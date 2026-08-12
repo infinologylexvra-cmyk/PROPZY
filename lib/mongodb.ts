@@ -1,9 +1,9 @@
 import mongoose from 'mongoose';
 import dns from 'dns';
 
-// Ensure Node.js resolves MongoDB Atlas SRV records properly on Windows
-// Set Google & Cloudflare DNS for MongoDB Atlas SRV resolution on Windows
+// Optimize Node.js DNS resolution order on Windows for MongoDB Atlas SRV records
 try {
+  dns.setDefaultResultOrder('ipv4first');
   dns.setServers(['8.8.8.8', '1.1.1.1', '8.8.4.4']);
 } catch (e) {}
 
@@ -27,7 +27,7 @@ if (!cached) {
 }
 
 let lastConnectErrorTime = 0;
-const RETRY_COOLDOWN_MS = 3000; // 3 seconds cooldown between retries
+const RETRY_COOLDOWN_MS = 5000; // 5s cooldown between retry attempts
 
 export async function connectToDatabase() {
   if (cached?.conn) {
@@ -35,16 +35,16 @@ export async function connectToDatabase() {
   }
 
   if (Date.now() - lastConnectErrorTime < RETRY_COOLDOWN_MS) {
-    throw new Error('MongoDB connection in cooldown');
+    throw new Error('MongoDB offline (memory store fallback active)');
   }
-
 
   if (!cached?.promise) {
     const opts: mongoose.ConnectOptions = {
       bufferCommands: false,
-      serverSelectionTimeoutMS: 5000,
-      connectTimeoutMS: 8000,
+      serverSelectionTimeoutMS: 3000,
+      connectTimeoutMS: 4000,
       tlsAllowInvalidCertificates: true,
+      family: 4, // Force IPv4 resolution on Windows
     };
 
     cached!.promise = mongoose.connect(MONGODB_URI, opts).then((mongooseInstance) => {
@@ -53,7 +53,6 @@ export async function connectToDatabase() {
     }).catch((err) => {
       cached!.promise = null;
       lastConnectErrorTime = Date.now();
-      console.warn('MongoDB connection issue:', err.message || err);
       throw err;
     });
   }
