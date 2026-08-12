@@ -3,11 +3,14 @@
 import React, { useState } from 'react';
 import { Users, ShieldCheck, UserCheck, Home, Phone, Mail } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
+import { getCachedUsers, setCachedUsers } from '@/lib/adminCache';
+
 
 export default function AdminUsersPage() {
   const { showToast } = useApp();
-  const [loading, setLoading] = React.useState(true);
-  const [users, setUsers] = useState<any[]>([]);
+  const cached = getCachedUsers();
+  const [users, setUsers] = useState<any[]>(cached || []);
+  const [loading, setLoading] = React.useState(!cached);
 
   React.useEffect(() => {
     async function fetchUsers() {
@@ -16,6 +19,7 @@ export default function AdminUsersPage() {
         const data = await res.json();
         if (data.success && data.data) {
           setUsers(data.data);
+          setCachedUsers(data.data);
         }
       } catch (err) {
         console.error('Failed to fetch users:', err);
@@ -23,8 +27,12 @@ export default function AdminUsersPage() {
         setLoading(false);
       }
     }
-    fetchUsers();
+
+    if (!cached) {
+      fetchUsers();
+    }
   }, []);
+
 
   return (
     <div className="space-y-6">

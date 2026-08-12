@@ -7,35 +7,46 @@ import {
 } from 'lucide-react';
 import { INITIAL_INQUIRIES } from '@/lib/seedData';
 import { useApp } from '@/context/AppContext';
+import { getCachedInquiries, setCachedInquiries } from '@/lib/adminCache';
 
 export default function AdminInquiriesPage() {
   const { showToast } = useApp();
-  const [inquiries, setInquiries] = useState<any[]>(INITIAL_INQUIRIES);
+  const cached = getCachedInquiries();
+  const [inquiries, setInquiries] = useState<any[]>(cached || INITIAL_INQUIRIES);
 
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!cached);
   const [statusFilter, setStatusFilter] = useState('all');
 
-  useEffect(() => {
-    async function fetchInquiries() {
-      try {
-        const res = await fetch('/api/inquiries');
-        const data = await res.json();
-        if (data.success && Array.isArray(data.data) && data.data.length > 0) {
-          setInquiries(data.data);
-        }
-      } catch (e) {
-        console.warn('Using seeded inquiries fallback:', e);
-      } finally {
-        setLoading(false);
+  const fetchInquiries = async () => {
+    try {
+      const res = await fetch('/api/inquiries');
+      const data = await res.json();
+      if (data.success && Array.isArray(data.data) && data.data.length > 0) {
+        setInquiries(data.data);
+        setCachedInquiries(data.data);
       }
+    } catch (e) {
+      console.warn('Using seeded inquiries fallback:', e);
+    } finally {
+      setLoading(false);
     }
-    fetchInquiries();
+  };
+
+  useEffect(() => {
+    if (!cached) {
+      fetchInquiries();
+    }
   }, []);
 
   const handleStatusChange = (id: string, newStatus: string) => {
-    setInquiries(prev => prev.map(inq => (inq.id === id || inq._id === id) ? { ...inq, status: newStatus } : inq));
+    setInquiries(prev => {
+      const updated = prev.map(inq => (inq.id === id || inq._id === id) ? { ...inq, status: newStatus } : inq);
+      setCachedInquiries(updated);
+      return updated;
+    });
     showToast(`Lead status updated to ${newStatus}`);
   };
+
 
   const filteredInquiries = inquiries.filter(item => {
     if (statusFilter !== 'all' && item.status !== statusFilter) return false;

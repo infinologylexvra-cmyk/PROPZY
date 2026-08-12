@@ -8,14 +8,16 @@ import {
 } from 'lucide-react';
 import { PropertyItem, INITIAL_PROPERTIES } from '@/lib/seedData';
 import { useApp } from '@/context/AppContext';
+import { getCachedProperties, setCachedProperties } from '@/lib/adminCache';
 
 function AdminPropertiesContent() {
   const searchParams = useSearchParams();
   const urlPid = searchParams.get('pid') || '';
   const { showToast } = useApp();
 
-  const [properties, setProperties] = useState<PropertyItem[]>(INITIAL_PROPERTIES);
-  const [loading, setLoading] = useState(true);
+  const cached = getCachedProperties();
+  const [properties, setProperties] = useState<PropertyItem[]>(cached || INITIAL_PROPERTIES);
+  const [loading, setLoading] = useState(!cached);
   
   // Filters State
   const [searchTerm, setSearchTerm] = useState(urlPid);
@@ -26,22 +28,27 @@ function AdminPropertiesContent() {
   // Edit Modal State
   const [editingProperty, setEditingProperty] = useState<PropertyItem | null>(null);
 
-  useEffect(() => {
-    async function fetchProperties() {
-      try {
-        const res = await fetch('/api/properties?admin=true');
-        const data = await res.json();
-        if (data.success && Array.isArray(data.data) && data.data.length > 0) {
-          setProperties(data.data);
-        }
-      } catch (e) {
-        console.warn('Using seeded properties fallback:', e);
-      } finally {
-        setLoading(false);
+  const fetchProperties = async () => {
+    try {
+      const res = await fetch('/api/properties?admin=true');
+      const data = await res.json();
+      if (data.success && Array.isArray(data.data) && data.data.length > 0) {
+        setProperties(data.data);
+        setCachedProperties(data.data);
       }
+    } catch (e) {
+      console.warn('Using seeded properties fallback:', e);
+    } finally {
+      setLoading(false);
     }
-    fetchProperties();
+  };
+
+  useEffect(() => {
+    if (!cached) {
+      fetchProperties();
+    }
   }, []);
+
 
   // Filtered List
   const filteredProperties = properties.filter(item => {
@@ -72,11 +79,15 @@ function AdminPropertiesContent() {
   const handleVerifyToggle = async (id: string, currentVerified: boolean) => {
     const newVerifiedStatus = !currentVerified;
 
-    setProperties(prev => prev.map(p => 
-      (p._id === id || p.pid === id || p.id === id) 
-        ? { ...p, verified: newVerifiedStatus } 
-        : p
-    ));
+    setProperties(prev => {
+      const updated = prev.map(p => 
+        (p._id === id || p.pid === id || p.id === id) 
+          ? { ...p, verified: newVerifiedStatus } 
+          : p
+      );
+      setCachedProperties(updated);
+      return updated;
+    });
 
     try {
       await fetch(`/api/properties/${id}`, {
@@ -94,11 +105,15 @@ function AdminPropertiesContent() {
   const handleFeatureToggle = async (id: string, currentFeatured: boolean) => {
     const newFeaturedStatus = !currentFeatured;
 
-    setProperties(prev => prev.map(p => 
-      (p._id === id || p.pid === id || p.id === id) 
-        ? { ...p, featured: newFeaturedStatus } 
-        : p
-    ));
+    setProperties(prev => {
+      const updated = prev.map(p => 
+        (p._id === id || p.pid === id || p.id === id) 
+          ? { ...p, featured: newFeaturedStatus } 
+          : p
+      );
+      setCachedProperties(updated);
+      return updated;
+    });
 
     try {
       await fetch(`/api/properties/${id}`, {
@@ -115,7 +130,11 @@ function AdminPropertiesContent() {
 
   const handleDelete = async (id: string) => {
     if (confirm('Are you sure you want to delete this property listing?')) {
-      setProperties(prev => prev.filter(p => p._id !== id && p.pid !== id && p.id !== id));
+      setProperties(prev => {
+        const updated = prev.filter(p => p._id !== id && p.pid !== id && p.id !== id);
+        setCachedProperties(updated);
+        return updated;
+      });
       try {
         await fetch(`/api/properties/${id}`, { method: 'DELETE' });
       } catch (e) {}
@@ -128,9 +147,13 @@ function AdminPropertiesContent() {
     if (!editingProperty) return;
     const targetId = editingProperty._id || editingProperty.pid || editingProperty.id;
 
-    setProperties(prev => prev.map(p => 
-      (p._id === targetId || p.pid === targetId || p.id === targetId) ? editingProperty : p
-    ));
+    setProperties(prev => {
+      const updated = prev.map(p => 
+        (p._id === targetId || p.pid === targetId || p.id === targetId) ? editingProperty : p
+      );
+      setCachedProperties(updated);
+      return updated;
+    });
 
     try {
       await fetch(`/api/properties/${targetId}`, {
@@ -143,6 +166,7 @@ function AdminPropertiesContent() {
     setEditingProperty(null);
     showToast('Property updated successfully!');
   };
+
 
   return (
     <div className="space-y-6">

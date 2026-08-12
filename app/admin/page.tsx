@@ -8,11 +8,15 @@ import {
 } from 'lucide-react';
 import { PropertyItem, INITIAL_PROPERTIES, INITIAL_INQUIRIES } from '@/lib/seedData';
 import { useApp } from '@/context/AppContext';
+import { getCachedProperties, setCachedProperties, getCachedInquiries, setCachedInquiries } from '@/lib/adminCache';
 
 export default function AdminOverviewPage() {
   const { showToast } = useApp();
-  const [properties, setProperties] = useState<PropertyItem[]>(INITIAL_PROPERTIES);
-  const [inquiries, setInquiries] = useState<any[]>(INITIAL_INQUIRIES);
+  const cachedProps = getCachedProperties();
+  const cachedInqs = getCachedInquiries();
+
+  const [properties, setProperties] = useState<PropertyItem[]>(cachedProps || INITIAL_PROPERTIES);
+  const [inquiries, setInquiries] = useState<any[]>(cachedInqs || INITIAL_INQUIRIES);
   const [refreshing, setRefreshing] = useState(false);
 
   const fetchData = async () => {
@@ -26,6 +30,7 @@ export default function AdminOverviewPage() {
         const propsData = await propsRes.json();
         if (propsData.success && Array.isArray(propsData.data) && propsData.data.length > 0) {
           setProperties(propsData.data);
+          setCachedProperties(propsData.data);
         }
       }
 
@@ -33,6 +38,7 @@ export default function AdminOverviewPage() {
         const inqData = await inqRes.json();
         if (inqData.success && Array.isArray(inqData.data) && inqData.data.length > 0) {
           setInquiries(inqData.data);
+          setCachedInquiries(inqData.data);
         }
       }
     } catch (e) {
@@ -41,8 +47,11 @@ export default function AdminOverviewPage() {
   };
 
   useEffect(() => {
-    fetchData();
+    if (!cachedProps || !cachedInqs) {
+      fetchData();
+    }
   }, []);
+
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -64,11 +73,16 @@ export default function AdminOverviewPage() {
 
   const handleVerifyToggle = async (propertyId: string, currentVerified: boolean) => {
     const newStatus = !currentVerified;
-    setProperties(prev => prev.map(p => 
-      (p._id === propertyId || p.pid === propertyId || p.id === propertyId) 
-        ? { ...p, verified: newStatus } 
-        : p
-    ));
+    setProperties(prev => {
+      const updated = prev.map(p => 
+        (p._id === propertyId || p.pid === propertyId || p.id === propertyId) 
+          ? { ...p, verified: newStatus } 
+          : p
+      );
+      setCachedProperties(updated);
+      return updated;
+    });
+
 
     try {
       await fetch(`/api/properties/${propertyId}`, {

@@ -3,11 +3,13 @@
 import React, { useState, useEffect } from 'react';
 import { ShieldCheck, CheckCircle2, XCircle, Clock, FileText, Search, UserCheck, RefreshCw, ExternalLink } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
+import { getCachedVerifications, setCachedVerifications } from '@/lib/adminCache';
 
 export default function AdminVerificationsPage() {
   const { showToast } = useApp();
-  const [verifications, setVerifications] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const cached = getCachedVerifications();
+  const [verifications, setVerifications] = useState<any[]>(cached || []);
+  const [loading, setLoading] = useState(!cached);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
 
@@ -18,6 +20,7 @@ export default function AdminVerificationsPage() {
       const data = await res.json();
       if (data.success && data.data) {
         setVerifications(data.data);
+        setCachedVerifications(data.data);
       }
     } catch (err) {
       console.warn('Failed to load verifications:', err);
@@ -27,7 +30,9 @@ export default function AdminVerificationsPage() {
   };
 
   useEffect(() => {
-    fetchVerifications();
+    if (!cached) {
+      fetchVerifications();
+    }
   }, []);
 
   const handleAction = async (userId: string, email: string, action: 'approve' | 'reject') => {
@@ -40,19 +45,24 @@ export default function AdminVerificationsPage() {
       const data = await res.json();
       if (data.success) {
         showToast(data.message);
-        setVerifications(prev => prev.map(u => {
-          if ((u._id && u._id === userId) || u.email === email) {
-            return {
-              ...u,
-              ownerVerified: action === 'approve',
-              verificationStatus: action === 'approve' ? 'approved' : 'rejected'
-            };
-          }
-          return u;
-        }));
+        setVerifications(prev => {
+          const updated = prev.map(u => {
+            if ((u._id && u._id === userId) || u.email === email) {
+              return {
+                ...u,
+                ownerVerified: action === 'approve',
+                verificationStatus: action === 'approve' ? 'approved' : 'rejected'
+              };
+            }
+            return u;
+          });
+          setCachedVerifications(updated);
+          return updated;
+        });
       } else {
         showToast(data.message || 'Action failed');
       }
+
     } catch (e) {
       showToast('Network error processing request');
     }
