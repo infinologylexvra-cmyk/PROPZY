@@ -522,98 +522,112 @@ function DashboardContent() {
               </form>
             )}
 
-            {/* ELECTRICITY BILL OWNER VERIFICATION SECTION */}
-            <div className="border-t border-emerald-950 pt-6 space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="text-base font-bold text-white flex items-center space-x-2">
-                    <span>⚡ Electricity Bill Owner Verification</span>
-                  </h4>
-                  <p className="text-xs text-gray-400">
-                    Upload your Electricity Bill & Consumer Number to verify your property ownership. Only verified owners can post property listings.
-                  </p>
-                </div>
-
-                {user.ownerVerified || user.verificationStatus === 'approved' ? (
-                  <span className="px-3 py-1 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800 text-xs font-extrabold flex items-center space-x-1">
-                    <ShieldCheck size={14} />
-                    <span>VERIFIED OWNER</span>
-                  </span>
-                ) : user.verificationStatus === 'pending' ? (
-                  <span className="px-3 py-1 rounded-full bg-amber-950 text-amber-400 border border-amber-800 text-xs font-extrabold flex items-center space-x-1">
-                    <RefreshCw size={14} className="animate-spin" />
-                    <span>PENDING ADMIN REVIEW</span>
-                  </span>
-                ) : user.verificationStatus === 'rejected' ? (
-                  <span className="px-3 py-1 rounded-full bg-red-950 text-red-400 border border-red-800 text-xs font-extrabold flex items-center space-x-1">
-                    <XCircle size={14} />
-                    <span>VERIFICATION REJECTED</span>
-                  </span>
-                ) : (
-                  <span className="px-3 py-1 rounded-full bg-gray-900 text-gray-400 border border-gray-800 text-xs font-bold">
-                    NOT VERIFIED
-                  </span>
-                )}
-              </div>
-
-              {/* Status Notice Banner */}
-              {user.ownerVerified || user.verificationStatus === 'approved' ? (
-                <div className="p-4 bg-[#0d2218] border border-emerald-800/80 rounded-2xl text-xs text-emerald-300 font-medium flex items-center space-x-3">
-                  <CheckCircle2 size={20} className="text-emerald-400 shrink-0" />
+            {/* ELECTRICITY BILL OWNER VERIFICATION SECTION (Only for Landlords/Owners) */}
+            {(user.role === 'owner' || user.ownerVerified || user.verificationStatus === 'pending' || user.verificationStatus === 'approved') ? (
+              <div className="border-t border-emerald-950 pt-6 space-y-4">
+                <div className="flex items-center justify-between">
                   <div>
-                    <span className="font-bold block text-white text-sm">Account Fully Verified!</span>
-                    Your Electricity Bill and Consumer Number ({user.consumerNumber || 'Verified'}) have been approved by Admin. You can post unlimited property listings.
-                  </div>
-                </div>
-              ) : user.verificationStatus === 'pending' ? (
-                <div className="p-4 bg-amber-950/40 border border-amber-800/80 rounded-2xl text-xs text-amber-300 font-medium flex items-center space-x-3">
-                  <RefreshCw size={20} className="text-amber-400 shrink-0 animate-spin" />
-                  <div>
-                    <span className="font-bold block text-white text-sm">Under Review by Admin</span>
-                    Your Electricity Bill (CA/Consumer No: <strong className="font-mono text-amber-400">{user.consumerNumber}</strong>) is currently being reviewed by our Admin team. You will be able to post properties as soon as it is approved.
-                  </div>
-                </div>
-              ) : (
-                <form onSubmit={handleVerifySubmit} className="space-y-4 max-w-xl text-xs pt-2">
-                  <div>
-                    <label className="block text-gray-300 font-semibold mb-1">Electricity Bill Consumer / CA Number *</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. CA-1004829103 or 100982341"
-                      value={verifyForm.consumerNumber}
-                      onChange={(e) => setVerifyForm({ ...verifyForm, consumerNumber: e.target.value })}
-                      className="w-full px-4 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white font-mono focus:border-emerald-500 focus:outline-none placeholder-gray-600"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-gray-300 font-semibold mb-1">Electricity Bill Photo / Document URL *</label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="Paste image link or URL of your electricity bill document"
-                      value={verifyForm.billUrl}
-                      onChange={(e) => setVerifyForm({ ...verifyForm, billUrl: e.target.value })}
-                      className="w-full px-4 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white focus:border-emerald-500 focus:outline-none placeholder-gray-600"
-                    />
-                    <p className="text-[11px] text-gray-500 mt-1">
-                      💡 Tip: You can paste any image link (e.g. Unsplash sample link or image URL) or upload a photo of your latest electricity bill.
+                    <h4 className="text-base font-bold text-white flex items-center space-x-2">
+                      <span>⚡ Electricity Bill Owner Verification</span>
+                    </h4>
+                    <p className="text-xs text-gray-400">
+                      Upload your Electricity Bill & Consumer Number to verify your property ownership. Only verified owners can post property listings.
                     </p>
                   </div>
 
-                  <button
-                    type="submit"
-                    disabled={submittingVerify}
-                    className="px-6 py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs rounded-full shadow-lg shadow-emerald-500/20 transition-all uppercase tracking-wider cursor-pointer"
-                  >
-                    {submittingVerify ? 'Submitting...' : 'Submit Electricity Bill for Admin Verification'}
-                  </button>
-                </form>
-              )}
-            </div>
+                  {user.ownerVerified || user.verificationStatus === 'approved' ? (
+                    <span className="px-3 py-1 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800 text-xs font-extrabold flex items-center space-x-1">
+                      <ShieldCheck size={14} />
+                      <span>VERIFIED OWNER</span>
+                    </span>
+                  ) : user.verificationStatus === 'pending' ? (
+                    <span className="px-3 py-1 rounded-full bg-amber-950 text-amber-400 border border-amber-800 text-xs font-extrabold flex items-center space-x-1">
+                      <RefreshCw size={14} className="animate-spin" />
+                      <span>PENDING ADMIN REVIEW</span>
+                    </span>
+                  ) : user.verificationStatus === 'rejected' ? (
+                    <span className="px-3 py-1 rounded-full bg-red-950 text-red-400 border border-red-800 text-xs font-extrabold flex items-center space-x-1">
+                      <XCircle size={14} />
+                      <span>VERIFICATION REJECTED</span>
+                    </span>
+                  ) : (
+                    <span className="px-3 py-1 rounded-full bg-gray-900 text-gray-400 border border-gray-800 text-xs font-bold">
+                      NOT VERIFIED
+                    </span>
+                  )}
+                </div>
+
+                {/* Status Notice Banner */}
+                {user.ownerVerified || user.verificationStatus === 'approved' ? (
+                  <div className="p-4 bg-[#0d2218] border border-emerald-800/80 rounded-2xl text-xs text-emerald-300 font-medium flex items-center space-x-3">
+                    <CheckCircle2 size={20} className="text-emerald-400 shrink-0" />
+                    <div>
+                      <span className="font-bold block text-white text-sm">Account Fully Verified!</span>
+                      Your Electricity Bill and Consumer Number ({user.consumerNumber || 'Verified'}) have been approved by Admin. You can post unlimited property listings.
+                    </div>
+                  </div>
+                ) : user.verificationStatus === 'pending' ? (
+                  <div className="p-4 bg-amber-950/40 border border-amber-800/80 rounded-2xl text-xs text-amber-300 font-medium flex items-center space-x-3">
+                    <RefreshCw size={20} className="text-amber-400 shrink-0 animate-spin" />
+                    <div>
+                      <span className="font-bold block text-white text-sm">Under Review by Admin</span>
+                      Your Electricity Bill (CA/Consumer No: <strong className="font-mono text-amber-400">{user.consumerNumber}</strong>) is currently being reviewed by our Admin team. You will be able to post properties as soon as it is approved.
+                    </div>
+                  </div>
+                ) : (
+                  <form onSubmit={handleVerifySubmit} className="space-y-4 max-w-xl text-xs pt-2">
+                    <div>
+                      <label className="block text-gray-300 font-semibold mb-1">Electricity Bill Consumer / CA Number *</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. CA-1004829103 or 100982341"
+                        value={verifyForm.consumerNumber}
+                        onChange={(e) => setVerifyForm({ ...verifyForm, consumerNumber: e.target.value })}
+                        className="w-full px-4 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white font-mono focus:border-emerald-500 focus:outline-none placeholder-gray-600"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-gray-300 font-semibold mb-1">Electricity Bill Photo / Document URL *</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="Paste image link or URL of your electricity bill document"
+                        value={verifyForm.billUrl}
+                        onChange={(e) => setVerifyForm({ ...verifyForm, billUrl: e.target.value })}
+                        className="w-full px-4 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white focus:border-emerald-500 focus:outline-none placeholder-gray-600"
+                      />
+                      <p className="text-[11px] text-gray-500 mt-1">
+                        💡 Tip: You can paste any image link (e.g. Unsplash sample link or image URL) or upload a photo of your latest electricity bill.
+                      </p>
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={submittingVerify}
+                      className="px-6 py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs rounded-full shadow-lg shadow-emerald-500/20 transition-all uppercase tracking-wider cursor-pointer"
+                    >
+                      {submittingVerify ? 'Submitting...' : 'Submit Electricity Bill for Admin Verification'}
+                    </button>
+                  </form>
+                )}
+              </div>
+            ) : (
+              <div className="border-t border-emerald-950 pt-6">
+                <div className="p-4 bg-[#0a1810] border border-emerald-950/80 rounded-2xl flex items-center justify-between gap-4">
+                  <div className="space-y-0.5">
+                    <h4 className="text-xs font-bold text-white">Are you a Property Owner or Landlord?</h4>
+                    <p className="text-[11px] text-gray-400">
+                      Switch your Account Role to <strong className="text-emerald-400">"Property Owner"</strong> above to apply for verification and post property listings.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
+
 
         {/* TAB 2: MY PROPERTIES */}
         {activeTab === 'my-properties' && (
