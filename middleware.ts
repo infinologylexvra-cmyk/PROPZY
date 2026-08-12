@@ -3,8 +3,9 @@ import { jwtVerify } from 'jose';
 
 const AUTH_COOKIE_NAME = 'propzy_token';
 const SECRET_KEY = new TextEncoder().encode(
-  process.env.JWT_SECRET || 'propzy-secret-jwt-key-2026-super-secure'
+  process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET || 'propzy-secret-jwt-key-2026-super-secure'
 );
+
 
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;

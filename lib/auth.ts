@@ -10,8 +10,9 @@ export interface JWTPayload {
 }
 
 const SECRET_KEY = new TextEncoder().encode(
-  process.env.JWT_SECRET || 'propzy-secret-jwt-key-2026-super-secure'
+  process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET || 'propzy-secret-jwt-key-2026-super-secure'
 );
+
 
 export const AUTH_COOKIE_NAME = 'propzy_token';
 

@@ -120,7 +120,8 @@ export default function AboutPage() {
                 Searching for a property shouldn't mean scrolling through fake listings, dealing with hidden charges, or making endless phone calls.
               </p>
               <p>
-                We created LetsRentz to simplify the entire journey with verified properties, transparent information, and direct owner connections—so every decision is backed by trust, not uncertainty.
+                We created PROPZY to simplify the entire journey with verified properties, transparent information, and direct owner connections—so every decision is backed by trust, not uncertainty.
+
               </p>
             </div>
           </div>

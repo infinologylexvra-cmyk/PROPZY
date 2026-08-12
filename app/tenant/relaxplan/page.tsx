@@ -33,7 +33,8 @@ export default function RelaxPlanPage() {
         </div>
 
         <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight">
-          LetsRentz <span className="text-emerald-400">Relax Plan</span>
+          PROPZY <span className="text-emerald-400">Relax Plan</span>
+
         </h1>
         <p className="text-xs sm:text-sm text-gray-300 max-w-2xl leading-relaxed">
           Skip the stress of endless property searching. Get a dedicated Relationship Manager (RM) who understands your exact requirements, handpicks verified owner listings, schedules visits, and negotiates the best rent for you — with 100% guarantee & 0% brokerage.

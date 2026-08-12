@@ -286,7 +286,8 @@ export default function PropertyDetailPage() {
             <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100 text-[11px] text-gray-600 space-y-2">
               <div className="flex items-center space-x-1.5 text-emerald-600 font-semibold">
                 <ShieldCheck size={14} />
-                <span>LetsRentz Verified Protection</span>
+                <span>PROPZY Verified Protection</span>
+
               </div>
               <p>Zero brokerage guarantee. Direct visit scheduling without commission.</p>
             </div>

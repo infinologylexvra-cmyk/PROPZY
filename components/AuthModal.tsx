@@ -81,7 +81,8 @@ export const AuthModal: React.FC = () => {
       const fallbackRole = (loginIdentifier.toLowerCase().includes('admin')) ? 'admin' : (loginIdentifier.toLowerCase().includes('owner') ? 'owner' : 'tenant');
       const fallbackUser = {
         name: loginIdentifier.split('@')[0] || 'User',
-        email: loginIdentifier.includes('@') ? loginIdentifier : `${loginIdentifier}@letsrentz.com`,
+        email: loginIdentifier.includes('@') ? loginIdentifier : `${loginIdentifier}@propzy.com`,
+
         phone: '+91 98765 43210',
         role: fallbackRole as any
       };

@@ -214,7 +214,7 @@ export default function PostPropertyPage() {
                   <Building2 size={32} className="mx-auto text-emerald-400" />
                   <h3 className="text-base font-bold text-white">Please Sign In to Post Your Property</h3>
                   <p className="text-xs text-gray-400 max-w-md mx-auto">
-                    You must be logged in with a verified owner account to list properties on LetsRentz.
+                    You must be logged in with a verified owner account to list properties on PROPZY.
                   </p>
                   <button
                     type="button"
@@ -232,7 +232,7 @@ export default function PostPropertyPage() {
                   <div className="space-y-1">
                     <h3 className="text-base font-bold text-white">Tenants Cannot Post Property Listings</h3>
                     <p className="text-xs text-gray-300 max-w-md mx-auto leading-relaxed">
-                      You are currently signed in as a <strong className="text-amber-400 font-bold uppercase">Tenant ({user.name})</strong>. Only verified Property Owners and Landlords can post listings on LetsRentz.
+                      You are currently signed in as a <strong className="text-amber-400 font-bold uppercase">Tenant ({user.name})</strong>. Only verified Property Owners and Landlords can post listings on PROPZY.
                     </p>
                   </div>
                   <div className="pt-2 flex items-center justify-center">
@@ -260,7 +260,7 @@ export default function PostPropertyPage() {
                     <div className="space-y-2">
                       <h3 className="text-base font-bold text-white">Electricity Bill Owner Verification Required</h3>
                       <p className="text-xs text-gray-300 max-w-md mx-auto leading-relaxed">
-                        To prevent fake listings, only property owners verified by their <strong className="text-emerald-400">Electricity Bill & Consumer Number</strong> can post property listings on LetsRentz.
+                        To prevent fake listings, only property owners verified by their <strong className="text-emerald-400">Electricity Bill & Consumer Number</strong> can post property listings on PROPZY.
                       </p>
                     </div>
                   )}
@@ -734,7 +734,7 @@ export default function PostPropertyPage() {
                 Your property listing <strong className="text-emerald-400 font-mono">{createdProperty.pid}</strong> has been submitted to the Admin Moderation Queue.
               </p>
               <div className="p-4 bg-[#0d1c14] border border-emerald-900/80 rounded-2xl max-w-md mx-auto text-xs text-emerald-300 font-medium">
-                🛡️ <strong>Pending Verification</strong>: Once our admin team verifies your listing details, it will automatically go live on the LetsRentz website with 0% brokerage.
+                🛡️ <strong>Pending Verification</strong>: Once our admin team verifies your listing details, it will automatically go live on the PROPZY website with 0% brokerage.
               </div>
               <div className="flex items-center justify-center space-x-4 pt-4">
                 <button

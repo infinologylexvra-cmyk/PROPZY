@@ -1,6 +1,7 @@
-# LetsRentz — Comprehensive Technical & Functional Documentation
+# PROPZY — Comprehensive Technical & Functional Documentation
 
-**LetsRentz** is a modern, high-performance real estate web application built for finding, renting, buying, and selling properties across Chandigarh Tricity (Chandigarh, Mohali, Kharar, Zirakpur, Panchkula) with **0% Brokerage**.
+**PROPZY** is a modern, high-performance real estate web application built for finding, renting, buying, and selling properties across Chandigarh Tricity (Chandigarh, Mohali, Kharar, Zirakpur, Panchkula) with **0% Brokerage**.
+
 
 ---
 
