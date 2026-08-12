@@ -3,7 +3,8 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ShieldCheck, PlusCircle, Building2, MapPin, DollarSign, Check, CheckCircle2, Upload, X, Image as ImageIcon, Plus, Trash2, Camera, Clock } from 'lucide-react';
+import { ShieldCheck, PlusCircle, Building2, MapPin, DollarSign, Check, CheckCircle2, Upload, X, Image as ImageIcon, Plus, Trash2, Camera, Clock, AlertTriangle } from 'lucide-react';
+
 import { useApp } from '@/context/AppContext';
 import { LazyImage } from '@/components/LazyImage';
 
@@ -191,8 +192,86 @@ export default function PostPropertyPage() {
     }
   };
 
+  // 1. UNLOGINED / UNREGISTERED USER WARNING GATE
+  if (!user) {
+    return (
+      <div className="bg-[#050806] text-gray-100 min-h-screen py-16 flex items-center justify-center">
+        <div className="max-w-xl mx-auto px-4 text-center space-y-6">
+          <div className="w-16 h-16 rounded-3xl bg-[#0e1d14] border border-emerald-900/80 text-emerald-400 flex items-center justify-center mx-auto shadow-xl">
+            <Building2 size={32} />
+          </div>
+
+          <div className="space-y-2">
+            <span className="px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-800/80 text-emerald-400 text-[11px] font-extrabold uppercase tracking-wider">
+              Authentication Required
+            </span>
+            <h1 className="text-2xl sm:text-4xl font-extrabold text-white">Login Required to Post Property</h1>
+            <p className="text-xs sm:text-sm text-gray-400 leading-relaxed max-w-md mx-auto">
+              You are currently not logged in. Posting properties on PROPZY requires a registered Property Owner / Landlord account.
+            </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+            <button
+              type="button"
+              onClick={openAuthModal}
+              className="w-full sm:w-auto px-8 py-3.5 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs rounded-full shadow-lg shadow-emerald-500/20 transition-all uppercase tracking-wider cursor-pointer"
+            >
+              Login / Sign Up to Continue
+            </button>
+            <Link
+              href="/"
+              className="w-full sm:w-auto px-6 py-3.5 bg-[#09110c] hover:bg-[#121c16] border border-emerald-950 text-gray-300 hover:text-white font-bold text-xs rounded-full transition-colors text-center"
+            >
+              Back to Home
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 2. REGISTERED TENANT WARNING GATE
+  if (user.role === 'tenant') {
+    return (
+      <div className="bg-[#050806] text-gray-100 min-h-screen py-16 flex items-center justify-center">
+        <div className="max-w-xl mx-auto px-4 text-center space-y-6">
+          <div className="w-16 h-16 rounded-3xl bg-amber-950/40 border border-amber-800/80 text-amber-400 flex items-center justify-center mx-auto shadow-xl">
+            <AlertTriangle size={32} />
+          </div>
+
+          <div className="space-y-2">
+            <span className="px-3 py-1 rounded-full bg-amber-950/80 border border-amber-800/80 text-amber-400 text-[11px] font-extrabold uppercase tracking-wider">
+              Property Owner Account Required
+            </span>
+            <h1 className="text-2xl sm:text-4xl font-extrabold text-white">Tenants Cannot Post Property Listings</h1>
+            <p className="text-xs sm:text-sm text-gray-300 leading-relaxed max-w-md mx-auto">
+              You are currently logged in as a <strong className="text-amber-400 font-bold">Tenant ({user.name})</strong>. Posting property listings on PROPZY is reserved for Property Owners and Landlords.
+            </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+            <Link
+              href="/dashboard?tab=account"
+              className="w-full sm:w-auto px-8 py-3.5 bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs rounded-full shadow-lg transition-all uppercase tracking-wider cursor-pointer text-center"
+            >
+              Switch Role to Owner in Profile
+            </Link>
+            <Link
+              href="/"
+              className="w-full sm:w-auto px-6 py-3.5 bg-[#09110c] hover:bg-[#121c16] border border-emerald-950 text-gray-300 hover:text-white font-bold text-xs rounded-full transition-colors text-center"
+            >
+              Back to Home
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-[#050806] text-gray-100 min-h-screen py-10">
+
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         {/* Header */}
         <div className="text-center space-y-2">
