@@ -25,15 +25,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   React.useEffect(() => {
     if (!isMounted || pathname === '/admin/login') return;
 
-    if (!user) {
-      openAuthModal();
-      router.replace('/');
-    } else if (user.role !== 'admin') {
-      showToast('Access restricted to Admin accounts');
-      router.replace('/dashboard');
+    if (!user || user.role !== 'admin') {
+      if (user && user.role !== 'admin') {
+        showToast('Access restricted to Admin accounts');
+      }
+      router.replace('/admin/login');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, pathname, isMounted]);
+
 
   // Bypass route guard for login page
   if (pathname === '/admin/login') {
