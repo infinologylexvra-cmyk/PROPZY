@@ -248,16 +248,7 @@ export default function AdminOverviewPage() {
               Quick Admin Actions
             </h3>
             <div className="space-y-2.5">
-              <Link
-                href="/post-property"
-                className="w-full p-3 rounded-2xl bg-[#07140c] border border-emerald-900/60 hover:border-emerald-500 flex items-center justify-between text-xs font-bold text-gray-200 hover:text-emerald-400 transition-all group"
-              >
-                <div className="flex items-center space-x-3">
-                  <PlusCircle size={18} className="text-emerald-400" />
-                  <span>Post New Property</span>
-                </div>
-                <ArrowUpRight size={16} className="text-gray-500 group-hover:text-emerald-400" />
-              </Link>
+
 
               <Link
                 href="/admin/properties"

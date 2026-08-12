@@ -77,26 +77,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
             {/* Right Controls */}
             <div className="flex items-center space-x-4">
-              {/* Post Property Quick Action */}
-              <Link
-                href="/post-property"
-                className="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs shadow-md transition-all"
-              >
-                <PlusCircle size={14} />
-                <span>Add Property</span>
-              </Link>
-
-              {/* Notifications */}
-              <button
-                onClick={() => showToast('No new unread system alerts')}
-                className="relative p-2 rounded-xl bg-[#0b140f] border border-emerald-900/80 text-gray-300 hover:text-emerald-400 transition-colors"
-                title="System Alerts"
-              >
-                <Bell size={18} />
-                <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-                <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-emerald-500" />
-              </button>
-
               {/* Admin Profile Badge */}
               <div className="flex items-center space-x-2 px-3 py-1.5 rounded-full bg-[#0a1610] border border-emerald-900/80 text-xs">
                 <div className="w-6 h-6 rounded-full bg-emerald-500 text-black font-extrabold flex items-center justify-center text-xs">
@@ -110,6 +90,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 </span>
               </div>
             </div>
+
           </header>
 
           {/* Main Content Area */}
