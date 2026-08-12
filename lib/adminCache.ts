@@ -1,5 +1,7 @@
 import { PropertyItem } from './seedData';
 
+const CACHE_KEY = 'propzy_admin_data_v1';
+
 interface AdminCacheStore {
   properties: PropertyItem[] | null;
   inquiries: any[] | null;
@@ -7,36 +9,42 @@ interface AdminCacheStore {
   verifications: any[] | null;
 }
 
-const cache: AdminCacheStore = {
-  properties: null,
-  inquiries: null,
-  users: null,
-  verifications: null,
+const getStore = (): AdminCacheStore => {
+  if (typeof window === 'undefined') {
+    return { properties: null, inquiries: null, users: null, verifications: null };
+  }
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+  return { properties: null, inquiries: null, users: null, verifications: null };
 };
 
-export const getCachedProperties = (): PropertyItem[] | null => cache.properties;
-export const setCachedProperties = (data: PropertyItem[]): void => {
-  cache.properties = data;
+const saveStore = (data: Partial<AdminCacheStore>) => {
+  if (typeof window === 'undefined') return;
+  try {
+    const current = getStore();
+    const updated = { ...current, ...data };
+    localStorage.setItem(CACHE_KEY, JSON.stringify(updated));
+  } catch (e) {}
 };
 
-export const getCachedInquiries = (): any[] | null => cache.inquiries;
-export const setCachedInquiries = (data: any[]): void => {
-  cache.inquiries = data;
-};
+export const getCachedProperties = (): PropertyItem[] | null => getStore().properties;
+export const setCachedProperties = (data: PropertyItem[]): void => saveStore({ properties: data });
 
-export const getCachedUsers = (): any[] | null => cache.users;
-export const setCachedUsers = (data: any[]): void => {
-  cache.users = data;
-};
+export const getCachedInquiries = (): any[] | null => getStore().inquiries;
+export const setCachedInquiries = (data: any[]): void => saveStore({ inquiries: data });
 
-export const getCachedVerifications = (): any[] | null => cache.verifications;
-export const setCachedVerifications = (data: any[]): void => {
-  cache.verifications = data;
-};
+export const getCachedUsers = (): any[] | null => getStore().users;
+export const setCachedUsers = (data: any[]): void => saveStore({ users: data });
+
+export const getCachedVerifications = (): any[] | null => getStore().verifications;
+export const setCachedVerifications = (data: any[]): void => saveStore({ verifications: data });
 
 export const clearAdminCache = (): void => {
-  cache.properties = null;
-  cache.inquiries = null;
-  cache.users = null;
-  cache.verifications = null;
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.removeItem(CACHE_KEY);
+    } catch (e) {}
+  }
 };

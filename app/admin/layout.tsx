@@ -8,22 +8,29 @@ import {
 } from 'lucide-react';
 import { GlobalSearchBar } from '@/components/GlobalSearchBar';
 import { AdminSidebar } from '@/components/AdminSidebar';
-import { useApp } from '@/context/AppContext';
+import { useApp, useAppStore } from '@/context/AppContext';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const { user, openPidModal, openAuthModal, showToast } = useApp();
   const [pidQuickInput, setPidQuickInput] = useState('');
-  const [isMounted, setIsMounted] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
 
   React.useEffect(() => {
-    setIsMounted(true);
+    const checkHydration = () => {
+      if (useAppStore.persist?.hasHydrated?.()) {
+        setIsHydrated(true);
+      } else {
+        setTimeout(checkHydration, 50);
+      }
+    };
+    checkHydration();
   }, []);
 
   // Automatic Authorization Guard & Silent Redirection
   React.useEffect(() => {
-    if (!isMounted || pathname === '/admin/login') return;
+    if (!isHydrated || pathname === '/admin/login') return;
 
     if (!user || user.role !== 'admin') {
       if (user && user.role !== 'admin') {
@@ -32,8 +39,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       router.replace('/admin/login');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, pathname, isMounted]);
-
+  }, [user, pathname, isHydrated]);
 
   // Bypass route guard for login page
   if (pathname === '/admin/login') {
@@ -41,9 +47,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   // Prevent rendering admin panel or restricted screen before hydration or for non-admin users
-  if (!isMounted || !user || user.role !== 'admin') {
+  if (!isHydrated || !user || user.role !== 'admin') {
     return null;
   }
+
 
 
   return (
