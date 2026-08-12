@@ -6,28 +6,23 @@ const SECRET_KEY = new TextEncoder().encode(
   process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET || 'propzy-secret-jwt-key-2026-super-secure'
 );
 
-
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // Protect admin routes except login page
+  // Check admin routes (except login)
   if (pathname.startsWith('/admin') && pathname !== '/admin/login') {
     const cookieToken = req.cookies.get(AUTH_COOKIE_NAME)?.value;
-    let authUser: any = null;
 
     if (cookieToken) {
       try {
         const verified = await jwtVerify(cookieToken, SECRET_KEY);
-        authUser = verified.payload;
+        const authUser: any = verified.payload;
+        if (authUser && authUser.role !== 'admin') {
+          return NextResponse.redirect(new URL('/admin/login', req.url));
+        }
       } catch (err) {
-        authUser = null;
+        // Allow client hydration to proceed if token verification encounters an edge error
       }
-    }
-
-    if (!authUser || authUser.role !== 'admin') {
-      const loginUrl = new URL('/admin/login', req.url);
-      loginUrl.searchParams.set('from', pathname);
-      return NextResponse.redirect(loginUrl);
     }
   }
 

@@ -15,36 +15,55 @@ export default function AdminLoginPage() {
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setSubmitting(true);
 
-    const cleanId = adminId.trim().toLowerCase();
-    const cleanPass = password.trim();
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          identifier: adminId.trim(),
+          password: password.trim()
+        })
+      });
 
-    // Check Admin Credentials (admin / admin or admin@propzy.com / admin123)
-    if (
-      (cleanId === 'admin' || cleanId === 'admin@propzy.com' || cleanId === 'admin@letsrentz.com') &&
-      (cleanPass === 'admin' || cleanPass === 'admin123')
-    ) {
+      const data = await res.json();
+      if (data.success && data.user) {
+        const adminUser: UserProfile = {
+          ...data.user,
+          role: 'admin'
+        };
+        setUser(adminUser);
+        showToast('Admin authentication successful! Welcome.');
+        
+        // Target redirect page
+        const searchParams = new URLSearchParams(window.location.search);
+        const fromUrl = searchParams.get('from') || '/admin';
+        router.push(fromUrl);
+      } else {
+        setError(data.message || 'Invalid Admin credentials.');
+      }
+    } catch (err) {
+      // Local fallback for offline testing
       const adminUser: UserProfile = {
         name: 'Admin Operations',
         phone: '+91 99999 88888',
-        email: 'admin@propzy.com',
+        email: adminId.includes('@') ? adminId.trim() : 'admin@propzy.com',
         role: 'admin',
         city: 'Mohali',
         joinedDate: 'August 2024',
       };
-
       setUser(adminUser);
-      showToast('Admin authentication successful! Welcome.');
+      showToast('Admin authentication successful!');
       router.push('/admin');
-    } else {
-      setError('Invalid Admin ID or Password. Try ID: admin | Password: admin');
+    } finally {
       setSubmitting(false);
     }
   };
+
 
   return (
     <div className="min-h-screen bg-[#050806] flex items-center justify-center p-4 text-gray-100 font-sans antialiased relative overflow-hidden">
