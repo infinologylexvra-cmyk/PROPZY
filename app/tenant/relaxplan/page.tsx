@@ -40,14 +40,15 @@ export default function RelaxPlanPage() {
       const data = await res.json();
       if (data.success) {
         setSubmitted(true);
-        showToast('Relax Plan request submitted! Assigned to RM.');
+        showToast(data.message || 'Your Relax Plan request has been submitted successfully!');
       } else {
         showToast(data.message || 'Failed to submit request');
       }
     } catch (err) {
       setSubmitted(true);
-      showToast('Relax Plan request submitted!');
-    } finally {
+      showToast('Your Relax Plan request has been submitted successfully!');
+    }
+ finally {
       setSubmitting(false);
     }
   };
