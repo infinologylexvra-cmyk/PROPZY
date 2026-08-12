@@ -101,12 +101,13 @@ export default function RelaxPlanPage() {
         {submitted ? (
           <div className="text-center py-10 space-y-3 bg-emerald-50 rounded-2xl border border-emerald-100 p-6">
             <CheckCircle2 size={40} className="mx-auto text-emerald-600" />
-            <h3 className="text-lg font-bold text-emerald-900">Relax Plan Activated!</h3>
-            <p className="text-xs text-emerald-800">
-              Your assigned Relationship Manager will contact <strong className="text-gray-900">{phone}</strong> within 30 minutes with tailored property recommendations.
+            <h3 className="text-lg font-bold text-emerald-900">Request Sent to Admin!</h3>
+            <p className="text-xs text-emerald-800 leading-relaxed max-w-md mx-auto">
+              Your Relax Plan request has been successfully sent to the Admin team. Our Relationship Manager will review your requirements and contact <strong className="text-gray-900">{phone}</strong> shortly.
             </p>
           </div>
         ) : (
+
           <form onSubmit={handleBooking} className="space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
