@@ -501,15 +501,13 @@ function DashboardContent() {
                 </div>
 
                 <div>
-                  <label className="block text-gray-300 font-semibold mb-1">Account Profile Role</label>
-                  <select
-                    value={accountForm.role}
-                    onChange={(e) => setAccountForm({ ...accountForm, role: e.target.value as any })}
-                    className="w-full px-4 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white focus:border-emerald-500 focus:outline-none"
-                  >
-                    <option value="tenant">Tenant (Looking for property to rent/buy)</option>
-                    <option value="owner">Property Owner / Landlord (Post properties)</option>
-                  </select>
+                  <label className="block text-gray-300 font-semibold mb-1">Account Type / Role</label>
+                  <div className="w-full px-4 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white font-bold capitalize flex items-center justify-between">
+                    <span className="text-emerald-400 font-extrabold">{user.role === 'owner' ? 'Property Owner / Landlord' : 'Tenant Account'}</span>
+                    <span className="text-[10px] bg-emerald-950 border border-emerald-800 text-emerald-300 px-2.5 py-0.5 rounded-full font-mono uppercase">
+                      {user.role}
+                    </span>
+                  </div>
                 </div>
 
                 <div className="pt-2">
@@ -523,20 +521,20 @@ function DashboardContent() {
               </form>
             )}
 
-            {/* ELECTRICITY BILL OWNER VERIFICATION SECTION */}
-            <div className="border-t border-emerald-950 pt-6 space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="text-base font-bold text-white flex items-center space-x-2">
-                    <span>⚡ Electricity Bill Owner Verification</span>
-                  </h4>
-                  <p className="text-xs text-gray-400">
-                    Upload your Electricity Bill & Consumer Number to verify your property ownership. Only verified owners can post property listings.
-                  </p>
-                </div>
+            {/* ELECTRICITY BILL OWNER VERIFICATION SECTION (Rendered ONLY for Property Owners) */}
+            {user.role === 'owner' && (
+              <div className="border-t border-emerald-950 pt-6 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h4 className="text-base font-bold text-white flex items-center space-x-2">
+                      <span>⚡ Electricity Bill Owner Verification</span>
+                    </h4>
+                    <p className="text-xs text-gray-400">
+                      Upload your Electricity Bill & Consumer Number to verify your property ownership. Only verified owners can post property listings.
+                    </p>
+                  </div>
 
-                {user.role === 'owner' && (
-                  user.ownerVerified || user.verificationStatus === 'approved' ? (
+                  {user.ownerVerified || user.verificationStatus === 'approved' ? (
                     <span className="px-3 py-1 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800 text-xs font-extrabold flex items-center space-x-1">
                       <ShieldCheck size={14} />
                       <span>VERIFIED OWNER</span>
@@ -555,22 +553,11 @@ function DashboardContent() {
                     <span className="px-3 py-1 rounded-full bg-gray-900 text-gray-400 border border-gray-800 text-xs font-bold">
                       NOT VERIFIED
                     </span>
-                  )
-                )}
-              </div>
-
-              {/* TENANT VIEW: Show warning notice ONLY (No filling form) */}
-              {user.role === 'tenant' ? (
-                <div className="p-4 bg-amber-950/30 border border-amber-900/60 rounded-2xl text-xs text-amber-300 font-medium flex items-center space-x-3">
-                  <AlertTriangle size={20} className="text-amber-400 shrink-0" />
-                  <div>
-                    <span className="font-bold block text-amber-200 text-sm">Tenant Account Notice</span>
-                    You are currently registered as a <strong>Tenant</strong>. Document submission and property verification are reserved for Property Owners / Landlords. To submit an Electricity Bill for verification, switch your Account Role to <strong>"Property Owner"</strong> above and click Save.
-                  </div>
+                  )}
                 </div>
-              ) : (
-                /* OWNER VIEW: Keep AS IT IS (Banner or filling form) */
-                user.ownerVerified || user.verificationStatus === 'approved' ? (
+
+                {/* Status Notice Banner or Verification Form */}
+                {user.ownerVerified || user.verificationStatus === 'approved' ? (
                   <div className="p-4 bg-[#0d2218] border border-emerald-800/80 rounded-2xl text-xs text-emerald-300 font-medium flex items-center space-x-3">
                     <CheckCircle2 size={20} className="text-emerald-400 shrink-0" />
                     <div>
@@ -623,9 +610,10 @@ function DashboardContent() {
                       {submittingVerify ? 'Submitting...' : 'Submit Electricity Bill for Admin Verification'}
                     </button>
                   </form>
-                )
-              )}
-            </div>
+                )}
+              </div>
+            )}
+
 
           </div>
         )}

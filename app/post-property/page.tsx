@@ -252,11 +252,12 @@ export default function PostPropertyPage() {
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
             <Link
-              href="/dashboard?tab=account"
-              className="w-full sm:w-auto px-8 py-3.5 bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs rounded-full shadow-lg transition-all uppercase tracking-wider cursor-pointer text-center"
+              href="/dashboard"
+              className="w-full sm:w-auto px-8 py-3.5 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs rounded-full shadow-lg transition-all uppercase tracking-wider cursor-pointer text-center"
             >
-              Switch Role to Owner in Profile
+              Go to Dashboard
             </Link>
+
             <Link
               href="/"
               className="w-full sm:w-auto px-6 py-3.5 bg-[#09110c] hover:bg-[#121c16] border border-emerald-950 text-gray-300 hover:text-white font-bold text-xs rounded-full transition-colors text-center"
