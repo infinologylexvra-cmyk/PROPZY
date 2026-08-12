@@ -2,8 +2,9 @@ import mongoose from 'mongoose';
 import dns from 'dns';
 
 // Ensure Node.js resolves MongoDB Atlas SRV records properly on Windows
+// Set Google & Cloudflare DNS for MongoDB Atlas SRV resolution on Windows
 try {
-  dns.setServers(['8.8.8.8', '1.1.1.1']);
+  dns.setServers(['8.8.8.8', '1.1.1.1', '8.8.4.4']);
 } catch (e) {}
 
 declare const process: NodeJS.Process;
@@ -26,7 +27,7 @@ if (!cached) {
 }
 
 let lastConnectErrorTime = 0;
-const RETRY_COOLDOWN_MS = 15000; // 15 seconds cooldown if DB fails
+const RETRY_COOLDOWN_MS = 3000; // 3 seconds cooldown between retries
 
 export async function connectToDatabase() {
   if (cached?.conn) {
@@ -34,8 +35,9 @@ export async function connectToDatabase() {
   }
 
   if (Date.now() - lastConnectErrorTime < RETRY_COOLDOWN_MS) {
-    throw new Error('Database connection in cooldown due to previous timeout');
+    throw new Error('MongoDB connection in cooldown');
   }
+
 
   if (!cached?.promise) {
     const opts: mongoose.ConnectOptions = {
