@@ -15,10 +15,15 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const { user, openPidModal, openAuthModal, showToast } = useApp();
   const [pidQuickInput, setPidQuickInput] = useState('');
+  const [isMounted, setIsMounted] = useState(false);
+
+  React.useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Automatic Authorization Guard & Silent Redirection
   React.useEffect(() => {
-    if (pathname === '/admin/login') return;
+    if (!isMounted || pathname === '/admin/login') return;
 
     if (!user) {
       openAuthModal();
@@ -28,17 +33,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       router.replace('/dashboard');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, pathname]);
+  }, [user, pathname, isMounted]);
 
   // Bypass route guard for login page
   if (pathname === '/admin/login') {
     return <>{children}</>;
   }
 
-  // Prevent rendering admin panel or restricted screen for non-admin users
-  if (!user || user.role !== 'admin') {
+  // Prevent rendering admin panel or restricted screen before hydration or for non-admin users
+  if (!isMounted || !user || user.role !== 'admin') {
     return null;
   }
+
 
   return (
     <>

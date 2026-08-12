@@ -142,23 +142,8 @@ export const useAppStore = create<AppState>()(
       name: STORAGE_KEY,
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({ user: state.user, wishlist: state.wishlist }),
-      onRehydrateStorage: () => (state) => {
-        // Clear pre-seeded admin sessions from stale local storage
-        if (
-          state?.user &&
-          (state.user.name === 'System Admin' ||
-            state.user.name === 'System' ||
-            state.user.name === 'Admin Operations' ||
-            state.user.name === 'Admin' ||
-            state.user.email === 'admin@propzy.com' ||
-            state.user.email === 'admin@letsrentz.com' ||
-
-            state.user.role === 'admin')
-        ) {
-          state.user = null;
-        }
-      },
     }
+
   )
 );
 
