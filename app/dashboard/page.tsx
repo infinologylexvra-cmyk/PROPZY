@@ -5,8 +5,9 @@ import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import {
   Heart, User, Building, PhoneCall, ShieldCheck, CheckCircle2,
-  XCircle, RefreshCw, CreditCard, Sparkles, FileText, Download, Check, Edit3, Save
+  XCircle, RefreshCw, CreditCard, Sparkles, FileText, Download, Check, Edit3, Save, AlertTriangle
 } from 'lucide-react';
+
 import { useApp, UserProfile, BillingRecord } from '@/context/AppContext';
 import { PropertyItem, INITIAL_PROPERTIES } from '@/lib/seedData';
 import { PropertyCard } from '@/components/PropertyCard';
@@ -522,20 +523,20 @@ function DashboardContent() {
               </form>
             )}
 
-            {/* ELECTRICITY BILL OWNER VERIFICATION SECTION (Only for Landlords/Owners) */}
-            {(user.role === 'owner' || user.ownerVerified || user.verificationStatus === 'pending' || user.verificationStatus === 'approved') ? (
-              <div className="border-t border-emerald-950 pt-6 space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="text-base font-bold text-white flex items-center space-x-2">
-                      <span>⚡ Electricity Bill Owner Verification</span>
-                    </h4>
-                    <p className="text-xs text-gray-400">
-                      Upload your Electricity Bill & Consumer Number to verify your property ownership. Only verified owners can post property listings.
-                    </p>
-                  </div>
+            {/* ELECTRICITY BILL OWNER VERIFICATION SECTION */}
+            <div className="border-t border-emerald-950 pt-6 space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="text-base font-bold text-white flex items-center space-x-2">
+                    <span>⚡ Electricity Bill Owner Verification</span>
+                  </h4>
+                  <p className="text-xs text-gray-400">
+                    Upload your Electricity Bill & Consumer Number to verify your property ownership. Only verified owners can post property listings.
+                  </p>
+                </div>
 
-                  {user.ownerVerified || user.verificationStatus === 'approved' ? (
+                {user.role === 'owner' && (
+                  user.ownerVerified || user.verificationStatus === 'approved' ? (
                     <span className="px-3 py-1 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800 text-xs font-extrabold flex items-center space-x-1">
                       <ShieldCheck size={14} />
                       <span>VERIFIED OWNER</span>
@@ -554,11 +555,22 @@ function DashboardContent() {
                     <span className="px-3 py-1 rounded-full bg-gray-900 text-gray-400 border border-gray-800 text-xs font-bold">
                       NOT VERIFIED
                     </span>
-                  )}
-                </div>
+                  )
+                )}
+              </div>
 
-                {/* Status Notice Banner */}
-                {user.ownerVerified || user.verificationStatus === 'approved' ? (
+              {/* TENANT VIEW: Show warning notice ONLY (No filling form) */}
+              {user.role === 'tenant' ? (
+                <div className="p-4 bg-amber-950/30 border border-amber-900/60 rounded-2xl text-xs text-amber-300 font-medium flex items-center space-x-3">
+                  <AlertTriangle size={20} className="text-amber-400 shrink-0" />
+                  <div>
+                    <span className="font-bold block text-amber-200 text-sm">Tenant Account Notice</span>
+                    You are currently registered as a <strong>Tenant</strong>. Document submission and property verification are reserved for Property Owners / Landlords. To submit an Electricity Bill for verification, switch your Account Role to <strong>"Property Owner"</strong> above and click Save.
+                  </div>
+                </div>
+              ) : (
+                /* OWNER VIEW: Keep AS IT IS (Banner or filling form) */
+                user.ownerVerified || user.verificationStatus === 'approved' ? (
                   <div className="p-4 bg-[#0d2218] border border-emerald-800/80 rounded-2xl text-xs text-emerald-300 font-medium flex items-center space-x-3">
                     <CheckCircle2 size={20} className="text-emerald-400 shrink-0" />
                     <div>
@@ -611,20 +623,10 @@ function DashboardContent() {
                       {submittingVerify ? 'Submitting...' : 'Submit Electricity Bill for Admin Verification'}
                     </button>
                   </form>
-                )}
-              </div>
-            ) : (
-              <div className="border-t border-emerald-950 pt-6">
-                <div className="p-4 bg-[#0a1810] border border-emerald-950/80 rounded-2xl flex items-center justify-between gap-4">
-                  <div className="space-y-0.5">
-                    <h4 className="text-xs font-bold text-white">Are you a Property Owner or Landlord?</h4>
-                    <p className="text-[11px] text-gray-400">
-                      Switch your Account Role to <strong className="text-emerald-400">"Property Owner"</strong> above to apply for verification and post property listings.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
+                )
+              )}
+            </div>
+
           </div>
         )}
 
