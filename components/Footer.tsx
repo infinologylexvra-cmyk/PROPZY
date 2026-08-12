@@ -99,12 +99,13 @@ export const Footer: React.FC = () => {
           <div className="lg:col-span-2 space-y-3">
             <h4 className="text-xs font-extrabold uppercase text-white tracking-widest">SUPPORT</h4>
             <ul className="space-y-2 text-xs text-gray-400">
-              <li><Link href="/tenant/relaxplan" className="hover:text-emerald-400 transition-colors">Help Center</Link></li>
-              <li><Link href="/tenant/relaxplan" className="hover:text-emerald-400 transition-colors">Safety & Security</Link></li>
-              <li><Link href="/about" className="hover:text-emerald-400 transition-colors">Terms of Use</Link></li>
-              <li><Link href="/about" className="hover:text-emerald-400 transition-colors">Privacy Policy</Link></li>
-              <li><Link href="/tenant/relaxplan" className="hover:text-emerald-400 transition-colors">FAQ</Link></li>
+              <li><Link href="/help" className="hover:text-emerald-400 transition-colors">Help Center</Link></li>
+              <li><Link href="/safety" className="hover:text-emerald-400 transition-colors">Safety & Security</Link></li>
+              <li><Link href="/terms" className="hover:text-emerald-400 transition-colors">Terms of Use</Link></li>
+              <li><Link href="/privacy" className="hover:text-emerald-400 transition-colors">Privacy Policy</Link></li>
+              <li><Link href="/faq" className="hover:text-emerald-400 transition-colors">FAQ</Link></li>
             </ul>
+
           </div>
 
           {/* Col 5: NEWSLETTER */}
@@ -234,9 +235,10 @@ export const Footer: React.FC = () => {
         <div className="flex flex-col sm:flex-row items-center justify-between text-xs text-gray-500 gap-4 pt-2">
           <p>© 2026 PROPZY. All rights reserved.</p>
           <div className="flex flex-wrap items-center space-x-4">
-            <Link href="/about" className="hover:text-emerald-400 transition-colors">Terms of Use</Link>
+            <Link href="/terms" className="hover:text-emerald-400 transition-colors">Terms of Use</Link>
             <span>•</span>
-            <Link href="/about" className="hover:text-emerald-400 transition-colors">Privacy Policy</Link>
+            <Link href="/privacy" className="hover:text-emerald-400 transition-colors">Privacy Policy</Link>
+
             <span>•</span>
             <Link href="/localities" className="hover:text-emerald-400 transition-colors">Sitemap</Link>
             <span>•</span>
