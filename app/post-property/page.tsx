@@ -285,76 +285,38 @@ export default function PostPropertyPage() {
 
         {/* Form Wizard Container */}
         <div className="bg-[#0a110d] rounded-3xl border border-emerald-950/90 p-6 sm:p-8 shadow-xl">
-          {/* VERIFICATION & ROLE BLOCK NOTICES */}
+          {/* VERIFICATION BLOCK NOTICE FOR UNVERIFIED OWNERS */}
           {!isVerifiedOwner && step !== 4 ? (
-            <div>
-              {!user ? (
-                <div className="bg-[#050806] border border-emerald-950 rounded-2xl p-8 text-center space-y-4 my-2">
-                  <Building2 size={32} className="mx-auto text-emerald-400" />
-                  <h3 className="text-base font-bold text-white">Please Sign In to Post Your Property</h3>
-                  <p className="text-xs text-gray-400 max-w-md mx-auto">
-                    You must be logged in with a verified owner account to list properties on PROPZY.
+            <div className="bg-[#121609] border border-amber-800/80 rounded-2xl p-6 text-center space-y-4 my-2">
+              <div className="w-12 h-12 rounded-2xl bg-amber-900/40 text-amber-400 flex items-center justify-center mx-auto border border-amber-700/60 shadow-lg">
+                <ShieldCheck size={24} />
+              </div>
+              {user.verificationStatus === 'pending' ? (
+                <div className="space-y-2">
+                  <h3 className="text-base font-bold text-white">Electricity Bill Verification Under Admin Review</h3>
+                  <p className="text-xs text-amber-300 max-w-md mx-auto leading-relaxed">
+                    Your Electricity Bill (Consumer No: <strong className="font-mono font-bold text-white">{user.consumerNumber || 'Submitted'}</strong>) is currently being reviewed by our Admin team. Once approved by Admin, your account will be authorized to post listings.
                   </p>
-                  <button
-                    type="button"
-                    onClick={openAuthModal}
-                    className="px-6 py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs rounded-full shadow-lg transition-all cursor-pointer"
-                  >
-                    Sign In / Register Now
-                  </button>
-                </div>
-              ) : user.role === 'tenant' ? (
-                <div className="bg-amber-950/40 border border-amber-800/80 rounded-2xl p-6 text-center space-y-4 my-2">
-                  <div className="w-12 h-12 rounded-2xl bg-amber-900/40 text-amber-400 flex items-center justify-center mx-auto border border-amber-700/60 shadow-lg">
-                    <Building2 size={24} />
-                  </div>
-                  <div className="space-y-1">
-                    <h3 className="text-base font-bold text-white">Tenants Cannot Post Property Listings</h3>
-                    <p className="text-xs text-gray-300 max-w-md mx-auto leading-relaxed">
-                      You are currently signed in as a <strong className="text-amber-400 font-bold uppercase">Tenant ({user.name})</strong>. Only verified Property Owners and Landlords can post listings on PROPZY.
-                    </p>
-                  </div>
-                  <div className="pt-2 flex items-center justify-center">
-                    <Link
-                      href="/dashboard?tab=account"
-                      className="px-6 py-3 bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs rounded-full shadow-lg transition-all uppercase tracking-wider cursor-pointer"
-                    >
-                      Go to Profile & Apply for Owner Verification
-                    </Link>
-                  </div>
                 </div>
               ) : (
-                <div className="bg-[#121609] border border-amber-800/80 rounded-2xl p-6 text-center space-y-4 my-2">
-                  <div className="w-12 h-12 rounded-2xl bg-amber-900/40 text-amber-400 flex items-center justify-center mx-auto border border-amber-700/60 shadow-lg">
-                    <ShieldCheck size={24} />
-                  </div>
-                  {user.verificationStatus === 'pending' ? (
-                    <div className="space-y-2">
-                      <h3 className="text-base font-bold text-white">Electricity Bill Verification Under Admin Review</h3>
-                      <p className="text-xs text-amber-300 max-w-md mx-auto leading-relaxed">
-                        Your Electricity Bill (Consumer No: <strong className="font-mono font-bold text-white">{user.consumerNumber || 'Submitted'}</strong>) is currently being reviewed by our Admin team. Once approved by Admin, your account will be authorized to post listings.
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      <h3 className="text-base font-bold text-white">Electricity Bill Owner Verification Required</h3>
-                      <p className="text-xs text-gray-300 max-w-md mx-auto leading-relaxed">
-                        To prevent fake listings, only property owners verified by their <strong className="text-emerald-400">Electricity Bill & Consumer Number</strong> can post property listings on PROPZY.
-                      </p>
-                    </div>
-                  )}
-                  <div className="pt-2 flex items-center justify-center">
-                    <Link
-                      href="/dashboard?tab=account"
-                      className="px-6 py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs rounded-full shadow-lg transition-all uppercase tracking-wider cursor-pointer"
-                    >
-                      {user.verificationStatus === 'pending' ? 'Check Status in Profile' : 'Upload Electricity Bill in Profile'}
-                    </Link>
-                  </div>
+                <div className="space-y-2">
+                  <h3 className="text-base font-bold text-white">Electricity Bill Owner Verification Required</h3>
+                  <p className="text-xs text-gray-300 max-w-md mx-auto leading-relaxed">
+                    To prevent fake listings, only property owners verified by their <strong className="text-emerald-400">Electricity Bill & Consumer Number</strong> can post property listings on PROPZY.
+                  </p>
                 </div>
               )}
+              <div className="pt-2 flex items-center justify-center">
+                <Link
+                  href="/dashboard?tab=account"
+                  className="px-6 py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs rounded-full shadow-lg transition-all uppercase tracking-wider cursor-pointer"
+                >
+                  {user.verificationStatus === 'pending' ? 'Check Status in Profile' : 'Upload Electricity Bill in Profile'}
+                </Link>
+              </div>
             </div>
           ) : (
+
             <>
               {/* Progress Indicator Bar */}
               {step < 4 && (
