@@ -1,0 +1,70 @@
+import mongoose, { Schema, Document } from 'mongoose';
+
+export interface IProperty extends Document {
+  pid: string;
+  title: string;
+  category: 'rent' | 'buy' | 'sell' | 'pg' | 'commercial';
+  type: 'house' | 'flat' | 'pg' | 'commercial' | 'plot';
+  city: string;
+  locality: string;
+  address: string;
+  price: number;
+  deposit?: number;
+  bedrooms?: number;
+  bathrooms?: number;
+  areaSqFt?: number;
+  furnishing: 'unfurnished' | 'semi-furnished' | 'fully-furnished';
+  verified: boolean;
+  featured: boolean;
+  images: string[];
+  description: string;
+  amenities: string[];
+  ownerName: string;
+  ownerPhone: string;
+  ownerEmail?: string;
+  ownerRole: 'owner' | 'agent';
+  available: boolean;
+  createdAt: Date;
+}
+
+const PropertySchema: Schema = new Schema({
+  pid: { type: String, required: true, unique: true },
+  title: { type: String, required: true },
+  category: { 
+    type: String, 
+    enum: ['rent', 'buy', 'sell', 'pg', 'commercial'], 
+    required: true,
+    index: true 
+  },
+  type: { 
+    type: String, 
+    enum: ['house', 'flat', 'pg', 'commercial', 'plot'], 
+    required: true 
+  },
+  city: { type: String, required: true, index: true },
+  locality: { type: String, required: true, index: true },
+  address: { type: String, required: true },
+  price: { type: Number, required: true, index: true },
+  deposit: { type: Number, default: 0 },
+  bedrooms: { type: Number, default: 1 },
+  bathrooms: { type: Number, default: 1 },
+  areaSqFt: { type: Number, default: 500 },
+  furnishing: { 
+    type: String, 
+    enum: ['unfurnished', 'semi-furnished', 'fully-furnished'], 
+    default: 'semi-furnished' 
+  },
+  verified: { type: Boolean, default: false },
+  featured: { type: Boolean, default: false },
+  images: [{ type: String }],
+  description: { type: String, required: true },
+  amenities: [{ type: String }],
+  ownerName: { type: String, required: true },
+  ownerPhone: { type: String, required: true },
+  ownerEmail: { type: String, default: '', index: true },
+  ownerRole: { type: String, enum: ['owner', 'agent'], default: 'owner' },
+  available: { type: Boolean, default: true },
+  createdAt: { type: Date, default: Date.now }
+});
+
+export default mongoose.models.Property || mongoose.model<IProperty>('Property', PropertySchema);

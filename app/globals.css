@@ -1,0 +1,36 @@
+@import "tailwindcss";
+
+:root {
+  --background: #050806;
+  --foreground: #f3f4f6;
+}
+
+body {
+  background-color: #050806;
+  color: #f3f4f6;
+  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+  overflow-x: hidden;
+}
+
+.font-serif {
+  font-family: var(--font-serif), Georgia, Cambria, "Times New Roman", Times, serif;
+}
+
+/* Custom emerald scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0a0f0c;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #143525;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #22c55e;
+}

@@ -1,0 +1,155 @@
+'use client';
+
+import React, { useState } from 'react';
+import { X, Phone, User, MessageSquare, CheckCircle, ShieldCheck } from 'lucide-react';
+import { PropertyItem } from '@/lib/seedData';
+import { useApp } from '@/context/AppContext';
+
+interface InquiryModalProps {
+  property: PropertyItem | null;
+  onClose: () => void;
+}
+
+export const InquiryModal: React.FC<InquiryModalProps> = ({ property, onClose }) => {
+  const { user, showToast } = useApp();
+  const [name, setName] = useState(user ? user.name : '');
+  const [phone, setPhone] = useState(user ? user.phone : '');
+  const [message, setMessage] = useState('Hi, I am interested in visiting this property.');
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+
+  if (!property) return null;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name || !phone) return;
+
+    setSubmitting(true);
+    try {
+      const res = await fetch('/api/inquiries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          propertyId: property.id || property.pid,
+          propertyTitle: property.title,
+          propertyPid: property.pid,
+          tenantName: name,
+          tenantPhone: phone,
+          tenantMessage: message,
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSubmitted(true);
+        showToast('Inquiry sent! Owner will contact you shortly.');
+      }
+    } catch (e) {
+      setSubmitted(true);
+      showToast('Inquiry received!');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
+      <div className="relative w-full max-w-md max-h-[90vh] overflow-y-auto bg-[#0a110d] rounded-3xl shadow-2xl border border-emerald-900/80 p-5 sm:p-6 text-gray-100">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 p-2 rounded-full text-gray-400 hover:text-white hover:bg-emerald-950 transition-colors"
+        >
+          <X size={20} />
+        </button>
+
+        {submitted ? (
+          <div className="text-center py-8 space-y-4">
+            <div className="w-16 h-16 bg-emerald-500/20 text-emerald-400 border border-emerald-800 rounded-full flex items-center justify-center mx-auto">
+              <CheckCircle size={32} />
+            </div>
+            <h3 className="text-xl font-bold text-white">Inquiry Sent Successfully!</h3>
+            <p className="text-xs text-gray-400">
+              The owner/manager for <strong className="text-emerald-400">{property.pid} ({property.locality})</strong> has received your request.
+            </p>
+            <div className="p-3.5 bg-[#050806] rounded-xl border border-emerald-900/60 text-xs text-gray-300">
+              Direct Owner Phone: <strong className="text-emerald-400">{property.ownerPhone}</strong> ({property.ownerName})
+            </div>
+            <button
+              onClick={onClose}
+              className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs rounded-xl shadow-lg transition-all uppercase tracking-wider"
+            >
+              Done
+            </button>
+          </div>
+        ) : (
+          <div>
+            <div className="mb-5">
+              <span className="inline-block px-3 py-1 bg-[#0f281b] text-emerald-400 border border-emerald-800/80 text-[10px] font-extrabold uppercase rounded-full mb-2">
+                {property.pid} • 0% Brokerage
+              </span>
+              <h3 className="text-base font-bold text-white line-clamp-1">{property.title}</h3>
+              <p className="text-xs text-gray-400">{property.locality}, {property.city}</p>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-300 mb-1">Your Full Name</label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    required
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="e.g. Rahul Sharma"
+                    className="w-full pl-9 pr-3 py-2.5 text-xs bg-[#050806] border border-emerald-900/80 rounded-xl text-white focus:border-emerald-500 focus:outline-none"
+                  />
+                  <User size={14} className="absolute left-3 top-3 text-emerald-400" />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-300 mb-1">Mobile Phone Number</label>
+                <div className="relative">
+                  <input
+                    type="tel"
+                    required
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="+91 98765 43210"
+                    className="w-full pl-9 pr-3 py-2.5 text-xs bg-[#050806] border border-emerald-900/80 rounded-xl text-white focus:border-emerald-500 focus:outline-none font-mono"
+                  />
+                  <Phone size={14} className="absolute left-3 top-3 text-emerald-400" />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-gray-300 mb-1">Message for Owner</label>
+                <div className="relative">
+                  <textarea
+                    rows={2}
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    className="w-full pl-9 pr-3 py-2 text-xs bg-[#050806] border border-emerald-900/80 rounded-xl text-white focus:border-emerald-500 focus:outline-none"
+                  />
+                  <MessageSquare size={14} className="absolute left-3 top-3 text-emerald-400" />
+                </div>
+              </div>
+
+              <div className="p-3 bg-[#071910] rounded-xl border border-emerald-900/60 flex items-center space-x-2 text-[11px] text-emerald-300 font-medium">
+                <ShieldCheck size={16} className="shrink-0 text-emerald-400" />
+                <span>Your contact info is shared strictly with the property owner. 0% Commission.</span>
+              </div>
+
+              <button
+                type="submit"
+                disabled={submitting}
+                className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs rounded-xl shadow-lg shadow-emerald-500/20 transition-all flex items-center justify-center space-x-2 uppercase tracking-wider cursor-pointer"
+              >
+                <span>{submitting ? 'Sending Request...' : 'Get Owner Contact Details'}</span>
+              </button>
+            </form>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
