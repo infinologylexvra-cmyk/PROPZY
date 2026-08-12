@@ -21,9 +21,9 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ success: true, data: verifications, source: 'mongodb' });
   } catch (error: any) {
-    console.warn('Admin verifications fallback:', error.message);
     return NextResponse.json({ success: true, data: [], source: 'memory' });
   }
+
 }
 
 // POST: Admin approves or rejects owner verification

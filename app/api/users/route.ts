@@ -11,17 +11,14 @@ export async function GET(req: NextRequest) {
     try {
       await connectToDatabase();
       dbConnected = true;
-    } catch (err: any) {
-      console.warn('Database connection warning when fetching users:', err.message);
-    }
+    } catch (err: any) {}
 
     if (dbConnected) {
       try {
         dbUsers = await User.find({}).sort({ createdAt: -1 }).lean();
-      } catch (err: any) {
-        console.warn('Database query warning when fetching users:', err.message);
-      }
+      } catch (err: any) {}
     }
+
 
     // Map DB users
     const mappedDbUsers = dbUsers.map((u: any) => ({

@@ -60,10 +60,8 @@ export async function GET(req: NextRequest) {
     const properties = await Property.find(filter).sort({ createdAt: -1 });
     return NextResponse.json({ success: true, data: properties, source: 'mongodb' });
   } catch (error) {
-    console.warn('Falling back to memory store:', (error as any)?.message || error);
-
-    
     // In-memory filtering fallback
+
     let filtered = [...memoryStore];
 
     if (category && category !== 'all') {
