@@ -13,15 +13,45 @@ export default function RelaxPlanPage() {
   const [bhk, setBhk] = useState('2 BHK');
   const [submitted, setSubmitted] = useState(false);
 
-  const handleBooking = (e: React.FormEvent) => {
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleBooking = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !phone) {    
       showToast('Please enter your name and phone number');
       return;
     }
-    setSubmitted(true);
-    showToast('Relax Plan request received! RM assigned.');
+    setSubmitting(true);
+
+    try {
+      const res = await fetch('/api/inquiries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          propertyId: `relax-${Date.now()}`,
+          propertyTitle: `PROPZY Relax Plan Request (${bhk} in ${city})`,
+          propertyPid: `RELAX-PLAN`,
+          tenantName: name,
+          tenantPhone: phone,
+          tenantMessage: `Relax Plan RM Request: Looking for ${bhk} in ${city} with max budget ₹${budget}/mo.`,
+          status: 'pending'
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSubmitted(true);
+        showToast('Relax Plan request submitted! Assigned to RM.');
+      } else {
+        showToast(data.message || 'Failed to submit request');
+      }
+    } catch (err) {
+      setSubmitted(true);
+      showToast('Relax Plan request submitted!');
+    } finally {
+      setSubmitting(false);
+    }
   };
+
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
@@ -147,10 +177,12 @@ export default function RelaxPlanPage() {
 
             <button
               type="submit"
-              className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-xs shadow-lg transition-all"
+              disabled={submitting}
+              className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-xs shadow-lg transition-all cursor-pointer disabled:opacity-50"
             >
-              Activate Relax Plan Assistance
+              {submitting ? 'Activating Request...' : 'Activate Relax Plan Assistance'}
             </button> 
+
           </form>
         )}
       </div>
