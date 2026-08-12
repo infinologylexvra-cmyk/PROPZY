@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 import { X, Phone, User, MessageSquare, CheckCircle, ShieldCheck } from 'lucide-react';
 import { PropertyItem } from '@/lib/seedData';
 import { useApp } from '@/context/AppContext';
+import { sanitizeName, sanitizePhone, isValidName, isValidPhone } from '@/lib/validation';
+
 
 interface InquiryModalProps {
   property: PropertyItem | null;
@@ -12,8 +14,8 @@ interface InquiryModalProps {
 
 export const InquiryModal: React.FC<InquiryModalProps> = ({ property, onClose }) => {
   const { user, showToast } = useApp();
-  const [name, setName] = useState(user ? user.name : '');
-  const [phone, setPhone] = useState(user ? user.phone : '');
+  const [name, setName] = useState(user ? sanitizeName(user.name) : '');
+  const [phone, setPhone] = useState(user ? sanitizePhone(user.phone) : '');
   const [message, setMessage] = useState('Hi, I am interested in visiting this property.');
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -22,7 +24,14 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({ property, onClose })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !phone) return;
+    if (!isValidName(name)) {
+      showToast('Please enter a valid name (letters only)');
+      return;
+    }
+    if (!isValidPhone(phone)) {
+      showToast('Please enter a valid 10-digit mobile phone number');
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -33,8 +42,8 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({ property, onClose })
           propertyId: property.id || property.pid,
           propertyTitle: property.title,
           propertyPid: property.pid,
-          tenantName: name,
-          tenantPhone: phone,
+          tenantName: name.trim(),
+          tenantPhone: phone.trim(),
           tenantMessage: message,
         })
       });
@@ -50,6 +59,7 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({ property, onClose })
       setSubmitting(false);
     }
   };
+
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
@@ -92,13 +102,14 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({ property, onClose })
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-300 mb-1">Your Full Name</label>
+                <label className="block text-xs font-semibold text-gray-300 mb-1">Your Full Name *</label>
                 <div className="relative">
                   <input
                     type="text"
                     required
+                    maxLength={50}
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    onChange={(e) => setName(sanitizeName(e.target.value))}
                     placeholder="e.g. Rahul Sharma"
                     className="w-full pl-9 pr-3 py-2.5 text-xs bg-[#050806] border border-emerald-900/80 rounded-xl text-white focus:border-emerald-500 focus:outline-none"
                   />
@@ -107,19 +118,21 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({ property, onClose })
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-300 mb-1">Mobile Phone Number</label>
+                <label className="block text-xs font-semibold text-gray-300 mb-1">Mobile Phone Number (10 Digits) *</label>
                 <div className="relative">
                   <input
                     type="tel"
                     required
+                    maxLength={10}
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="+91 98765 43210"
+                    onChange={(e) => setPhone(sanitizePhone(e.target.value))}
+                    placeholder="9876543210"
                     className="w-full pl-9 pr-3 py-2.5 text-xs bg-[#050806] border border-emerald-900/80 rounded-xl text-white focus:border-emerald-500 focus:outline-none font-mono"
                   />
                   <Phone size={14} className="absolute left-3 top-3 text-emerald-400" />
                 </div>
               </div>
+
 
               <div>
                 <label className="block text-xs font-semibold text-gray-300 mb-1">Message for Owner</label>

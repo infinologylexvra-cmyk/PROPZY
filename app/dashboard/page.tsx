@@ -12,6 +12,8 @@ import { useApp, UserProfile, BillingRecord } from '@/context/AppContext';
 import { PropertyItem, INITIAL_PROPERTIES } from '@/lib/seedData';
 import { PropertyCard } from '@/components/PropertyCard';
 import { LazyImage } from '@/components/LazyImage';
+import { sanitizeName, sanitizePhone, isValidName, isValidPhone } from '@/lib/validation';
+
 
 interface InquiryItem {
   _id?: string;
@@ -201,13 +203,24 @@ function DashboardContent() {
   });
 
   const handleAccountFormSave = (e: React.FormEvent) => {
+
     e.preventDefault();
     if (!user) return;
 
+    if (!isValidName(accountForm.name)) {
+      showToast('Please enter a valid full name (letters only)');
+      return;
+    }
+
+    if (!isValidPhone(accountForm.phone)) {
+      showToast('Please enter a valid 10-digit mobile phone number');
+      return;
+    }
+
     const updatedUser: UserProfile = {
       ...user,
-      name: accountForm.name,
-      phone: accountForm.phone,
+      name: accountForm.name.trim(),
+      phone: accountForm.phone.trim(),
       email: accountForm.email,
       city: accountForm.city,
       role: accountForm.role as 'tenant' | 'owner' | 'admin'
@@ -217,6 +230,7 @@ function DashboardContent() {
     setIsEditingAccount(false);
     showToast('Account details updated successfully!');
   };
+
 
   const handleVerifySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -463,22 +477,25 @@ function DashboardContent() {
                   <input
                     type="text"
                     required
+                    maxLength={50}
                     value={accountForm.name}
-                    onChange={(e) => setAccountForm({ ...accountForm, name: e.target.value })}
+                    onChange={(e) => setAccountForm({ ...accountForm, name: sanitizeName(e.target.value) })}
                     className="w-full px-4 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white focus:border-emerald-500 focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-gray-300 font-semibold mb-1">Phone Number</label>
+                  <label className="block text-gray-300 font-semibold mb-1">Phone Number (10 Digits)</label>
                   <input
-                    type="text"
+                    type="tel"
                     required
+                    maxLength={10}
                     value={accountForm.phone}
-                    onChange={(e) => setAccountForm({ ...accountForm, phone: e.target.value })}
+                    onChange={(e) => setAccountForm({ ...accountForm, phone: sanitizePhone(e.target.value) })}
                     className="w-full px-4 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white font-mono focus:border-emerald-500 focus:outline-none"
                   />
                 </div>
+
 
                 <div>
                   <label className="block text-gray-300 font-semibold mb-1">Email Address</label>

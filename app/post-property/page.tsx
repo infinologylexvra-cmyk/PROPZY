@@ -7,6 +7,8 @@ import { ShieldCheck, PlusCircle, Building2, MapPin, DollarSign, Check, CheckCir
 
 import { useApp } from '@/context/AppContext';
 import { LazyImage } from '@/components/LazyImage';
+import { sanitizeName, sanitizePhone, isValidName, isValidPhone } from '@/lib/validation';
+
 
 export default function PostPropertyPage() {
   const router = useRouter();
@@ -127,11 +129,23 @@ export default function PostPropertyPage() {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
+
     e.preventDefault();
     if (!title || !locality || !price || !ownerName || !ownerPhone) {
       showToast('Please fill out all required fields');
       return;
     }
+
+    if (!isValidName(ownerName)) {
+      showToast('Please enter a valid owner name (letters only)');
+      return;
+    }
+
+    if (!isValidPhone(ownerPhone)) {
+      showToast('Please enter a valid 10-digit mobile phone number');
+      return;
+    }
+
 
     setSubmitting(true);
 
@@ -717,22 +731,25 @@ export default function PostPropertyPage() {
                   <input
                     type="text"
                     required
+                    maxLength={50}
                     value={ownerName}
-                    onChange={(e) => setOwnerName(e.target.value)}
+                    onChange={(e) => setOwnerName(sanitizeName(e.target.value))}
                     className="w-full px-4 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white focus:border-emerald-500 focus:outline-none"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-gray-300 font-semibold mb-1">Contact Phone Number *</label>
+                  <label className="block text-gray-300 font-semibold mb-1">Contact Phone Number (10 Digits) *</label>
                   <input
                     type="tel"
                     required
+                    maxLength={10}
                     value={ownerPhone}
-                    onChange={(e) => setOwnerPhone(e.target.value)}
+                    onChange={(e) => setOwnerPhone(sanitizePhone(e.target.value))}
                     className="w-full px-4 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white font-mono focus:border-emerald-500 focus:outline-none font-bold text-emerald-400"
                   />
                 </div>
+
               </div>
 
               <div>

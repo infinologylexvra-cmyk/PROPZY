@@ -4,8 +4,11 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { X, Mail, Lock, User, ShieldCheck, UserCheck, KeyRound, Building, Home, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
+import { sanitizeName, sanitizePhone, isValidName, isValidPhone } from '@/lib/validation';
+
 
 export const AuthModal: React.FC = () => {
+
   const router = useRouter();
   const { isAuthModalOpen, closeAuthModal, setUser, user, showToast } = useApp();
   const [mode, setMode] = useState<'login' | 'register'>('login');
@@ -95,9 +98,20 @@ export const AuthModal: React.FC = () => {
   };
 
   const handleRegisterSubmit = async (e: React.FormEvent) => {
+
     e.preventDefault();
     if (!name.trim() || !email.trim() || !phone.trim() || !password.trim()) {
       setError('Please fill out all registration fields.');
+      return;
+    }
+
+    if (!isValidName(name)) {
+      setError('Please enter a valid full name (letters only, no numbers).');
+      return;
+    }
+
+    if (!isValidPhone(phone)) {
+      setError('Please enter a valid 10-digit mobile phone number.');
       return;
     }
 
@@ -105,6 +119,7 @@ export const AuthModal: React.FC = () => {
       setError('Passwords do not match. Please re-enter your password.');
       return;
     }
+
 
     setError('');
     setSubmitting(true);
@@ -332,12 +347,14 @@ export const AuthModal: React.FC = () => {
                     </span>
                     <input
                       type="text"
+                      maxLength={50}
                       value={name}
-                      onChange={(e) => setName(e.target.value)}
+                      onChange={(e) => setName(sanitizeName(e.target.value))}
                       placeholder="Aman Kumar"
                       className="w-full py-3 pr-3 text-xs text-white placeholder-gray-600 bg-transparent focus:outline-none"
                       required
                     />
+
                   </div>
                 </div>
 

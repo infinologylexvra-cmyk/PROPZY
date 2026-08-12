@@ -3,11 +3,12 @@
 import React, { useState } from 'react';
 import { Sparkles, ShieldCheck, CheckCircle2, UserCheck, PhoneCall, Home, Search, HeartHandshake } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
+import { sanitizeName, sanitizePhone, isValidName, isValidPhone } from '@/lib/validation';
 
 export default function RelaxPlanPage() {
   const { user, showToast } = useApp();
-  const [name, setName] = useState(user ? user.name : '');
-  const [phone, setPhone] = useState(user ? user.phone : '');
+  const [name, setName] = useState(user ? sanitizeName(user.name) : '');
+  const [phone, setPhone] = useState(user ? sanitizePhone(user.phone) : '');
   const [city, setCity] = useState('Mohali');
   const [budget, setBudget] = useState('15000');
   const [bhk, setBhk] = useState('2 BHK');
@@ -17,8 +18,12 @@ export default function RelaxPlanPage() {
 
   const handleBooking = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !phone) {    
-      showToast('Please enter your name and phone number');
+    if (!isValidName(name)) {    
+      showToast('Please enter a valid name (letters only)');
+      return;
+    }
+    if (!isValidPhone(phone)) {
+      showToast('Please enter a valid 10-digit mobile phone number');
       return;
     }
     setSubmitting(true);
@@ -31,8 +36,8 @@ export default function RelaxPlanPage() {
           propertyId: `relax-${Date.now()}`,
           propertyTitle: `PROPZY Relax Plan Request (${bhk} in ${city})`,
           propertyPid: `RELAX-PLAN`,
-          tenantName: name,
-          tenantPhone: phone,
+          tenantName: name.trim(),
+          tenantPhone: phone.trim(),
           tenantMessage: `Relax Plan RM Request: Looking for ${bhk} in ${city} with max budget ₹${budget}/mo.`,
           status: 'pending'
         })
@@ -47,11 +52,11 @@ export default function RelaxPlanPage() {
     } catch (err) {
       setSubmitted(true);
       showToast('Your Relax Plan request has been submitted successfully!');
-    }
- finally {
+    } finally {
       setSubmitting(false);
     }
   };
+
 
 
   return (
@@ -115,24 +120,27 @@ export default function RelaxPlanPage() {
                 <input
                   type="text"
                   required
+                  maxLength={50}
                   value={name}
-                  onChange={(e) => setName(e.target.value)}
+                  onChange={(e) => setName(sanitizeName(e.target.value))}
                   placeholder="Rahul Sharma"
-                  className="w-full px-4 py-3 text-xs text-black border border-gray-300 rounded-xl "
+                  className="w-full px-4 py-3 text-xs text-black border border-gray-300 rounded-xl"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-700 mb-1">Mobile Phone Number *</label>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Mobile Phone Number (10 Digits) *</label>
                 <input
                   type="tel"
                   required
+                  maxLength={10}
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="+91 98765 43210"
-                  className="w-full px-4 py-3 text-xs text-black border border-gray-300 rounded-xl"
+                  onChange={(e) => setPhone(sanitizePhone(e.target.value))}
+                  placeholder="9876543210"
+                  className="w-full px-4 py-3 text-xs text-black border border-gray-300 rounded-xl font-mono"
                 />
               </div>
+
             </div>
 
             <div className="grid grid-cols-3 gap-3">
