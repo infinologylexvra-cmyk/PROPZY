@@ -21,13 +21,14 @@ export const Footer: React.FC = () => {
   };
 
   const majorCities = [
-    { name: 'Mohali' },
-    { name: 'Chandigarh' },
-    { name: 'Zirakpur' },
-    { name: 'Panchkula' },
-    { name: 'Kharar' },
-    { name: '+ More' },
+    { name: 'Mohali', href: '/properties?city=Mohali' },
+    { name: 'Chandigarh', href: '/properties?city=Chandigarh' },
+    { name: 'Zirakpur', href: '/properties?city=Zirakpur' },
+    { name: 'Panchkula', href: '/properties?city=Panchkula' },
+    { name: 'Kharar', href: '/properties?city=Kharar' },
+    { name: '+ More', href: '/localities' },
   ];
+
 
   // Hide Footer on Admin portal routes (called after all hook declarations)
   if (pathname && pathname.startsWith('/admin')) {
@@ -213,15 +214,16 @@ export const Footer: React.FC = () => {
             </div>
             <div className="flex flex-wrap justify-center md:justify-start  gap-4">
               {majorCities.map((c, idx) => (
-                <div key={idx} className="flex flex-col items-center space-y-1 group cursor-pointer">
+                <Link key={idx} href={c.href} className="flex flex-col items-center space-y-1 group cursor-pointer">
                   <div className="w-10 h-10 rounded-full bg-[#0a1b12] border border-emerald-900/60 group-hover:border-emerald-500 group-hover:bg-emerald-500 group-hover:text-black text-emerald-400 flex items-center justify-center transition-all">
                     <Home size={16} />
                   </div>
                   <span className="text-[10px] text-gray-400 group-hover:text-white font-medium transition-colors">
                     {c.name}
                   </span>
-                </div>
+                </Link>
               ))}
+
             </div>
           </div>
         </div>
