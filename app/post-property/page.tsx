@@ -196,6 +196,7 @@ export default function PostPropertyPage() {
         return prev;
       }
 
+      
       return [...prev, imageSrc].slice(0, maxSellImages);
     });
   };
