@@ -277,6 +277,11 @@ function DashboardContent() {
   };
 
   const [refreshing, setRefreshing] = useState(false);
+  const [isClientReady, setIsClientReady] = useState(false);
+
+  useEffect(() => {
+    setIsClientReady(true);
+  }, []);
 
   const handleManualRefresh = async () => {
     setRefreshing(true);
@@ -296,6 +301,12 @@ function DashboardContent() {
     setActiveTab(tab);
     router.push(`/dashboard?tab=${tab}`);
   };
+
+  // The persisted session exists only in the browser. Rendering this stable shell
+  // first keeps the server and initial client markup identical during hydration.
+  if (!isClientReady) {
+    return <div className="bg-[#050806] min-h-screen" aria-busy="true" />;
+  }
 
   if (!user) {
     return (
