@@ -920,7 +920,7 @@ export default function PostPropertyPage() {
                     maxLength={10}
                     value={ownerPhone}
                     onChange={(e) => setOwnerPhone(sanitizePhone(e.target.value))}
-                    className="w-full px-4 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white font-mono focus:border-emerald-500 focus:outline-none font-bold text-emerald-400"
+                    className="w-full px-4 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl font-mono focus:border-emerald-500 focus:outline-none font-bold text-emerald-400"
                   />
                 </div>
 
