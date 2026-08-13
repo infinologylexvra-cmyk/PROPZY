@@ -43,6 +43,96 @@ export default function PostPropertyPage() {
   const [ownerName, setOwnerName] = useState(user ? user.name : '');
   const [ownerPhone, setOwnerPhone] = useState(user ? user.phone : '');
 
+  const postPropertyChannelRef = React.useRef<BroadcastChannel | null>(null);
+  const draftSyncLockedRef = React.useRef(false);
+  const draftHydratedRef = React.useRef(false);
+
+  const POST_PROPERTY_DRAFT_KEY = 'propzy_post_property_draft_v2';
+  const POST_PROPERTY_SUBMISSION_KEY = 'propzy_post_property_submission_v2';
+
+  type PostPropertyTextDraft = {
+    step: number;
+    category: 'rent' | 'sell' | 'buy' | 'pg' | 'commercial';
+    type: 'flat' | 'house' | 'pg' | 'commercial';
+    title: string;
+    city: string;
+    locality: string;
+    address: string;
+    price: number | '';
+    deposit: number | '';
+    bedrooms: number;
+    bathrooms: number;
+    areaSqFt: number;
+    furnishing: 'unfurnished' | 'semi-furnished' | 'fully-furnished';
+    description: string;
+    selectedAmenities: string[];
+    urlInput: string;
+    uploadTab: 'file' | 'url';
+    ownerName: string;
+    ownerPhone: string;
+  };
+
+  const createSubmissionSignature = (draft: Pick<PostPropertyTextDraft, 'category' | 'type' | 'title' | 'city' | 'locality' | 'address' | 'price' | 'deposit' | 'bedrooms' | 'bathrooms' | 'areaSqFt' | 'furnishing' | 'description' | 'selectedAmenities' | 'urlInput' | 'uploadTab' | 'ownerName' | 'ownerPhone'>, imagesList: string[]) => {
+    const source = JSON.stringify({
+      ...draft,
+      selectedAmenities: [...draft.selectedAmenities].sort(),
+      images: imagesList,
+    });
+
+    let hash = 5381;
+    for (let index = 0; index < source.length; index += 1) {
+      hash = ((hash << 5) + hash) + source.charCodeAt(index);
+    }
+
+    return `${hash >>> 0}`;
+  };
+
+  const readTextDraft = (): PostPropertyTextDraft => ({
+    step,
+    category,
+    type,
+    title,
+    city,
+    locality,
+    address,
+    price,
+    deposit,
+    bedrooms,
+    bathrooms,
+    areaSqFt,
+    furnishing,
+    description,
+    selectedAmenities,
+    urlInput,
+    uploadTab,
+    ownerName,
+    ownerPhone,
+  });
+
+  const applyTextDraft = (draft: Partial<PostPropertyTextDraft>) => {
+    if (typeof draft.step === 'number') setStep(draft.step);
+    if (draft.category) setCategory(draft.category);
+    if (draft.type) setType(draft.type);
+    if (typeof draft.title === 'string') setTitle(draft.title);
+    if (typeof draft.city === 'string') setCity(draft.city);
+    if (typeof draft.locality === 'string') setLocality(draft.locality);
+    if (typeof draft.address === 'string') setAddress(draft.address);
+    if (typeof draft.price !== 'undefined') setPrice(draft.price);
+    if (typeof draft.deposit !== 'undefined') setDeposit(draft.deposit);
+    if (typeof draft.bedrooms === 'number') setBedrooms(draft.bedrooms);
+    if (typeof draft.bathrooms === 'number') setBathrooms(draft.bathrooms);
+    if (typeof draft.areaSqFt === 'number') setAreaSqFt(draft.areaSqFt);
+    if (draft.furnishing) setFurnishing(draft.furnishing);
+    if (typeof draft.description === 'string') setDescription(draft.description);
+    if (Array.isArray(draft.selectedAmenities)) setSelectedAmenities(draft.selectedAmenities);
+    if (typeof draft.urlInput === 'string') setUrlInput(draft.urlInput);
+    if (draft.uploadTab) setUploadTab(draft.uploadTab);
+    if (typeof draft.ownerName === 'string') setOwnerName(draft.ownerName);
+    if (typeof draft.ownerPhone === 'string') setOwnerPhone(draft.ownerPhone);
+  };
+
+  const readImageDraft = () => images;
+
   const isVerifiedOwner = Boolean(
     user &&
     user.role === 'owner' &&
@@ -71,7 +161,7 @@ export default function PostPropertyPage() {
             }
           }
         })
-        .catch(() => {});
+        .catch(() => { });
     }
   }, [user]);
 
@@ -88,36 +178,128 @@ export default function PostPropertyPage() {
     { label: 'Cozy Room', url: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=800&q=80' }
   ];
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const maxSellImages = 6;
+  const maxImagesReached = images.length >= maxSellImages;
+
+  const validateImageSource = (src: string) => {
+    return new Promise<boolean>((resolve) => {
+      const img = new window.Image();
+      img.onload = () => resolve(true);
+      img.onerror = () => resolve(false);
+      img.src = src;
+    });
+  };
+
+  const appendImage = (imageSrc: string) => {
+    setImages(prev => {
+      if (prev.length >= maxSellImages) {
+        return prev;
+      }
+
+      return [...prev, imageSrc].slice(0, maxSellImages);
+    });
+  };
+
+  React.useEffect(() => {
+    if (images.length > maxSellImages) {
+      setImages(prev => prev.slice(0, maxSellImages));
+      showToast(`Listings can have at most ${maxSellImages} photos`);
+    }
+  }, [images.length]);
+
+  const readFileAsDataUrl = (file: File) => {
+    return new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (typeof event.target?.result === 'string') {
+          resolve(event.target.result);
+        } else {
+          reject(new Error('Unable to read file'));
+        }
+      };
+      reader.onerror = () => reject(new Error('Unable to read file'));
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    Array.from(files).forEach(file => {
+    if (images.length >= maxSellImages) {
+      showToast(`Listings can have at most ${maxSellImages} photos`);
+      e.target.value = '';
+      return;
+    }
+
+    const remainingSlots = Math.max(maxSellImages - images.length, 0);
+    const filesToUpload = Array.from(files).slice(0, remainingSlots);
+
+    if (files.length > remainingSlots) {
+      showToast(`Only ${remainingSlots} more photo${remainingSlots === 1 ? '' : 's'} can be added`);
+    }
+
+    let addedCount = 0;
+    let skippedCount = 0;
+
+    for (const file of filesToUpload) {
       if (!file.type.startsWith('image/')) {
-        showToast('Please select valid image files (JPG, PNG, WEBP)');
-        return;
+        skippedCount += 1;
+        continue;
       }
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        if (event.target?.result) {
-          setImages(prev => [...prev, event.target!.result as string]);
+      try {
+        const imageData = await readFileAsDataUrl(file);
+        const isValid = await validateImageSource(imageData);
+        if (isValid) {
+          appendImage(imageData);
+          addedCount += 1;
+        } else {
+          skippedCount += 1;
         }
-      };
-      reader.readAsDataURL(file);
-    });
-    showToast('Images added successfully!');
+      } catch {
+        skippedCount += 1;
+      }
+    }
+
+    if (addedCount > 0) {
+      showToast(`${addedCount} image${addedCount === 1 ? '' : 's'} added successfully!`);
+    }
+
+    if (skippedCount > 0) {
+      showToast(`${skippedCount} invalid image${skippedCount === 1 ? '' : 's'} were skipped`);
+    }
+
+    e.target.value = '';
   };
 
   const handleRemoveImage = (index: number) => {
     setImages(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleAddUrl = () => {
+  const handleAddUrl = async () => {
     if (!urlInput.trim()) {
       showToast('Please enter an image URL');
       return;
     }
-    setImages(prev => [...prev, urlInput.trim()]);
+
+    if (images.length >= maxSellImages) {
+      showToast(`Listings can have at most ${maxSellImages} photos`);
+      return;
+    }
+
+    const imageUrl = urlInput.trim();
+    const isValid = await validateImageSource(imageUrl);
+    if (!isValid) {
+      showToast('That image URL could not be loaded');
+      return;
+    }
+
+    if (images.length >= maxSellImages) {
+      showToast(`Listings can have at most ${maxSellImages} photos`);
+      return;
+    }
+
+    appendImage(imageUrl);
     setUrlInput('');
     showToast('Image URL added!');
   };
@@ -129,8 +311,8 @@ export default function PostPropertyPage() {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-
     e.preventDefault();
+    if (submitting || step === 4) return;
     if (!title || !locality || !price || !ownerName || !ownerPhone) {
       showToast('Please fill out all required fields');
       return;
@@ -367,8 +549,8 @@ export default function PostPropertyPage() {
                       type="button"
                       onClick={() => setCategory(cat)}
                       className={`py-2.5 cursor-pointer rounded-xl font-bold uppercase transition-all border ${category === cat
-                          ? 'bg-emerald-500 text-black border-emerald-500 shadow-md'
-                          : 'bg-[#050806] text-gray-400 border-emerald-950 hover:text-white'
+                        ? 'bg-emerald-500 text-black border-emerald-500 shadow-md'
+                        : 'bg-[#050806] text-gray-400 border-emerald-950 hover:text-white'
                         }`}
                     >
                       {cat}
@@ -385,9 +567,9 @@ export default function PostPropertyPage() {
                       key={t}
                       type="button"
                       onClick={() => setType(t)}
-                      className={`py-2.5 rounded-xl font-bold capitalize transition-all border ${type === t
-                          ? 'bg-emerald-500 text-black border-emerald-500 shadow-md'
-                          : 'bg-[#050806] text-gray-400 border-emerald-950 hover:text-white'
+                      className={`py-2.5 rounded-xl font-bold uppercase transition-all border ${type === t
+                        ? 'bg-emerald-500 text-black border-emerald-500 shadow-md'
+                        : 'bg-[#050806] text-gray-400 border-emerald-950 hover:text-white'
                         }`}
                     >
                       {t}
@@ -510,11 +692,20 @@ export default function PostPropertyPage() {
                 </div>
 
                 <div>
-                  <label className="block text-gray-300 font-semibold mb-1">Area (sq.ft)</label>
+                  <label className="block text-gray-300 font-semibold mb-1">
+                    Area (sq.ft)
+                  </label>
+
                   <input
                     type="number"
                     value={areaSqFt}
-                    onChange={(e) => setAreaSqFt(Number(e.target.value))}
+                    onChange={(e) => {
+                      const value = e.target.value;
+
+                      if (value.length <=8) {
+                        setAreaSqFt(Number(value));
+                      }
+                    }}
                     className="w-full px-3 py-2.5 bg-[#050806] border border-emerald-900/80 rounded-xl text-white font-mono focus:border-emerald-500 focus:outline-none"
                   />
                 </div>
@@ -529,8 +720,8 @@ export default function PostPropertyPage() {
                       type="button"
                       onClick={() => setFurnishing(f)}
                       className={`py-2 rounded-xl text-xs font-bold capitalize transition-all border ${furnishing === f
-                          ? 'bg-emerald-500 text-black border-emerald-500'
-                          : 'bg-[#050806] text-gray-400 border-emerald-950 hover:text-white'
+                        ? 'bg-emerald-500 text-black border-emerald-500'
+                        : 'bg-[#050806] text-gray-400 border-emerald-950 hover:text-white'
                         }`}
                     >
                       {f.replace('-', ' ')}
@@ -548,8 +739,8 @@ export default function PostPropertyPage() {
                       type="button"
                       onClick={() => toggleAmenity(amenity)}
                       className={`p-2.5 rounded-xl text-xs font-semibold text-left flex items-center justify-between border transition-all ${selectedAmenities.includes(amenity)
-                          ? 'bg-[#0e261a] text-emerald-400 border-emerald-700/80'
-                          : 'bg-[#050806] text-gray-400 border-emerald-950 hover:text-white'
+                        ? 'bg-[#0e261a] text-emerald-400 border-emerald-700/80'
+                        : 'bg-[#050806] text-gray-400 border-emerald-950 hover:text-white'
                         }`}
                     >
                       <span>{amenity}</span>
@@ -595,8 +786,8 @@ export default function PostPropertyPage() {
                       type="button"
                       onClick={() => setUploadTab('file')}
                       className={`px-3 py-1 rounded-lg font-bold transition-all flex items-center space-x-1.5 ${uploadTab === 'file'
-                          ? 'bg-emerald-500 text-black shadow'
-                          : 'text-gray-400 hover:text-white'
+                        ? 'bg-emerald-500 text-black shadow'
+                        : 'text-gray-400 hover:text-white'
                         }`}
                     >
                       <Upload size={12} />
@@ -606,8 +797,8 @@ export default function PostPropertyPage() {
                       type="button"
                       onClick={() => setUploadTab('url')}
                       className={`px-3 py-1 rounded-lg font-bold transition-all flex items-center space-x-1.5 ${uploadTab === 'url'
-                          ? 'bg-emerald-500 text-black shadow'
-                          : 'text-gray-400 hover:text-white'
+                        ? 'bg-emerald-500 text-black shadow'
+                        : 'text-gray-400 hover:text-white'
                         }`}
                     >
                       <ImageIcon size={12} />
@@ -666,7 +857,9 @@ export default function PostPropertyPage() {
                   </p>
                 ) : (
                   <div>
-                    <span className="text-[11px] font-semibold text-gray-400 block mb-2">Your Uploaded Photos ({images.length}):</span>
+                    <span className="text-[11px] font-semibold text-gray-400 block mb-2">
+                      Your Uploaded Photos ({images.length} / {maxSellImages}):
+                    </span>
                     <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
                       {images.map((img, idx) => (
                         <div key={idx} className="relative group rounded-xl overflow-hidden border border-emerald-900/80 aspect-video bg-black/40">
@@ -688,41 +881,22 @@ export default function PostPropertyPage() {
                       ))}
 
                       {/* Add More button inside grid */}
-                      <label className="relative flex flex-col items-center justify-center border-2 border-dashed border-emerald-900/60 hover:border-emerald-500 rounded-xl aspect-video bg-[#080d0a] cursor-pointer transition-colors text-emerald-400 hover:text-emerald-300">
+                      <label className={`relative flex flex-col items-center justify-center border-2 border-dashed rounded-xl aspect-video bg-[#080d0a] transition-colors text-emerald-400 hover:text-emerald-300 ${maxImagesReached ? 'border-gray-800 opacity-50 cursor-not-allowed pointer-events-none' : 'border-emerald-900/60 hover:border-emerald-500 cursor-pointer'}`}>
                         <input
                           type="file"
                           accept="image/*"
                           multiple
                           onChange={handleFileUpload}
-                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                          disabled={maxImagesReached}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
                         />
                         <Plus size={20} />
-                        <span className="text-[10px] font-bold mt-1">Add More</span>
+                        <span className="text-[10px] font-bold mt-1">{maxImagesReached ? 'Limit Reached' : 'Add More'}</span>
                       </label>
                     </div>
                   </div>
                 )}
 
-                {/* Preset Sample Photos Bar */}
-                <div className="pt-2 border-t border-emerald-950/80">
-                  <span className="text-[10px] font-semibold text-gray-400 block mb-1.5">Or quick-add sample photos:</span>
-                  <div className="flex flex-wrap gap-2">
-                    {sampleImages.map((sample, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        onClick={() => {
-                          setImages(prev => [...prev, sample.url]);
-                          showToast(`Added ${sample.label} photo!`);
-                        }}
-                        className="px-2.5 py-1 rounded-lg bg-[#0a140f] border border-emerald-950 text-gray-300 hover:text-emerald-400 hover:border-emerald-800 text-[10px] font-medium transition-colors flex items-center space-x-1"
-                      >
-                        <Camera size={10} className="text-emerald-400" />
-                        <span>+ {sample.label}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -774,7 +948,7 @@ export default function PostPropertyPage() {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="w-2/3 py-3.5 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs rounded-full shadow-lg shadow-emerald-500/20 uppercase tracking-wider transition-all cursor-pointer"
+                  className="w-2/3 py-3.5 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs rounded-full shadow-lg shadow-emerald-500/20 uppercase tracking-wider transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {submitting ? 'Publishing Listing...' : 'Publish Property Listing FREE'}
                 </button>

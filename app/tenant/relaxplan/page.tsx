@@ -18,6 +18,7 @@ export default function RelaxPlanPage() {
 
   const handleBooking = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submitting || submitted) return;
     if (!isValidName(name)) {    
       showToast('Please enter a valid name (letters only)');
       return;
@@ -38,6 +39,7 @@ export default function RelaxPlanPage() {
           propertyPid: `RELAX-PLAN`,
           tenantName: name.trim(),
           tenantPhone: phone.trim(),
+          tenantEmail: user?.email || '',
           tenantMessage: `Relax Plan RM Request: Looking for ${bhk} in ${city} with max budget ₹${budget}/mo.`,
           status: 'pending'
         })
@@ -187,8 +189,8 @@ export default function RelaxPlanPage() {
 
             <button
               type="submit"
-              disabled={submitting}
-              className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-xs shadow-lg transition-all cursor-pointer disabled:opacity-50"
+              disabled={submitting || submitted}
+              className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-xs shadow-lg transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {submitting ? 'Activating Request...' : 'Activate Relax Plan Assistance'}
             </button> 

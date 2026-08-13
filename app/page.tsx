@@ -19,7 +19,7 @@ import { CallToActionBanner } from '@/components/CallToActionBanner';
 
 export default function HomePage() {
   const router = useRouter();
-  const { openPidModal } = useApp();
+  const { user, openAuthModal, openPidModal, showToast } = useApp();
 
   const [activeTab, setActiveTab] = useState<'rent' | 'buy' | 'pg'>('rent');
   const [propertyType, setPropertyType] = useState('all');
@@ -102,7 +102,7 @@ export default function HomePage() {
             className="object-cover object-center opacity-75"
           />
         </div>
-        <div className="absolute inset-0 bg-gradient-to-b from-[#050806]/60 via-[#050806]/30 to-[#050806] pointer-events-none z-0" />
+        <div className="absolute inset-0 bg-linear-to-b from-[#050806]/60 via-[#050806]/30 to-[#050806] pointer-events-none z-0" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center max-w-4xl mx-auto space-y-4 sm:space-y-6 mb-8 sm:mb-12">
@@ -155,7 +155,7 @@ export default function HomePage() {
                 <select
                   value={selectedCity}
                   onChange={(e) => setSelectedCity(e.target.value)}
-                  className="bg-transparent cursor-pointer text-xs font-bold text-white focus:outline-none cursor-pointer"
+                  className="bg-transparent cursor-pointer text-xs font-bold text-white focus:outline-none"
                 >
                   <option value="Mohali" className="bg-[#0a110d] text-white">Mohali</option>
                   <option value="Chandigarh" className="bg-[#0a110d] text-white">Chandigarh</option>
@@ -226,9 +226,9 @@ export default function HomePage() {
             <span>EXPLORE BY LOCATION</span>
           </div>
 
-          <h2 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
-            Where would you like to <br className="hidden sm:inline" />
-            <span className="font-serif italic  text-emerald-400 font-normal">live?</span>
+          <h2 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight max-w-xl mx-auto">
+            Where would you like to <br className="sm:hidden" />
+            <span className="block sm:inline font-serif italic text-emerald-400 font-normal">live?</span>
           </h2>
 
           <p className="text-xs sm:text-sm text-gray-400 max-w-xl mx-auto">
@@ -236,8 +236,8 @@ export default function HomePage() {
           </p>
 
           {/* Stats Bar */}
-          <div className="pt-4 flex items-center gap-10 justify-center space-x-8 text-xs font-semibold text-gray-300">
-            <div className="flex items-center space-x-2">
+          <div className="pt-4 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-8 justify-items-center text-xs font-semibold text-gray-300 max-w-3xl mx-auto">
+            <div className="w-full max-w-60 sm:max-w-none flex items-center justify-center sm:justify-start space-x-2 rounded-2xl bg-[#06110c]/70 border border-emerald-950/70 px-4 py-3">
               <div className="w-8 h-8 rounded-full bg-emerald-950/80 border border-emerald-800/60 flex items-center justify-center text-emerald-400">
                 <HomeIcon size={14} />
               </div>
@@ -247,7 +247,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="flex items-center space-x-2">
+            <div className="w-full max-w-60 sm:max-w-none flex items-center justify-center sm:justify-start space-x-2 rounded-2xl bg-[#06110c]/70 border border-emerald-950/70 px-4 py-3">
               <div className="w-8 h-8 rounded-full bg-emerald-950/80 border border-emerald-800/60 flex items-center justify-center text-emerald-400">
                 <Compass size={14} />
               </div>
@@ -257,7 +257,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="flex items-center space-x-2">
+            <div className="w-full max-w-60 sm:max-w-none flex items-center justify-center sm:justify-start space-x-2 rounded-2xl bg-[#06110c]/70 border border-emerald-950/70 px-4 py-3">
               <div className="w-8 h-8 rounded-full bg-emerald-950/80 border border-emerald-800/60 flex items-center justify-center text-emerald-400">
                 <ShieldCheck size={14} />
               </div>
@@ -285,7 +285,7 @@ export default function HomePage() {
                 alt={loc.name}
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+              <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/40 to-transparent" />
 
               {/* Featured Badge */}
               {loc.badge && (
@@ -376,11 +376,18 @@ export default function HomePage() {
           {properties.map((prop) => (
             <div
               key={prop.id || prop.pid}
-              className="w-[285px] sm:w-[320px] lg:w-[340px] shrink-0 snap-start"
+              className="w-71.25 sm:w-80 lg:w-85 shrink-0 snap-start"
             >
               <PropertyCard
                 property={prop}
-                onContactClick={(p) => setSelectedPropertyForInquiry(p)}
+                onContactClick={(p) => {
+                  if (!user) {
+                    showToast('Please login to contact the property owner');
+                    openAuthModal();
+                    return;
+                  }
+                  setSelectedPropertyForInquiry(p);
+                }}
               />
             </div>
           ))}
@@ -404,21 +411,21 @@ export default function HomePage() {
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="relative bg-[#080e0a] border border-emerald-950/90 rounded-3xl p-8 sm:p-12 overflow-hidden shadow-2xl">
           {/* Concentric Circle Background Rings */}
-          <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/3 w-[500px] h-[500px] rounded-full border border-emerald-950/60 pointer-events-none hidden md:block" />
-          <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/3 w-[360px] h-[360px] rounded-full border border-emerald-950/80 pointer-events-none hidden md:block" />
+          <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/3 w-125 h-125 rounded-full border border-emerald-950/60 pointer-events-none hidden md:block" />
+          <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/3 w-90 h-90 rounded-full border border-emerald-950/80 pointer-events-none hidden md:block" />
 
           {/* Header Row: Badge & Talk to Expert */}
-          <div className="flex items-center justify-between gap-4 mb-8">
-            <div className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full bg-[#0a2618] border border-emerald-800/60 text-emerald-400 text-xs font-bold tracking-wide">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+            <div className="inline-flex items-center justify-center sm:justify-start space-x-1.5 px-3.5 py-1.5 rounded-full bg-[#0a2618] border border-emerald-800/60 text-emerald-400 text-xs font-bold tracking-wide self-start">
               <ShieldCheck size={14} />
               <span>Personal Assistance</span>
             </div>
 
             <Link
               href="/tenant/relaxplan"
-              className="inline-flex items-center bg-emerald-500 space-x-1.5 px-4 py-2 rounded-full bg-[#0d1812] border border-emerald-900/80 hover:border-emerald-500 text-gray-200 text-xs font-semibold transition-all shadow-[0_0_20px_rgba(16,185,129,0.5)] hover:shadow-[0_0_35px_rgba(16,185,129,0.7)]"
+              className="inline-flex items-center justify-center space-x-1.5 px-4 py-3 sm:py-2 rounded-full bg-[#0d1812] border border-emerald-900/80 hover:border-emerald-500 text-gray-200 text-xs font-semibold transition-all shadow-[0_0_20px_rgba(16,185,129,0.5)] hover:shadow-[0_0_35px_rgba(16,185,129,0.7)] w-full sm:w-auto"
             >
-              <PhoneCall size={14} className="text-emerald-400 text-white" />
+              <PhoneCall size={14} className="text-emerald-400" />
               <span>Talk to our expert</span>
               <span>→</span>
             </Link>
@@ -427,8 +434,8 @@ export default function HomePage() {
           {/* Section Title */}
           <div className="max-w-2xl space-y-3 mb-10">
             <h2 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight">
-              Your personal manager <br />
-              finds your perfect home, <br />
+              Your personal manager <br className="sm:hidden" />
+              finds your perfect home, <br className="sm:hidden" />
               <span className="font-serif italic text-emerald-400 font-normal">10× faster.</span>
             </h2>
             <p className="text-xs sm:text-sm text-gray-400">
@@ -556,14 +563,14 @@ export default function HomePage() {
             <div
               key={idx}
               onClick={() => router.push(`/properties?type=${cat.type}&city=${activeCategoryCity}`)}
-              className="group relative aspect-4/3 sm:aspect-square rounded-3xl overflow-hidden border border-emerald-950/80 border-emerald-400 hover:border-emerald-700/80 cursor-pointer transition-all shadow-xl"
+              className="group relative aspect-4/3 sm:aspect-square rounded-3xl overflow-hidden border border-emerald-400 hover:border-emerald-700/80 cursor-pointer transition-all shadow-xl"
             >
               <LazyImage
                 src={cat.img}
                 alt={cat.title}
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+              <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/40 to-transparent" />
 
               {/* Title & Arrow Button */}
               <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between">

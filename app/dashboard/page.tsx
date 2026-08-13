@@ -12,7 +12,7 @@ import { useApp, UserProfile, BillingRecord } from '@/context/AppContext';
 import { PropertyItem, INITIAL_PROPERTIES } from '@/lib/seedData';
 import { PropertyCard } from '@/components/PropertyCard';
 import { LazyImage } from '@/components/LazyImage';
-import { sanitizeName, sanitizePhone, isValidName, isValidPhone } from '@/lib/validation';
+import { sanitizeName, sanitizePhone, isValidName, isValidPhone, isValidEmail } from '@/lib/validation';
 
 
 interface InquiryItem {
@@ -217,6 +217,11 @@ function DashboardContent() {
       return;
     }
 
+    if (accountForm.email && !isValidEmail(accountForm.email)) {
+      showToast('Please enter a valid email address (e.g., name@example.com)');
+      return;
+    }
+
     const updatedUser: UserProfile = {
       ...user,
       name: accountForm.name.trim(),
@@ -234,7 +239,7 @@ function DashboardContent() {
 
   const handleVerifySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
+    if (!user || submittingVerify || user.verificationStatus === 'pending' || user.verificationStatus === 'approved') return;
     if (!verifyForm.consumerNumber || !verifyForm.billUrl) {
       showToast('Please provide both Consumer Number and Electricity Bill photo/link');
       return;
@@ -622,7 +627,7 @@ function DashboardContent() {
                     <button
                       type="submit"
                       disabled={submittingVerify}
-                      className="px-6 py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs rounded-full shadow-lg shadow-emerald-500/20 transition-all uppercase tracking-wider cursor-pointer"
+                      className="px-6 py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs rounded-full shadow-lg shadow-emerald-500/20 transition-all uppercase tracking-wider cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {submittingVerify ? 'Submitting...' : 'Submit Electricity Bill for Admin Verification'}
                     </button>

@@ -15,9 +15,9 @@ function AdminPropertiesContent() {
   const urlPid = searchParams.get('pid') || '';
   const { showToast } = useApp();
 
-  const cached = getCachedProperties();
-  const [properties, setProperties] = useState<PropertyItem[]>(cached || INITIAL_PROPERTIES);
-  const [loading, setLoading] = useState(!cached);
+  const [properties, setProperties] = useState<PropertyItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [actionPendingId, setActionPendingId] = useState<string | null>(null);
   
   // Filters State
   const [searchTerm, setSearchTerm] = useState(urlPid);
@@ -27,6 +27,7 @@ function AdminPropertiesContent() {
 
   // Edit Modal State
   const [editingProperty, setEditingProperty] = useState<PropertyItem | null>(null);
+  const [propertyPendingDeletion, setPropertyPendingDeletion] = useState<PropertyItem | null>(null);
 
   const fetchProperties = async () => {
     try {
@@ -44,7 +45,12 @@ function AdminPropertiesContent() {
   };
 
   useEffect(() => {
-    if (!cached) {
+    const localProps = getCachedProperties();
+    if (localProps && localProps.length > 0) {
+      setProperties(localProps);
+      setLoading(false);
+    } else {
+      setProperties(INITIAL_PROPERTIES);
       fetchProperties();
     }
   }, []);
@@ -77,6 +83,8 @@ function AdminPropertiesContent() {
 
   // Actions
   const handleVerifyToggle = async (id: string, currentVerified: boolean) => {
+    if (actionPendingId) return;
+    setActionPendingId(id);
     const newVerifiedStatus = !currentVerified;
 
     setProperties(prev => {
@@ -97,12 +105,16 @@ function AdminPropertiesContent() {
       });
     } catch (e) {
       console.warn('PATCH Error:', e);
+    } finally {
+      setActionPendingId(null);
     }
 
     showToast(newVerifiedStatus ? `Listing ${id} verified successfully!` : `Listing ${id} marked as Unverified (Pending Review)`);
   };
 
   const handleFeatureToggle = async (id: string, currentFeatured: boolean) => {
+    if (actionPendingId) return;
+    setActionPendingId(id);
     const newFeaturedStatus = !currentFeatured;
 
     setProperties(prev => {
@@ -123,23 +135,34 @@ function AdminPropertiesContent() {
       });
     } catch (e) {
       console.warn('PATCH Error:', e);
+    } finally {
+      setActionPendingId(null);
     }
 
     showToast(newFeaturedStatus ? `Listing featured on homepage!` : `Listing removed from featured`);
   };
 
-  const handleDelete = async (id: string) => {
-    if (confirm('Are you sure you want to delete this property listing?')) {
-      setProperties(prev => {
-        const updated = prev.filter(p => p._id !== id && p.pid !== id && p.id !== id);
-        setCachedProperties(updated);
-        return updated;
-      });
-      try {
-        await fetch(`/api/properties/${id}`, { method: 'DELETE' });
-      } catch (e) {}
-      showToast('Property listing deleted.');
+  const handleDelete = async () => {
+    if (!propertyPendingDeletion) return;
+    if (actionPendingId) return;
+    const id = propertyPendingDeletion._id || propertyPendingDeletion.pid || propertyPendingDeletion.id;
+    if (!id) return;
+
+    setActionPendingId(id);
+    setProperties(prev => {
+      const updated = prev.filter(p => p._id !== id && p.pid !== id && p.id !== id);
+      setCachedProperties(updated);
+      return updated;
+    });
+    setPropertyPendingDeletion(null);
+
+    try {
+      await fetch(`/api/properties/${id}`, { method: 'DELETE' });
+    } catch (e) {
+    } finally {
+      setActionPendingId(null);
     }
+    showToast('Property listing deleted.');
   };
 
   const handleSaveEdit = async (e: React.FormEvent) => {
@@ -323,8 +346,9 @@ function AdminPropertiesContent() {
                       <td className="p-3.5 text-right space-x-1.5">
                         {/* Verify / Unverify Button */}
                         <button
+                          disabled={Boolean(actionPendingId)}
                           onClick={() => handleVerifyToggle(targetId, !!item.verified)}
-                          className={`px-2.5 py-1 rounded-xl text-[10px] font-extrabold border transition-all cursor-pointer ${
+                          className={`px-2.5 py-1 rounded-xl text-[10px] font-extrabold border transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
                             item.verified
                               ? 'bg-[#140b0d] text-rose-400 border-rose-900/80 hover:bg-rose-950'
                               : 'bg-emerald-500 hover:bg-emerald-400 text-black border-emerald-500 shadow-md shadow-emerald-500/20'
@@ -335,30 +359,33 @@ function AdminPropertiesContent() {
 
                         {/* Feature Button */}
                         <button
+                          disabled={Boolean(actionPendingId)}
                           onClick={() => handleFeatureToggle(targetId, !!item.featured)}
-                        className={`px-2 py-1 rounded-xl text-[10px] font-bold border transition-all cursor-pointer ${
-                          item.featured
-                            ? 'bg-purple-950 text-purple-300 border-purple-800'
-                            : 'bg-[#0a1810] text-gray-300 border-emerald-900 hover:text-white'
-                        }`}
-                        title="Toggle Featured status"
-                      >
-                        <Star size={12} className={item.featured ? 'text-purple-400 fill-purple-400' : ''} />
-                      </button>
+                          className={`px-2 py-1 rounded-xl text-[10px] font-bold border transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
+                            item.featured
+                              ? 'bg-purple-950 text-purple-300 border-purple-800'
+                              : 'bg-[#0a1810] text-gray-300 border-emerald-900 hover:text-white'
+                          }`}
+                          title="Toggle Featured status"
+                        >
+                          <Star size={12} className={item.featured ? 'text-purple-400 fill-purple-400' : ''} />
+                        </button>
 
-                      {/* Edit Button */}
-                      <button
-                        onClick={() => setEditingProperty(item)}
-                        className="px-2 py-1 rounded-xl bg-[#0a1810] border border-emerald-900 text-gray-300 hover:text-emerald-400 text-[10px] font-bold transition-colors cursor-pointer"
-                        title="Edit Property Details"
-                      >
-                        <Edit3 size={12} />
-                      </button>
+                        {/* Edit Button */}
+                        <button
+                          disabled={Boolean(actionPendingId)}
+                          onClick={() => setEditingProperty(item)}
+                          className="px-2 py-1 rounded-xl bg-[#0a1810] border border-emerald-900 text-gray-300 hover:text-emerald-400 text-[10px] font-bold transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                          title="Edit Property Details"
+                        >
+                          <Edit3 size={12} />
+                        </button>
 
-                      {/* Delete Button */}
-                      <button
-                        onClick={() => handleDelete(targetId)}
-                        className="px-2 py-1 rounded-xl bg-[#180a0a] border border-rose-950 text-rose-400 hover:bg-rose-950 text-[10px] font-bold transition-colors cursor-pointer"
+                        {/* Delete Button */}
+                        <button
+                          disabled={Boolean(actionPendingId)}
+                          onClick={() => setPropertyPendingDeletion(item)}
+                          className="px-2 py-1 rounded-xl bg-[#180a0a] border border-rose-950 text-rose-400 hover:bg-rose-950 text-[10px] font-bold transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                         title="Delete Listing"
                       >
                         <Trash2 size={12} />
@@ -372,6 +399,53 @@ function AdminPropertiesContent() {
           </table>
         </div>
       </div>
+
+      {/* Delete Property Confirmation */}
+      {propertyPendingDeletion && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4"
+          role="presentation"
+          onClick={() => setPropertyPendingDeletion(null)}
+        >
+          <div
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="delete-property-title"
+            aria-describedby="delete-property-description"
+            className="bg-[#0a110d] rounded-3xl border border-rose-900/80 p-6 max-w-md w-full space-y-5 text-gray-100 shadow-2xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex items-start gap-3">
+              <div className="shrink-0 rounded-xl bg-rose-950/80 border border-rose-900 p-2.5 text-rose-400">
+                <Trash2 size={20} />
+              </div>
+              <div>
+                <h3 id="delete-property-title" className="text-base font-extrabold text-white">Delete property listing?</h3>
+                <p id="delete-property-description" className="mt-1 text-xs leading-5 text-gray-400">
+                  You are about to permanently delete <span className="font-bold text-gray-200">{propertyPendingDeletion.title}</span> ({propertyPendingDeletion.pid}). This action cannot be undone.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 border-t border-emerald-950 pt-4">
+              <button
+                type="button"
+                onClick={() => setPropertyPendingDeletion(null)}
+                className="px-4 py-2 rounded-xl bg-[#050806] border border-emerald-900 text-gray-300 text-xs font-semibold hover:text-white transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDelete}
+                className="px-4 py-2 rounded-xl bg-rose-600 text-white text-xs font-extrabold hover:bg-rose-500 transition-colors shadow-md shadow-rose-950/50"
+              >
+                Delete listing
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Edit Property Modal */}
       {editingProperty && (

@@ -184,8 +184,8 @@ export default function ContactPage() {
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  disabled={loading}
-                  className="w-full py-4 rounded-full bg-emerald-400 hover:bg-emerald-300 text-black font-extrabold text-sm shadow-lg shadow-emerald-500/20 transition-all flex items-center justify-center space-x-2 active:scale-[0.99]"
+                  disabled={loading || submitted}
+                  className="w-full py-4 rounded-full bg-emerald-400 hover:bg-emerald-300 text-black font-extrabold text-sm shadow-lg shadow-emerald-500/20 transition-all flex items-center justify-center space-x-2 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <span>{loading ? 'Sending Message...' : 'Send Message'}</span>
                   <ArrowRight size={18} />

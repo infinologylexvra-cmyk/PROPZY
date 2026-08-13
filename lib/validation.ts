@@ -22,3 +22,10 @@ export const isValidPhone = (val: string): boolean => {
   // Validates a 10-digit mobile number
   return /^\d{10}$/.test(trimmed);
 };
+
+// Email validation: requires valid user@domain.tld structure with at least 2-char TLD (.com, .in, etc.)
+export const isValidEmail = (val: string): boolean => {
+  if (!val) return false;
+  const trimmed = val.trim();
+  return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(trimmed);
+};

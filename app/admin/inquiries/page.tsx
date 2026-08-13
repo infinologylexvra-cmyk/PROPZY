@@ -75,7 +75,7 @@ export default function AdminInquiriesPage() {
         </div>
 
         <div className="flex flex-wrap gap-2">
-          {['all', 'New', 'Contacted', 'Visit Scheduled', 'Closed'].map((st) => (
+          {['all', 'Contacted', 'Visit Scheduled', 'Closed'].map((st) => (
             <button
               key={st}
               onClick={() => setStatusFilter(st)}

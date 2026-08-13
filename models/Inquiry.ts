@@ -6,6 +6,7 @@ export interface IInquiry extends Document {
   propertyPid: string;
   tenantName: string;
   tenantPhone: string;
+  tenantEmail?: string;
   tenantMessage?: string;
   status: 'pending' | 'contacted' | 'closed';
   createdAt: Date;
@@ -17,6 +18,7 @@ const InquirySchema: Schema = new Schema({
   propertyPid: { type: String, required: true },
   tenantName: { type: String, required: true },
   tenantPhone: { type: String, required: true },
+  tenantEmail: { type: String, default: '', index: true },
   tenantMessage: { type: String, default: '' },
   status: { type: String, enum: ['pending', 'contacted', 'closed'], default: 'pending' },
   createdAt: { type: Date, default: Date.now }

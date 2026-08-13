@@ -75,8 +75,9 @@ export const PropertyCard: React.FC<PropertyCardProps> = React.memo(({ property,
         </div>
 
         {/* Wishlist Button */}
-        <button
-          type="button"
+        <div
+          role="button"
+          tabIndex={0}
           suppressHydrationWarning
           onClick={(e) => {
             e.preventDefault();
@@ -89,25 +90,27 @@ export const PropertyCard: React.FC<PropertyCardProps> = React.memo(({ property,
           title="Save Property"
         >
           <Heart size={16} fill={wish ? 'currentColor' : 'none'} />
-        </button>
+        </div>
 
         {/* Slider Controls */}
         {images.length > 1 && (
           <>
-            <button
-              type="button"
+            <div
+              role="button"
+              tabIndex={0}
               onClick={prevImg}
-              className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/60 hover:bg-black text-white opacity-0 group-hover:opacity-100 transition-opacity z-20"
+              className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/60 hover:bg-black text-white opacity-0 group-hover:opacity-100 transition-opacity z-20 cursor-pointer"
             >
               <ChevronLeft size={16} />
-            </button>
-            <button
-              type="button"
+            </div>
+            <div
+              role="button"
+              tabIndex={0}
               onClick={nextImg}
-              className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/60 hover:bg-black text-white opacity-0 group-hover:opacity-100 transition-opacity z-20"
+              className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/60 hover:bg-black text-white opacity-0 group-hover:opacity-100 transition-opacity z-20 cursor-pointer"
             >
               <ChevronRight size={16} />
-            </button>
+            </div>
           </>
         )}
       </div>
@@ -147,7 +150,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = React.memo(({ property,
                 <span>{property.bathrooms} Bath</span>
               </div>
             )}
-            {property.areaSqFt && (
+            {property.areaSqFt !== undefined && property.areaSqFt <= 99999 && (
               <div className="flex items-center space-x-1.5">
                 <Maximize size={14} className="text-emerald-500" />
                 <span>{property.areaSqFt} sq.ft</span>

@@ -4,6 +4,7 @@ import { connectToDatabase } from '@/lib/mongodb';
 import User from '@/models/User';
 import { memoryUsers, MemoryUser } from '@/lib/memoryStore';
 import { signJWT, setAuthCookie } from '@/lib/auth';
+import { isValidEmail } from '@/lib/validation';
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,6 +12,10 @@ export async function POST(req: NextRequest) {
 
     if (!name || !email || !phone || !password) {
       return NextResponse.json({ success: false, message: 'Please provide all required registration fields.' }, { status: 400 });
+    }
+
+    if (!isValidEmail(email)) {
+      return NextResponse.json({ success: false, message: 'Please enter a valid email address (e.g. name@example.com).' }, { status: 400 });
     }
 
     const cleanEmail = email.trim().toLowerCase();

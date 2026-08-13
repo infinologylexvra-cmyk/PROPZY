@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { X, Mail, Lock, User, ShieldCheck, UserCheck, KeyRound, Building, Home, ArrowRight, Eye, EyeOff } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
-import { sanitizeName, sanitizePhone, isValidName, isValidPhone } from '@/lib/validation';
+import { sanitizeName, sanitizePhone, isValidName, isValidPhone, isValidEmail } from '@/lib/validation';
 
 
 export const AuthModal: React.FC = () => {
@@ -52,8 +52,14 @@ export const AuthModal: React.FC = () => {
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submitting) return;
     if (!loginIdentifier.trim() || !loginPassword.trim()) {
       setError('Please enter your email/username and password');
+      return;
+    }
+
+    if (loginIdentifier.includes('@') && !isValidEmail(loginIdentifier)) {
+      setError('Please enter a valid email address (e.g., name@example.com).');
       return;
     }
 
@@ -98,8 +104,8 @@ export const AuthModal: React.FC = () => {
   };
 
   const handleRegisterSubmit = async (e: React.FormEvent) => {
-
     e.preventDefault();
+    if (submitting) return;
     if (!name.trim() || !email.trim() || !phone.trim() || !password.trim()) {
       setError('Please fill out all registration fields.');
       return;
@@ -112,6 +118,11 @@ export const AuthModal: React.FC = () => {
 
     if (!isValidPhone(phone)) {
       setError('Please enter a valid 10-digit mobile phone number.');
+      return;
+    }
+
+    if (!isValidEmail(email)) {
+      setError('Please enter a valid email address (e.g., name@example.com).');
       return;
     }
 
@@ -317,7 +328,7 @@ export const AuthModal: React.FC = () => {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs rounded-xl shadow-lg shadow-emerald-500/20 transition-all uppercase tracking-wider cursor-pointer"
+                  className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs rounded-xl shadow-lg shadow-emerald-500/20 transition-all uppercase tracking-wider cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {submitting ? 'Authenticating...' : 'Sign In Now'}
                 </button>
@@ -486,7 +497,7 @@ export const AuthModal: React.FC = () => {
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs rounded-xl shadow-lg shadow-emerald-500/20 transition-all uppercase tracking-wider cursor-pointer"
+                  className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs rounded-xl shadow-lg shadow-emerald-500/20 transition-all uppercase tracking-wider cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {submitting ? 'Creating Account...' : 'Create Account FREE'}
                 </button>

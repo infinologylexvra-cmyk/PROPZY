@@ -8,16 +8,20 @@ import {
   Globe, Instagram, Linkedin, Twitter, Facebook, UserCheck, Percent, Heart
 } from 'lucide-react';
 
+import { isValidEmail } from '@/lib/validation';
+
 export const Footer: React.FC = () => {
   const pathname = usePathname();
   const [emailInput, setEmailInput] = useState('');
   const [subscribed, setSubscribed] = useState(false);
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
-    if (emailInput.trim()) {
-      setSubscribed(true);
-      setEmailInput('');
+    if (!isValidEmail(emailInput)) {
+      alert('Please enter a valid email address (e.g., name@example.com)');
+      return;
     }
+    setSubscribed(true);
+    setEmailInput('');
   };
 
   const majorCities = [

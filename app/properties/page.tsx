@@ -8,8 +8,10 @@ import { PropertyCard } from '@/components/PropertyCard';
 import { InquiryModal } from '@/components/InquiryModal';
 import { SkeletonGrid } from '@/components/Loader';
 import { CallToActionBanner } from '@/components/CallToActionBanner';
+import { useApp } from '@/context/AppContext';
 
 function PropertySearchContent() {
+  const { user, openAuthModal, showToast } = useApp();
   const searchParams = useSearchParams();
   const router = useRouter();
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
@@ -451,7 +453,14 @@ function PropertySearchContent() {
                   <PropertyCard
                     key={property.id || property.pid}
                     property={property}
-                    onContactClick={(p) => setSelectedPropertyForInquiry(p)}
+                    onContactClick={(p) => {
+                      if (!user) {
+                        showToast('Please login to contact the property owner');
+                        openAuthModal();
+                        return;
+                      }
+                      setSelectedPropertyForInquiry(p);
+                    }}
                   />
                 ))}
               </div>

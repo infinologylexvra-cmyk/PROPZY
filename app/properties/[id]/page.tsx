@@ -5,7 +5,7 @@ import { useParams, useRouter, notFound } from 'next/navigation';
 import Link from 'next/link';
 import { 
   ShieldCheck, MapPin, Bed, Bath, Maximize, Heart, PhoneCall, 
-  ChevronLeft, ChevronRight, Check, Share2, Calculator, Sparkles, Building2, User 
+  ChevronLeft, ChevronRight, Check, Share2, Calculator, Sparkles, Building2, User, Copy 
 } from 'lucide-react';
 import { PropertyItem, INITIAL_PROPERTIES } from '@/lib/seedData';
 import { useApp } from '@/context/AppContext';
@@ -18,7 +18,7 @@ export default function PropertyDetailPage() {
   const router = useRouter();
   const id = params?.id as string;
 
-  const { toggleWishlist, isWishlisted, showToast } = useApp();
+  const { user, openAuthModal, toggleWishlist, isWishlisted, showToast } = useApp();
   const [property, setProperty] = useState<PropertyItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentImgIndex, setCurrentImgIndex] = useState(0);
@@ -44,7 +44,7 @@ export default function PropertyDetailPage() {
       }
     }
     fetchProperty();
-  }, [id]);
+  }, [id, user?.email, user?.role]);
 
   if (loading) {
     return (
@@ -93,8 +93,8 @@ export default function PropertyDetailPage() {
             onClick={handleShare}
             className="flex cursor-pointer items-center space-x-1 px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold transition-colors"
           >
-            <Share2 size={14} />
-            <span>Share</span>
+            <Copy size={14} />
+            <span>Copy Link</span>
           </button>
 
           <button
@@ -266,21 +266,34 @@ export default function PropertyDetailPage() {
 
             <div className="space-y-3">
               <button
-                onClick={() => setShowInquiryModal(true)}
-                className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold text-xs shadow-lg transition-all flex items-center justify-center space-x-2"
+                onClick={() => {
+                  if (!user) {
+                    showToast('Please login to get owner contact details');
+                    openAuthModal();
+                    return;
+                  }
+                  setShowInquiryModal(true);
+                }}
+                className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold text-xs shadow-lg transition-all flex items-center justify-center space-x-2 cursor-pointer"
               >
                 <PhoneCall size={18} />
                 <span>Get Owner Contact Number</span>
               </button>
 
-              <a
-                href={`https://wa.me/${property.ownerPhone.replace(/\D/g, '')}?text=Hi,%20I%20am%20interested%20in%20your%20property%20PID%20${property.pid}`}
-                target="_blank"
-                rel="noreferrer"
-                className="w-full py-3.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-2xl font-bold text-xs transition-colors flex items-center justify-center space-x-2"
+              <button
+                onClick={() => {
+                  if (!user) {
+                    showToast('Please login to contact owner on WhatsApp');
+                    openAuthModal();
+                    return;
+                  }
+                  const cleanPhone = property.ownerPhone ? property.ownerPhone.replace(/\D/g, '') : '';
+                  window.open(`https://wa.me/${cleanPhone}?text=Hi,%20I%20am%20interested%20in%20your%20property%20PID%20${property.pid}`, '_blank');
+                }}
+                className="w-full py-3.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-2xl font-bold text-xs transition-colors flex items-center justify-center space-x-2 cursor-pointer"
               >
                 <span>Chat on WhatsApp</span>
-              </a>
+              </button>
             </div>
 
             <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100 text-[11px] text-gray-600 space-y-2">

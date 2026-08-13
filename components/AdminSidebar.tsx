@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
   LayoutDashboard, Building, MessageSquare, Users, FileText, 
-  ArrowLeft, Home, ShieldCheck, Sparkles, ChevronRight, LogOut
+  ArrowLeft, Home, ShieldCheck, Sparkles, ChevronRight, LogOut, XCircle
 } from 'lucide-react';
 
 interface AdminSidebarProps {
@@ -25,10 +25,10 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen = true, onClo
   ];
 
   return (
-    <aside className="w-64 bg-[#070d09] border-r border-emerald-950/80 flex flex-col justify-between h-screen sticky top-0 z-40 text-gray-200 select-none shrink-0">
-      <div className="p-5 space-y-6">
+    <aside className={`w-full md:w-64 bg-[#070d09] border-r border-emerald-950/80 flex flex-col justify-between h-full md:h-screen md:sticky md:top-0 z-40 text-gray-200 select-none shrink-0 transition-transform duration-300 ease-out ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
+      <div className="p-4 sm:p-5 space-y-6 h-full overflow-y-auto">
         {/* Brand Header */}
-        <div className="flex items-center justify-between border-b border-emerald-950/80 pb-4">
+        <div className="flex items-center justify-between border-b border-emerald-950/80 pb-4 gap-3">
           <Link href="/admin" className="flex items-center space-x-2.5 group">
             <div className="w-9 h-9 rounded-xl bg-emerald-500 flex items-center justify-center text-black shadow-lg shadow-emerald-500/25 group-hover:scale-105 transition-transform">
               <Home size={20} className="stroke-[2.5]" />
@@ -42,6 +42,17 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen = true, onClo
               </span>
             </div>
           </Link>
+
+          {onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[#0b1610] border border-emerald-900/80 text-gray-300"
+              aria-label="Close admin navigation"
+            >
+              <XCircle size={18} />
+            </button>
+          )}
         </div>
 
         {/* Navigation Menu */}

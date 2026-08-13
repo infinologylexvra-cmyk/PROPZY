@@ -10,6 +10,7 @@ export default function AdminVerificationsPage() {
   const cached = getCachedVerifications();
   const [verifications, setVerifications] = useState<any[]>(cached || []);
   const [loading, setLoading] = useState(!cached);
+  const [processingId, setProcessingId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
 
@@ -36,6 +37,8 @@ export default function AdminVerificationsPage() {
   }, []);
 
   const handleAction = async (userId: string, email: string, action: 'approve' | 'reject') => {
+    if (processingId) return;
+    setProcessingId(userId);
     try {
       const res = await fetch('/api/admin/verifications', {
         method: 'POST',
@@ -65,6 +68,8 @@ export default function AdminVerificationsPage() {
 
     } catch (e) {
       showToast('Network error processing request');
+    } finally {
+      setProcessingId(null);
     }
   };
 
@@ -85,24 +90,24 @@ export default function AdminVerificationsPage() {
   const pendingCount = verifications.filter(v => v.verificationStatus === 'pending').length;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5 sm:space-y-6">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-emerald-950/80 pb-5">
-        <div>
-          <div className="flex items-center space-x-2">
-            <h1 className="text-2xl font-extrabold text-white">Owner Verification Queue</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 border-b border-emerald-950/80 pb-4 sm:pb-5">
+        <div className="min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <h1 className="text-xl sm:text-2xl font-extrabold text-white leading-tight">Owner Verification Queue</h1>
             {pendingCount > 0 && (
-              <span className="px-2.5 py-0.5 rounded-full bg-amber-500 text-black text-xs font-extrabold shadow animate-pulse">
+              <span className="px-2 py-0.5 rounded-full bg-amber-500 text-black text-[10px] font-extrabold shadow animate-pulse whitespace-nowrap">
                 {pendingCount} Pending
               </span>
             )}
           </div>
-          <p className="text-xs text-gray-400">Review Electricity Bills & approve verified property owners</p>
+          <p className="text-[11px] sm:text-xs text-gray-400 max-w-xs sm:max-w-none">Review Electricity Bills & approve verified property owners</p>
         </div>
 
         <button
           onClick={fetchVerifications}
-          className="flex items-center space-x-1.5 px-4 py-2 bg-[#091a12] border border-emerald-800 text-emerald-400 hover:bg-emerald-900/60 rounded-full text-xs font-bold transition-all cursor-pointer self-start sm:self-auto"
+          className="flex items-center justify-center space-x-1.5 px-4 py-2 bg-[#091a12] border border-emerald-800 text-emerald-400 hover:bg-emerald-900/60 rounded-full text-xs font-bold transition-all cursor-pointer self-start sm:self-auto w-full sm:w-auto"
         >
           <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
           <span>Refresh Queue</span>
@@ -110,13 +115,13 @@ export default function AdminVerificationsPage() {
       </div>
 
       {/* Filter Tabs & Search */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex items-center space-x-2 bg-[#080d0a] p-1.5 rounded-2xl border border-emerald-950 w-full sm:w-auto">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+        <div className="grid grid-cols-2 sm:flex items-stretch gap-2 bg-[#080d0a] p-1.5 rounded-2xl border border-emerald-950 w-full sm:w-auto">
           {(['pending', 'approved', 'rejected', 'all'] as const).map((st) => (
             <button
               key={st}
               onClick={() => setStatusFilter(st)}
-              className={`px-4 py-1.5 rounded-xl text-xs font-extrabold uppercase transition-all tracking-wider capitalize ${
+              className={`px-2.5 sm:px-4 py-2 rounded-xl text-[10px] sm:text-xs font-extrabold uppercase transition-all tracking-wider capitalize whitespace-nowrap ${
                 statusFilter === st
                   ? 'bg-emerald-500 text-black shadow-md'
                   : 'text-gray-400 hover:text-white'
@@ -134,7 +139,7 @@ export default function AdminVerificationsPage() {
             placeholder="Search by name, email, consumer no..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-[#080d0a] border border-emerald-950 rounded-2xl text-xs text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500"
+            className="w-full pl-9 pr-4 py-2.5 bg-[#080d0a] border border-emerald-950 rounded-2xl text-xs text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500"
           />
         </div>
       </div>
@@ -146,66 +151,66 @@ export default function AdminVerificationsPage() {
           Loading Electricity Bill submissions...
         </div>
       ) : filtered.length === 0 ? (
-        <div className="bg-[#0a110d] rounded-3xl border border-emerald-950 p-12 text-center space-y-3">
+        <div className="bg-[#0a110d] rounded-3xl border border-emerald-950 p-8 sm:p-12 text-center space-y-3">
           <UserCheck size={36} className="mx-auto text-emerald-900/60" />
           <h3 className="text-base font-bold text-white">No Verification Requests Found</h3>
-          <p className="text-xs text-gray-400">There are no property owner electricity bill submissions matching your filter.</p>
+          <p className="text-xs text-gray-400 max-w-sm mx-auto">There are no property owner electricity bill submissions matching your filter.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 gap-4">
           {filtered.map((item) => (
             <div
               key={item._id || item.email}
-              className="bg-[#0a110d] border border-emerald-950/90 rounded-3xl p-5 sm:p-6 shadow-xl flex flex-col lg:flex-row lg:items-center justify-between gap-6"
+              className="bg-[#0a110d] border border-emerald-950/90 rounded-3xl p-4 sm:p-5 lg:p-6 shadow-xl flex flex-col lg:flex-row lg:items-center justify-between gap-4 sm:gap-6"
             >
               {/* Left Details */}
-              <div className="space-y-3 flex-1">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 rounded-2xl bg-emerald-950 border border-emerald-800/80 text-emerald-400 font-extrabold flex items-center justify-center text-sm">
+              <div className="space-y-3 flex-1 min-w-0">
+                <div className="flex items-start gap-3">
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-emerald-950 border border-emerald-800/80 text-emerald-400 font-extrabold flex items-center justify-center text-sm shrink-0">
                     {item.name?.charAt(0) || 'O'}
                   </div>
-                  <div>
-                    <div className="flex items-center space-x-2">
-                      <h3 className="text-base font-bold text-white">{item.name}</h3>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h3 className="text-sm sm:text-base font-bold text-white truncate max-w-[11rem] sm:max-w-none">{item.name}</h3>
                       {item.verificationStatus === 'approved' && (
-                        <span className="px-2.5 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800 text-[10px] font-extrabold flex items-center space-x-1">
+                        <span className="px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800 text-[9px] sm:text-[10px] font-extrabold flex items-center space-x-1 whitespace-nowrap">
                           <CheckCircle2 size={10} />
                           <span>VERIFIED OWNER</span>
                         </span>
                       )}
                       {item.verificationStatus === 'pending' && (
-                        <span className="px-2.5 py-0.5 rounded-full bg-amber-950 text-amber-400 border border-amber-800 text-[10px] font-extrabold flex items-center space-x-1">
+                        <span className="px-2 py-0.5 rounded-full bg-amber-950 text-amber-400 border border-amber-800 text-[9px] sm:text-[10px] font-extrabold flex items-center space-x-1 whitespace-nowrap">
                           <Clock size={10} />
                           <span>PENDING REVIEW</span>
                         </span>
                       )}
                       {item.verificationStatus === 'rejected' && (
-                        <span className="px-2.5 py-0.5 rounded-full bg-red-950 text-red-400 border border-red-800 text-[10px] font-extrabold flex items-center space-x-1">
+                        <span className="px-2 py-0.5 rounded-full bg-red-950 text-red-400 border border-red-800 text-[9px] sm:text-[10px] font-extrabold flex items-center space-x-1 whitespace-nowrap">
                           <XCircle size={10} />
                           <span>REJECTED</span>
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-gray-400">{item.email} • {item.phone}</p>
+                    <p className="text-[11px] sm:text-xs text-gray-400 break-words">{item.email} • {item.phone}</p>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 sm:pt-2 text-xs">
                   <div className="bg-[#050806] p-3 rounded-2xl border border-emerald-950">
                     <span className="text-gray-500 font-medium block">Consumer / CA Number</span>
-                    <span className="font-mono font-bold text-emerald-400 text-sm">{item.consumerNumber || 'Not provided'}</span>
+                    <span className="font-mono font-bold text-emerald-400 text-[13px] sm:text-sm break-all">{item.consumerNumber || 'Not provided'}</span>
                   </div>
-                  <div className="bg-[#050806] p-3 rounded-2xl border border-emerald-950 flex items-center justify-between">
-                    <div>
+                  <div className="bg-[#050806] p-3 rounded-2xl border border-emerald-950 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div className="min-w-0">
                       <span className="text-gray-500 font-medium block">Electricity Bill</span>
-                      <span className="text-gray-300 font-bold">Document Attached</span>
+                      <span className="text-gray-300 font-bold text-sm sm:text-xs">Document Attached</span>
                     </div>
                     {item.electricityBillUrl && (
                       <a
                         href={item.electricityBillUrl}
                         target="_blank"
                         rel="noreferrer"
-                        className="px-3 py-1.5 bg-[#0e2418] hover:bg-emerald-900/60 text-emerald-400 border border-emerald-800/80 rounded-xl text-[11px] font-bold flex items-center space-x-1 transition-all"
+                        className="px-3 py-2 bg-[#0e2418] hover:bg-emerald-900/60 text-emerald-400 border border-emerald-800/80 rounded-xl text-[11px] font-bold inline-flex items-center justify-center space-x-1 transition-all w-full sm:w-auto"
                       >
                         <span>View Document</span>
                         <ExternalLink size={12} />
@@ -215,22 +220,44 @@ export default function AdminVerificationsPage() {
                 </div>
               </div>
 
-              {/* Action Buttons */}
-              <div className="flex items-center space-x-3 self-end lg:self-center">
-                <button
-                  onClick={() => handleAction(item._id, item.email, 'reject')}
-                  className="px-4 py-2.5 bg-red-950/60 hover:bg-red-900/80 text-red-300 border border-red-800/60 rounded-full text-xs font-extrabold transition-all cursor-pointer flex items-center space-x-1"
-                >
-                  <XCircle size={14} />
-                  <span>Reject</span>
-                </button>
-                <button
-                  onClick={() => handleAction(item._id, item.email, 'approve')}
-                  className="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-black rounded-full text-xs font-extrabold shadow-lg shadow-emerald-500/20 transition-all cursor-pointer flex items-center space-x-1"
-                >
-                  <ShieldCheck size={14} />
-                  <span>Approve & Verify Owner</span>
-                </button>
+              {/* Right Action Buttons */}
+              <div className="flex flex-row lg:flex-col items-center justify-end gap-2.5 pt-2 lg:pt-0 border-t lg:border-t-0 border-emerald-950/80 shrink-0">
+                {item.verificationStatus === 'approved' ? (
+                  <button
+                    disabled
+                    className="w-full lg:w-36 py-2.5 px-4 bg-emerald-950/60 border border-emerald-800/40 text-emerald-400 font-extrabold text-xs rounded-2xl flex items-center justify-center space-x-1.5 opacity-80 cursor-not-allowed"
+                  >
+                    <CheckCircle2 size={14} />
+                    <span>Approved</span>
+                  </button>
+                ) : item.verificationStatus === 'rejected' ? (
+                  <button
+                    disabled
+                    className="w-full lg:w-36 py-2.5 px-4 bg-red-950/60 border border-red-800/40 text-red-400 font-extrabold text-xs rounded-2xl flex items-center justify-center space-x-1.5 opacity-80 cursor-not-allowed"
+                  >
+                    <XCircle size={14} />
+                    <span>Rejected</span>
+                  </button>
+                ) : (
+                  <>
+                    <button
+                      disabled={Boolean(processingId)}
+                      onClick={() => handleAction(item._id || item.id, item.email, 'approve')}
+                      className="flex-1 lg:w-36 py-2.5 px-4 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs rounded-2xl shadow-lg transition-all flex items-center justify-center space-x-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <CheckCircle2 size={14} />
+                      <span>{processingId === (item._id || item.id) ? 'Processing...' : 'Approve Owner'}</span>
+                    </button>
+                    <button
+                      disabled={Boolean(processingId)}
+                      onClick={() => handleAction(item._id || item.id, item.email, 'reject')}
+                      className="flex-1 lg:w-36 py-2.5 px-4 bg-[#180909] hover:bg-red-950 text-red-400 border border-red-900/60 font-extrabold text-xs rounded-2xl transition-all flex items-center justify-center space-x-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <XCircle size={14} />
+                      <span>Reject Request</span>
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           ))}

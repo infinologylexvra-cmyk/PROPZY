@@ -4,8 +4,11 @@ import Property from '@/models/Property';
 import User from '@/models/User';
 import { INITIAL_PROPERTIES, PropertyItem } from '@/lib/seedData';
 import { memoryStore } from '@/lib/memoryStore';
+import { getAuthUser } from '@/lib/auth';
+import { isAdminUser, normalizeEmail, serializeProperty } from '@/lib/accessControl';
 
 export async function GET(req: NextRequest) {
+  const authUser = await getAuthUser(req);
   const { searchParams } = new URL(req.url);
   const category = searchParams.get('category');
   const city = searchParams.get('city');
@@ -17,6 +20,10 @@ export async function GET(req: NextRequest) {
   const search = searchParams.get('search');
   const verified = searchParams.get('verified');
   const admin = searchParams.get('admin');
+
+  if (admin === 'true' && !isAdminUser(authUser)) {
+    return NextResponse.json({ success: false, message: 'Forbidden. Admin privileges required.' }, { status: 403 });
+  }
 
   try {
     await connectToDatabase();
@@ -38,15 +45,6 @@ export async function GET(req: NextRequest) {
     if (bedrooms && bedrooms !== 'all') filter.bedrooms = Number(bedrooms);
     if (maxPrice) filter.price = { $lte: Number(maxPrice) };
     
-    // Admin request sees all properties; public website only sees verified properties by default
-    if (admin === 'true' || verified === 'all') {
-      if (verified === 'false') filter.verified = false;
-      if (verified === 'true') filter.verified = true;
-    } else {
-      if (verified === 'false') filter.verified = false;
-      else filter.verified = true;
-    }
-
     if (search) {
       filter.$or = [
         { title: new RegExp(search, 'i') },
@@ -57,8 +55,31 @@ export async function GET(req: NextRequest) {
       ];
     }
 
-    const properties = await Property.find(filter).sort({ createdAt: -1 });
-    return NextResponse.json({ success: true, data: properties, source: 'mongodb' });
+    const properties = await Property.find(filter).sort({ createdAt: -1 }).lean();
+    const normalizedAuthEmail = normalizeEmail(authUser?.email);
+    const visibleProperties = properties.filter((property: any) => {
+      if (admin === 'true' && isAdminUser(authUser)) {
+        return true;
+      }
+
+      const isOwner = Boolean(normalizedAuthEmail && normalizeEmail(property.ownerEmail) === normalizedAuthEmail);
+
+      if (!authUser) {
+        return property.verified === true;
+      }
+
+      if (verified === 'all' || verified === 'false') {
+        return property.verified === true || isOwner;
+      }
+
+      return property.verified === true || isOwner;
+    });
+
+    return NextResponse.json({
+      success: true,
+      data: visibleProperties.map((property: any) => serializeProperty(property, Boolean(authUser))),
+      source: 'mongodb'
+    });
   } catch (error) {
     // In-memory filtering fallback
 
@@ -78,14 +99,6 @@ export async function GET(req: NextRequest) {
     if (bedrooms && bedrooms !== 'all') filtered = filtered.filter(p => p.bedrooms === Number(bedrooms));
     if (maxPrice) filtered = filtered.filter(p => p.price <= Number(maxPrice));
     
-    if (admin === 'true' || verified === 'all') {
-      if (verified === 'false') filtered = filtered.filter(p => !p.verified);
-      if (verified === 'true') filtered = filtered.filter(p => p.verified);
-    } else {
-      if (verified === 'false') filtered = filtered.filter(p => !p.verified);
-      else filtered = filtered.filter(p => p.verified);
-    }
-
     if (search) {
       const q = search.toLowerCase();
       filtered = filtered.filter(p => 
@@ -96,33 +109,66 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    return NextResponse.json({ success: true, data: filtered, source: 'memory' });
+    const normalizedAuthEmail = normalizeEmail(authUser?.email);
+    const visibleProperties = filtered.filter((property: any) => {
+      if (admin === 'true' && isAdminUser(authUser)) {
+        return true;
+      }
+
+      const isOwner = Boolean(normalizedAuthEmail && normalizeEmail(property.ownerEmail) === normalizedAuthEmail);
+
+      if (!authUser) {
+        return property.verified === true;
+      }
+
+      if (verified === 'all' || verified === 'false') {
+        return property.verified === true || isOwner;
+      }
+
+      return property.verified === true || isOwner;
+    });
+
+    return NextResponse.json({
+      success: true,
+      data: visibleProperties.map((property: any) => serializeProperty(property, Boolean(authUser))),
+      source: 'memory'
+    });
   }
 }
 
 export async function POST(req: NextRequest) {
   try {
+    const authUser = await getAuthUser(req);
+    if (!authUser) {
+      return NextResponse.json({ success: false, message: 'Unauthorized. Please login.' }, { status: 401 });
+    }
+
     const body = await req.json();
 
     const validCategories = ['rent', 'buy', 'sell', 'pg', 'commercial'];
     const validTypes = ['house', 'flat', 'pg', 'commercial', 'plot'];
     const validFurnishing = ['unfurnished', 'semi-furnished', 'fully-furnished'];
 
-    // Strict Owner Verification Check
-    if (body.ownerEmail) {
-      try {
-        await connectToDatabase();
-        const existingUser = await User.findOne({ email: body.ownerEmail.toLowerCase().trim() });
-        if (existingUser && (!existingUser.ownerVerified && existingUser.verificationStatus !== 'approved')) {
-          return NextResponse.json({
-            success: false,
-            message: 'Owner verification required! Please submit your Electricity Bill in your Profile for admin approval before posting properties.'
-          }, { status: 403 });
-        }
-      } catch (e) {}
+    if (authUser.role === 'tenant') {
+      return NextResponse.json({ success: false, message: 'Forbidden. Property owners only.' }, { status: 403 });
+    }
+
+    await connectToDatabase();
+    const existingUser = await User.findOne({ email: authUser.email.toLowerCase().trim() });
+
+    if (authUser.role !== 'admin') {
+      if (!existingUser || (!existingUser.ownerVerified && existingUser.verificationStatus !== 'approved')) {
+        return NextResponse.json({
+          success: false,
+          message: 'Owner verification required! Please submit your Electricity Bill in your Profile for admin approval before posting properties.'
+        }, { status: 403 });
+      }
     }
 
     const pidGenerated = body.pid || `LR-${Math.floor(100 + Math.random() * 900)}`;
+    const resolvedOwnerName = existingUser?.name || authUser.name || body.ownerName || 'Property Owner';
+    const resolvedOwnerPhone = existingUser?.phone || body.ownerPhone || '+91 98765 43210';
+    const resolvedOwnerEmail = authUser.email.toLowerCase().trim();
 
     const newProperty = {
       pid: pidGenerated,
@@ -143,10 +189,10 @@ export async function POST(req: NextRequest) {
       images: Array.isArray(body.images) && body.images.length > 0 ? body.images : ['https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=800&q=80'],
       description: body.description || `Property listing in ${body.locality || 'Mohali'}.`,
       amenities: Array.isArray(body.amenities) ? body.amenities : ['Power Backup', 'Car Parking'],
-      ownerName: body.ownerName || 'Property Owner',
-      ownerPhone: body.ownerPhone || '+91 98765 43210',
-      ownerEmail: body.ownerEmail ? body.ownerEmail.toLowerCase().trim() : '',
-      ownerRole: body.ownerRole || 'owner',
+      ownerName: resolvedOwnerName,
+      ownerPhone: resolvedOwnerPhone,
+      ownerEmail: resolvedOwnerEmail,
+      ownerRole: (existingUser?.role === 'owner' ? 'owner' : 'agent') as 'owner' | 'agent',
       available: true,
       createdAt: new Date()
     };

@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { 
-  Search, Bell, ShieldCheck, PlusCircle, Home 
+  Search, Bell, ShieldCheck, PlusCircle, Home, Menu, X
 } from 'lucide-react';
 import { GlobalSearchBar } from '@/components/GlobalSearchBar';
 import { AdminSidebar } from '@/components/AdminSidebar';
@@ -16,6 +16,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const { user, openPidModal, openAuthModal, showToast } = useApp();
   const [pidQuickInput, setPidQuickInput] = useState('');
   const [isHydrated, setIsHydrated] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
   React.useEffect(() => {
     const checkHydration = () => {
@@ -51,51 +52,52 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     return null;
   }
 
-
-
   return (
     <>
-      {/* Desktop-Only Blocker — visible on screens < 1024px */}
-      <div className="fixed inset-0 z-[999] bg-[#050806] flex flex-col items-center justify-center text-center p-8 lg:hidden">
-        <div className="w-20 h-20 rounded-3xl bg-[#0a2618] border border-emerald-800/60 text-emerald-400 flex items-center justify-center mb-6">
-          <ShieldCheck size={40} />
-        </div>
-        <h2 className="text-2xl font-extrabold text-white mb-2">Desktop Only</h2>
-        <p className="text-sm text-gray-400 max-w-sm mb-6">
-          The Propzy Admin Panel is optimized for desktop screens. Please open this page on a laptop or desktop computer for the best experience.
-        </p>
-        <Link
-          href="/"
-          className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-sm transition-all"
-        >
-          <Home size={16} />
-          <span>Go to Homepage</span>
-        </Link>
-      </div>
-
-      {/* Admin Panel — only usable on lg+ screens */}
-      <div className="bg-[#050806] text-gray-100 min-h-screen flex font-sans antialiased">
+      <div className="bg-[#050806] text-gray-100 min-h-screen flex flex-col lg:flex-row font-sans antialiased overflow-x-hidden">
         {/* Sidebar */}
-        <div className="shrink-0">
+        <div className="hidden lg:block shrink-0">
           <AdminSidebar />
         </div>
+
+        {isMobileSidebarOpen && (
+          <>
+            <button
+              type="button"
+              aria-label="Close admin navigation"
+              onClick={() => setIsMobileSidebarOpen(false)}
+              className="fixed inset-0 z-40 bg-black/60 backdrop-blur-[2px] lg:hidden"
+            />
+            <div className="fixed left-0 top-0 z-50 h-dvh w-[86vw] max-w-sm lg:hidden shadow-2xl">
+              <AdminSidebar isOpen={isMobileSidebarOpen} onClose={() => setIsMobileSidebarOpen(false)} />
+            </div>
+          </>
+        )}
 
         {/* Main Administrative Viewport Container */}
         <div className="flex-1 flex flex-col min-w-0">
           {/* Top Header Bar */}
-          <header className="sticky top-0 z-30 bg-[#060a08]/95 backdrop-blur-xl border-b border-emerald-950/80 px-8 py-3.5 flex items-center justify-between gap-4">
-            <div className="flex items-center space-x-3">
-              <GlobalSearchBar mode="admin" className="w-80" />
+          <header className="sticky top-0 z-30 bg-[#060a08]/95 backdrop-blur-xl border-b border-emerald-950/80 px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex items-center gap-3 w-full lg:w-auto">
+              <button
+                type="button"
+                onClick={() => setIsMobileSidebarOpen(true)}
+                className="lg:hidden inline-flex h-11 w-11 items-center justify-center rounded-xl bg-[#0a1610] border border-emerald-900/80 text-emerald-400"
+                aria-label="Open admin navigation"
+              >
+                <Menu size={18} />
+              </button>
+              <GlobalSearchBar mode="admin" className="w-full md:w-md md:max-w-[42vw]" />
             </div>
 
             {/* Right Controls */}
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center justify-between lg:justify-end gap-3 sm:gap-4 w-full lg:w-auto flex-wrap">
               {/* Admin Profile Badge */}
-              <div className="flex items-center space-x-2 px-3 py-1.5 rounded-full bg-[#0a1610] border border-emerald-900/80 text-xs">
+              <div className="flex items-center space-x-2 px-3 py-1.5 rounded-full bg-[#0a1610] border border-emerald-900/80 text-xs min-w-0">
                 <div className="w-6 h-6 rounded-full bg-emerald-500 text-black font-extrabold flex items-center justify-center text-xs">
                   {user ? user.name.charAt(0) : 'A'}
                 </div>
-                <span className="font-bold text-white">
+                <span className="font-bold text-white truncate max-w-28 sm:max-w-none">
                   {user ? user.name.split(' ')[0] : 'Admin'}
                 </span>
                 <span className="text-[10px] font-extrabold text-emerald-400 bg-emerald-950 border border-emerald-800/80 px-2 py-0.5 rounded-full">
@@ -107,7 +109,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </header>
 
           {/* Main Content Area */}
-          <main className="flex-1 p-8 space-y-8 max-w-7xl w-full mx-auto pb-24">
+          <main className="flex-1 px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-8 max-w-7xl w-full mx-auto pb-24">
             {children}
           </main>
         </div>

@@ -12,12 +12,10 @@ import { getCachedProperties, setCachedProperties, getCachedInquiries, setCached
 
 export default function AdminOverviewPage() {
   const { showToast } = useApp();
-  const cachedProps = getCachedProperties();
-  const cachedInqs = getCachedInquiries();
-
-  const [properties, setProperties] = useState<PropertyItem[]>(cachedProps || INITIAL_PROPERTIES);
-  const [inquiries, setInquiries] = useState<any[]>(cachedInqs || INITIAL_INQUIRIES);
+  const [properties, setProperties] = useState<PropertyItem[]>([]);
+  const [inquiries, setInquiries] = useState<any[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [actionPendingId, setActionPendingId] = useState<string | null>(null);
 
   const fetchData = async () => {
     try {
@@ -47,8 +45,21 @@ export default function AdminOverviewPage() {
   };
 
   useEffect(() => {
-    if (!cachedProps || !cachedInqs) {
+    const localProps = getCachedProperties();
+    const localInqs = getCachedInquiries();
+
+    if (localProps && localProps.length > 0) {
+      setProperties(localProps);
+    } else {
+      setProperties(INITIAL_PROPERTIES);
       fetchData();
+    }
+
+    if (localInqs && localInqs.length > 0) {
+      setInquiries(localInqs);
+    } else {
+      setInquiries(INITIAL_INQUIRIES);
+      if (localProps && localProps.length > 0) fetchData(); // Fetch data if inquiries missing but properties existed (since fetchData fetches both)
     }
   }, []);
 
@@ -72,6 +83,8 @@ export default function AdminOverviewPage() {
   const featuredListings = properties.filter(p => p.featured).length;
 
   const handleVerifyToggle = async (propertyId: string, currentVerified: boolean) => {
+    if (actionPendingId) return;
+    setActionPendingId(propertyId);
     const newStatus = !currentVerified;
     setProperties(prev => {
       const updated = prev.map(p => 
@@ -90,7 +103,10 @@ export default function AdminOverviewPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ verified: newStatus })
       });
-    } catch (e) {}
+    } catch (e) {
+    } finally {
+      setActionPendingId(null);
+    }
 
     showToast(newStatus ? 'Property verified successfully!' : 'Property marked as unverified');
   };
@@ -120,11 +136,11 @@ export default function AdminOverviewPage() {
           </p>
         </div>
 
-        <div className="flex items-center space-x-3">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:space-x-3 w-full sm:w-auto">
           <button
             onClick={handleRefresh}
             disabled={refreshing}
-            className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-bold flex items-center space-x-2 shadow-lg shadow-emerald-500/20 transition-all cursor-pointer disabled:opacity-50"
+            className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-bold flex items-center justify-center space-x-2 shadow-lg shadow-emerald-500/20 transition-all cursor-pointer disabled:opacity-50 w-full sm:w-auto"
           >
             <RefreshCw size={14} className={refreshing ? 'animate-spin' : ''} />
             <span>{refreshing ? 'Refreshing...' : 'Refresh Data'}</span>
@@ -132,7 +148,7 @@ export default function AdminOverviewPage() {
 
           <Link
             href="/admin/properties"
-            className="px-4 py-2 rounded-xl bg-[#0a1810] border border-emerald-900/80 text-emerald-400 hover:bg-emerald-950 text-xs font-semibold flex items-center space-x-1.5 transition-colors"
+            className="px-4 py-2 rounded-xl bg-[#0a1810] border border-emerald-900/80 text-emerald-400 hover:bg-emerald-950 text-xs font-semibold flex items-center justify-center space-x-1.5 transition-colors w-full sm:w-auto"
           >
             <Building size={14} />
             <span>Manage All PID ({totalListings})</span>
@@ -336,8 +352,9 @@ export default function AdminOverviewPage() {
                   </td>
                   <td className="p-3 text-right">
                     <button
+                      disabled={Boolean(actionPendingId)}
                       onClick={() => handleVerifyToggle(item.pid || item._id || item.id, !!item.verified)}
-                      className={`px-3 py-1 rounded-xl text-[11px] font-extrabold border transition-all cursor-pointer ${
+                      className={`px-3 py-1 rounded-xl text-[11px] font-extrabold border transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
                         item.verified
                           ? 'bg-[#140b0d] text-rose-400 border-rose-900/80 hover:bg-rose-950'
                           : 'bg-emerald-500 hover:bg-emerald-400 text-black border-emerald-500'

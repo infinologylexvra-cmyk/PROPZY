@@ -157,7 +157,7 @@ export default function HelpCenterPage() {
         </div>
 
         {/* Contact Support Banner */}
-        <div className="bg-gradient-to-r from-[#0a1c12] to-[#07130c] border border-emerald-900/80 rounded-3xl p-8 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xl">
+        <div className="bg-linear-to-r from-[#0a1c12] to-[#07130c] border border-emerald-900/80 rounded-3xl p-8 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xl">
           <div className="space-y-2 text-center sm:text-left">
             <h3 className="text-xl font-bold text-white">Still need assistance?</h3>
             <p className="text-xs text-gray-300 max-w-md">

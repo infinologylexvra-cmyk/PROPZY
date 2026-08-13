@@ -48,7 +48,6 @@ export const INITIAL_PROPERTIES: PropertyItem[] = [
     images: [
       'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=800&q=80',
       'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=800&q=80',
-      'https://images.unsplash.com/photo-1484154218962-a197022b5858?auto=format&fit=crop&w=800&q=80'
     ],
     description: 'Spacious & sunlit 2 BHK apartment in prime Sector 71, Mohali. Features modular kitchen, wooden wardrobes, AC in both rooms, power backup, and 24/7 security. 0% Brokerage.',
     amenities: ['Power Backup', 'Air Conditioner', 'Car Parking', 'Modular Kitchen', 'Wi-Fi', 'Balcony', 'Geyser'],

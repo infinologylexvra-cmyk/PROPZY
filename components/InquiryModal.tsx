@@ -13,17 +13,78 @@ interface InquiryModalProps {
 }
 
 export const InquiryModal: React.FC<InquiryModalProps> = ({ property, onClose }) => {
-  const { user, showToast } = useApp();
+  const { user, openAuthModal, showToast } = useApp();
   const [name, setName] = useState(user ? sanitizeName(user.name) : '');
   const [phone, setPhone] = useState(user ? sanitizePhone(user.phone) : '');
   const [message, setMessage] = useState('Hi, I am interested in visiting this property.');
   const [submitting, setSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  const [submitted, setSubmitted] = useState(() => {
+    if (typeof window !== 'undefined' && property?.pid) {
+      try {
+        const history = JSON.parse(sessionStorage.getItem('propzy_inquired_pids') || '[]');
+        return history.includes(property.pid);
+      } catch {
+        return false;
+      }
+    }
+    return false;
+  });
 
   if (!property) return null;
 
+  if (!user) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
+        <div className="relative w-full max-w-md bg-[#0a110d] rounded-3xl shadow-2xl border border-emerald-900/80 p-6 text-gray-100 text-center space-y-5">
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 p-2 rounded-full text-gray-400 hover:text-white hover:bg-emerald-950 transition-colors"
+          >
+            <X size={20} />
+          </button>
+
+          <div className="w-16 h-16 bg-emerald-500/20 text-emerald-400 border border-emerald-800 rounded-full flex items-center justify-center mx-auto">
+            <User size={32} />
+          </div>
+
+          <div className="space-y-2">
+            <h3 className="text-xl font-bold text-white">Login Required</h3>
+            <p className="text-xs text-gray-400">
+              You must be logged in to contact the owner or view direct contact details for <strong className="text-emerald-400">{property.pid}</strong>.
+            </p>
+          </div>
+
+          <div className="pt-2">
+            <button
+              onClick={() => {
+                onClose();
+                openAuthModal();
+              }}
+              className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs rounded-xl shadow-lg transition-all uppercase tracking-wider cursor-pointer"
+            >
+              Login / Register Now
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const markPidAsInquired = (pid: string) => {
+    if (typeof window !== 'undefined' && pid) {
+      try {
+        const history = JSON.parse(sessionStorage.getItem('propzy_inquired_pids') || '[]');
+        if (!history.includes(pid)) {
+          sessionStorage.setItem('propzy_inquired_pids', JSON.stringify([...history, pid]));
+        }
+      } catch {}
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submitting || submitted) return;
+
     if (!isValidName(name)) {
       showToast('Please enter a valid name (letters only)');
       return;
@@ -44,16 +105,19 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({ property, onClose })
           propertyPid: property.pid,
           tenantName: name.trim(),
           tenantPhone: phone.trim(),
+          tenantEmail: user?.email || '',
           tenantMessage: message,
         })
       });
       const data = await res.json();
       if (data.success) {
         setSubmitted(true);
+        markPidAsInquired(property.pid);
         showToast('Inquiry sent! Owner will contact you shortly.');
       }
     } catch (e) {
       setSubmitted(true);
+      markPidAsInquired(property.pid);
       showToast('Inquiry received!');
     } finally {
       setSubmitting(false);
@@ -154,10 +218,10 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({ property, onClose })
 
               <button
                 type="submit"
-                disabled={submitting}
-                className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs rounded-xl shadow-lg shadow-emerald-500/20 transition-all flex items-center justify-center space-x-2 uppercase tracking-wider cursor-pointer"
+                disabled={submitting || submitted}
+                className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs rounded-xl shadow-lg shadow-emerald-500/20 transition-all flex items-center justify-center space-x-2 uppercase tracking-wider cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <span>{submitting ? 'Sending Request...' : 'Get Owner Contact Details'}</span>
+                <span>{submitting ? 'Sending Request...' : submitted ? 'Inquiry Already Submitted' : 'Get Owner Contact Details'}</span>
               </button>
             </form>
           </div>
