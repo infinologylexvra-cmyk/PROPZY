@@ -146,14 +146,14 @@ function NavbarContent() {
             <GlobalSearchBar mode="public" className="hidden lg:block w-64 md:w-72" />
 
             {/* Post Property Button */}
-            <Link
+            {user?.role === 'owner' && <Link
               href="/post-property"
               onClick={() => setActiveItem('sell')}
               className="hidden sm:flex items-center space-x-1 px-4 sm:px-5 py-2 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-all"
             >
               <span>Post Property</span>
               <span className="text-sm font-bold ml-1">→</span>
-            </Link>
+            </Link>}
 
             {/* Saved Wishlist Icon */}
             <Link
@@ -353,7 +353,7 @@ function NavbarContent() {
               </Link>
             </div>
 
-            <div className="pt-3 border-t border-emerald-950 space-y-2">
+            {user?.role === 'owner' && <div className="pt-3 border-t border-emerald-950 space-y-2">
               <Link
                 href="/post-property"
                 onClick={() => setIsMobileMenuOpen(false)}
@@ -361,7 +361,7 @@ function NavbarContent() {
               >
                 Post Property →
               </Link>
-            </div>
+            </div>}
           </div>
         )}
 
@@ -369,14 +369,14 @@ function NavbarContent() {
         <div className="flex sm:hidden items-center justify-between gap-2.5 pb-3.5 pt-1 px-1 border-t border-emerald-950/40">
           <GlobalSearchBar mode="public" placeholder="Search PID, City, Title..." className="flex-1" />
 
-          <Link
+          {user?.role === 'owner' && <Link
             href="/post-property"
             onClick={() => setActiveItem('sell')}
             className="flex-1 flex items-center justify-center space-x-1 py-2 px-3 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs shadow-lg shadow-emerald-500/20 transition-all"
           >
             <span>Post Property</span>
             <span className="text-sm font-bold ml-0.5">→</span>
-          </Link>
+          </Link>}
         </div>
       </div>
 
@@ -416,7 +416,7 @@ function NavbarContent() {
                 <span>Search PID</span>
               </button>
 
-              <Link
+              {user?.role === 'owner' && <Link
                 href="/post-property"
                 onClick={() => {
                   setIsMobileMenuOpen(false);
@@ -425,7 +425,7 @@ function NavbarContent() {
                 className="flex-1 py-2 px-3 rounded-xl bg-emerald-500 text-black text-xs font-extrabold text-center"
               >
                 Post Property →
-              </Link>
+              </Link>}
             </div>
           </div>
         </div>

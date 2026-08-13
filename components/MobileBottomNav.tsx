@@ -17,7 +17,7 @@ export const MobileBottomNav: React.FC = () => {
 
   return (
     <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#060a08]/95 backdrop-blur-xl border-t border-emerald-900/60 px-2 py-1.5 shadow-2xl shadow-emerald-950/80">
-      <div className="grid grid-cols-5 items-center text-center">
+      <div className={`grid ${user?.role === 'owner' ? 'grid-cols-5' : 'grid-cols-4'} items-center text-center`}>
         {/* Home */}
         <Link
           href="/"
@@ -58,8 +58,8 @@ export const MobileBottomNav: React.FC = () => {
           <span className="mt-0.5">Saved</span>
         </Link>
 
-        {/* Post Property */}
-        <Link
+        {/* Post Property - owners only */}
+        {user?.role === 'owner' && <Link
           href="/post-property"
           className={`flex flex-col items-center justify-center py-1 text-[10px] font-semibold transition-colors ${
             pathname === '/post-property' ? 'text-emerald-400 font-extrabold' : 'text-gray-400 hover:text-emerald-300'
@@ -67,7 +67,7 @@ export const MobileBottomNav: React.FC = () => {
         >
           <PlusCircle size={20} className="text-emerald-400" />
           <span className="mt-0.5">Post</span>
-        </Link>
+        </Link>}
 
         {/* Account / Login */}
         <button

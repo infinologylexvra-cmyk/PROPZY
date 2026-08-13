@@ -28,12 +28,15 @@ export interface UserProfile {
   billingHistory?: BillingRecord[];
 }
 
+export type ToastType = 'success' | 'error';
+
 export interface AppState {
   user: UserProfile | null;
   wishlist: string[];
   isAuthModalOpen: boolean;
   isPidModalOpen: boolean;
   toastMessage: string | null;
+  toastType: ToastType;
 
   // Actions
   setUser: (user: UserProfile | null) => void;
@@ -44,11 +47,13 @@ export interface AppState {
   closeAuthModal: () => void;
   openPidModal: () => void;
   closePidModal: () => void;
-  showToast: (msg: string) => void;
+  showToast: (msg: string, type?: ToastType) => void;
   clearToast: () => void;
 }
 
 const STORAGE_KEY = 'propzy_app_v1';
+
+const isSuccessToast = (message: string) => /\b(success|welcome|redirecting|logged out|saved|removed|listed|posted|added|sent|received|copied|updated|refreshed|verified|featured|marked|submitted|download|payment)\b/i.test(message);
 
 const normalizeWishlistKey = (key: string) => {
   if (key && key.startsWith('prop-')) {
@@ -65,6 +70,7 @@ export const useAppStore = create<AppState>()(
       isAuthModalOpen: false,
       isPidModalOpen: false,
       toastMessage: null,
+      toastType: 'success',
 
       setUser: (user) => {
         if (user && Array.isArray(user.wishlist)) {
@@ -127,8 +133,8 @@ export const useAppStore = create<AppState>()(
       openPidModal: () => set({ isPidModalOpen: true }),
       closePidModal: () => set({ isPidModalOpen: false }),
 
-      showToast: (msg) => {
-        set({ toastMessage: msg });
+      showToast: (msg, type) => {
+        set({ toastMessage: msg, toastType: type ?? (isSuccessToast(msg) ? 'success' : 'error') });
         setTimeout(() => {
           if (get().toastMessage === msg) {
             set({ toastMessage: null });
