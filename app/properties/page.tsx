@@ -297,7 +297,7 @@ function PropertySearchContent() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8">
           {/* Desktop/Tablet Sidebar Filters */}
-          <aside className="hidden md:block md:col-span-1 bg-[#0a110d] p-6 rounded-3xl border border-emerald-950/90 shadow-xl h-fit space-y-6">
+          <aside className="hidden md:block md:col-span-1 bg-[#0a110d] p-6 rounded-3xl border border-emerald-950/90 shadow-xl sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto space-y-6">
             <div className="flex items-center justify-between border-b border-emerald-950 pb-3">
               <span className="text-sm font-bold text-white flex items-center space-x-2">
                 <SlidersHorizontal size={16} className="text-emerald-400" />

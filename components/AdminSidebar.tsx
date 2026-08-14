@@ -25,8 +25,8 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen = true, onClo
   ];
 
   return (
-    <aside className={`w-full md:w-64 bg-[#070d09] border-r border-emerald-950/80 flex flex-col justify-between h-full md:h-screen md:sticky md:top-0 z-40 text-gray-200 select-none shrink-0 transition-transform duration-300 ease-out ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}>
-      <div className="p-4 sm:p-5 space-y-6 h-full overflow-y-auto">
+    <aside className={`w-full h-full bg-[#070d09] border-r border-emerald-950/80 flex flex-col justify-between text-gray-200 select-none shrink-0 transition-transform duration-300 ease-out ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+      <div className="p-4 sm:p-5 space-y-6 flex-1 overflow-y-auto">
         {/* Brand Header */}
         <div className="flex items-center justify-between border-b border-emerald-950/80 pb-4 gap-3">
           <Link href="/admin" className="flex items-center space-x-2.5 group">

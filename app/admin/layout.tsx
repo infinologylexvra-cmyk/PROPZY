@@ -81,9 +81,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   return (
     <>
-      <div className="bg-[#050806] text-gray-100 min-h-screen flex flex-col lg:flex-row font-sans antialiased overflow-x-hidden">
+      <div className="bg-[#050806] text-gray-100 min-h-screen font-sans antialiased">
         {/* Sidebar */}
-        <div className="hidden lg:block shrink-0">
+        <div className="hidden lg:block fixed left-0 top-0 bottom-0 w-64 z-40">
           <AdminSidebar />
         </div>
 
@@ -102,7 +102,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         )}
 
         {/* Main Administrative Viewport Container */}
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className="lg:pl-64 flex-1 flex flex-col min-w-0 min-h-screen">
           {/* Top Header Bar */}
           <header className="sticky top-0 z-30 bg-[#060a08]/95 backdrop-blur-xl border-b border-emerald-950/80 px-4 sm:px-6 lg:px-8 py-3.5 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
             <div className="flex items-center gap-3 w-full lg:w-auto">
