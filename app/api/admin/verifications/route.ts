@@ -56,9 +56,7 @@ export async function POST(req: NextRequest) {
 
     try {
       await connectToDatabase();
-      // This is intentionally a conditional update. MongoDB evaluates the
-      // pending-status condition atomically, so two admins cannot approve and
-      // reject the same request from separate tabs/browsers.
+      // Conditional atomic update on MongoDB evaluating verificationStatus: 'pending'
       const updatedUser = await User.findOneAndUpdate(
         { ...query, verificationStatus: 'pending' },
         { $set: updateFields },
@@ -66,13 +64,16 @@ export async function POST(req: NextRequest) {
       ).select('-password');
 
       if (!updatedUser) {
-        const currentUser = await User.findOne(query).select('verificationStatus').lean();
+        const currentUser: any = await User.findOne(query).select('verificationStatus ownerVerified email').lean();
         if (!currentUser) {
           return NextResponse.json({ success: false, message: 'Verification request not found.' }, { status: 404 });
         }
+        const currentStatus = currentUser.verificationStatus || 'processed';
         return NextResponse.json({
           success: false,
-          message: `This request was already ${currentUser.verificationStatus}. The queue has been refreshed.`
+          user: currentUser,
+          verificationStatus: currentStatus,
+          message: `This request was already ${currentStatus.toUpperCase()}. Your view has been synchronized.`
         }, { status: 409 });
       }
 

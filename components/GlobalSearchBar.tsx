@@ -25,7 +25,7 @@ interface GlobalSearchBarProps {
 }
 
 export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
-  placeholder = 'Search by PID, Title, City, Locality (e.g. LR-101, 2 BHK, Mohali)...',
+  placeholder = 'Search by Title, City, Locality, PID (e.g. 2 BHK, Mohali, LR-101)...',
   mode = 'public',
   className = '',
 }) => {
@@ -163,11 +163,10 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
             if (suggestions.length > 0 && query.trim()) setIsOpen(true);
           }}
           placeholder={placeholder}
-          className={`w-full pl-9 pr-8 py-2 text-xs rounded-xl border transition-all focus:outline-none ${
-            mode === 'admin'
+          className={`w-full pl-9 pr-8 py-2 text-xs rounded-xl border transition-all focus:outline-none ${mode === 'admin'
               ? 'bg-[#09110c] border-emerald-900/80 text-white placeholder-gray-500 focus:border-emerald-500 font-mono tracking-wide'
               : 'bg-[#07100a] border-emerald-900/70 text-white placeholder-gray-400 focus:border-emerald-500 shadow-inner'
-          }`}
+            }`}
         />
         <Search className="absolute left-3 text-emerald-400 pointer-events-none" size={14} />
 
@@ -203,9 +202,8 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
                     key={item.pid || item._id || idx}
                     onClick={() => handleSelectSuggestion(item)}
                     onMouseEnter={() => setSelectedIndex(idx)}
-                    className={`p-2.5 flex items-center space-x-3 cursor-pointer transition-colors ${
-                      isSelected ? 'bg-[#0e2417] text-white' : 'hover:bg-[#0b1a11] text-gray-200'
-                    }`}
+                    className={`p-2.5 flex items-center space-x-3 cursor-pointer transition-colors ${isSelected ? 'bg-[#0e2417] text-white' : 'hover:bg-[#0b1a11] text-gray-200'
+                      }`}
                   >
                     {/* Thumbnail */}
                     {thumb ? (

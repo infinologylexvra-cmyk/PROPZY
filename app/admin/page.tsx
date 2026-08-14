@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { 
   Building, ShieldCheck, MessageSquare, Users, FileText, 
@@ -9,6 +9,7 @@ import {
 import { PropertyItem, INITIAL_PROPERTIES, INITIAL_INQUIRIES } from '@/lib/seedData';
 import { useApp } from '@/context/AppContext';
 import { getCachedProperties, setCachedProperties, getCachedInquiries, setCachedInquiries } from '@/lib/adminCache';
+import { useAdminSync } from '@/hooks/useAdminSync';
 
 export default function AdminOverviewPage() {
   const { showToast } = useApp();
@@ -17,7 +18,7 @@ export default function AdminOverviewPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [actionPendingId, setActionPendingId] = useState<string | null>(null);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const [propsRes, inqRes] = await Promise.all([
         fetch('/api/properties?admin=true').catch(() => null),
@@ -42,7 +43,7 @@ export default function AdminOverviewPage() {
     } catch (e) {
       console.warn('Using seeded data fallback:', e);
     }
-  };
+  }, []);
 
   useEffect(() => {
     const localProps = getCachedProperties();
@@ -59,10 +60,23 @@ export default function AdminOverviewPage() {
       setInquiries(localInqs);
     } else {
       setInquiries(INITIAL_INQUIRIES);
-      if (localProps && localProps.length > 0) fetchData(); // Fetch data if inquiries missing but properties existed (since fetchData fetches both)
+      if (localProps && localProps.length > 0) fetchData();
     }
-  }, []);
+  }, [fetchData]);
 
+  // Real-time cross-tab sync hook for Admin Dashboard Overview
+  useAdminSync({
+    dataType: 'all',
+    onSync: () => {
+      const localProps = getCachedProperties();
+      const localInqs = getCachedInquiries();
+      if (localProps) setProperties(localProps);
+      if (localInqs) setInquiries(localInqs);
+      if (!localProps || !localInqs) fetchData();
+    },
+    enablePolling: true,
+    pollIntervalMs: 12000,
+  });
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -95,7 +109,6 @@ export default function AdminOverviewPage() {
       setCachedProperties(updated);
       return updated;
     });
-
 
     try {
       await fetch(`/api/properties/${propertyId}`, {
@@ -264,8 +277,6 @@ export default function AdminOverviewPage() {
               Quick Admin Actions
             </h3>
             <div className="space-y-2.5">
-
-
               <Link
                 href="/admin/properties"
                 className="w-full p-3 rounded-2xl bg-[#07140c] border border-emerald-900/60 hover:border-emerald-500 flex items-center justify-between text-xs font-bold text-gray-200 hover:text-emerald-400 transition-all group"
@@ -335,7 +346,7 @@ export default function AdminOverviewPage() {
                   <td className="p-3 font-mono font-bold text-emerald-400">{item.pid}</td>
                   <td className="p-3 font-bold text-white max-w-xs truncate">{item.title}</td>
                   <td className="p-3 text-gray-300">{item.locality}, {item.city}</td>
-                  <td className="p-3 font-bold text-emerald-400">₹{item.price.toLocaleString('en-IN')}</td>
+                  <td className="p-3 font-bold text-emerald-400">₹{item.price?.toLocaleString('en-IN')}</td>
                   <td className="p-3 font-mono text-gray-300">{item.ownerPhone || '+91 98765 43210'}</td>
                   <td className="p-3">
                     {item.verified ? (

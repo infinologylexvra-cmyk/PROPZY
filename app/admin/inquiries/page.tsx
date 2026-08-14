@@ -1,13 +1,14 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   MessageSquare, Phone, User, Calendar, CheckCircle2, 
-  Clock, Search, ArrowUpRight, Sparkles, Filter 
+  Clock, Search, ArrowUpRight, Sparkles, Filter, RefreshCw
 } from 'lucide-react';
 import { INITIAL_INQUIRIES } from '@/lib/seedData';
 import { useApp } from '@/context/AppContext';
 import { getCachedInquiries, setCachedInquiries } from '@/lib/adminCache';
+import { useAdminSync } from '@/hooks/useAdminSync';
 
 export default function AdminInquiriesPage() {
   const { showToast } = useApp();
@@ -17,7 +18,8 @@ export default function AdminInquiriesPage() {
   const [loading, setLoading] = useState(!cached);
   const [statusFilter, setStatusFilter] = useState('all');
 
-  const fetchInquiries = async () => {
+  const fetchInquiries = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
     try {
       const res = await fetch('/api/inquiries');
       const data = await res.json();
@@ -28,15 +30,30 @@ export default function AdminInquiriesPage() {
     } catch (e) {
       console.warn('Using seeded inquiries fallback:', e);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (!cached) {
       fetchInquiries();
     }
-  }, []);
+  }, [cached, fetchInquiries]);
+
+  // Real-time cross-tab sync hook
+  useAdminSync({
+    dataType: 'inquiries',
+    onSync: () => {
+      const latest = getCachedInquiries();
+      if (latest) {
+        setInquiries(latest);
+      } else {
+        fetchInquiries(true);
+      }
+    },
+    enablePolling: true,
+    pollIntervalMs: 12000,
+  });
 
   const handleStatusChange = (id: string, newStatus: string) => {
     setInquiries(prev => {
@@ -46,7 +63,6 @@ export default function AdminInquiriesPage() {
     });
     showToast(`Lead status updated to ${newStatus}`);
   };
-
 
   const filteredInquiries = inquiries.filter(item => {
     if (statusFilter !== 'all' && item.status !== statusFilter) return false;
@@ -65,6 +81,13 @@ export default function AdminInquiriesPage() {
             Stream of tenant interest forms, property visit requests & direct lead status tracking.
           </p>
         </div>
+        <button
+          onClick={() => fetchInquiries(false)}
+          className="flex items-center justify-center space-x-1.5 px-4 py-2 bg-[#091a12] border border-emerald-800 text-emerald-400 hover:bg-emerald-900/60 rounded-full text-xs font-bold transition-all cursor-pointer self-start sm:self-auto"
+        >
+          <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+          <span>Refresh Leads</span>
+        </button>
       </div>
 
       {/* Filter Bar */}

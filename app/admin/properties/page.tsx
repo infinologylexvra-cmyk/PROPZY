@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { 
   Building, ShieldCheck, Search, Filter, RefreshCw, PlusCircle, 
@@ -9,6 +9,7 @@ import {
 import { PropertyItem, INITIAL_PROPERTIES } from '@/lib/seedData';
 import { useApp } from '@/context/AppContext';
 import { getCachedProperties, setCachedProperties } from '@/lib/adminCache';
+import { useAdminSync } from '@/hooks/useAdminSync';
 
 function AdminPropertiesContent() {
   const searchParams = useSearchParams();
@@ -29,7 +30,8 @@ function AdminPropertiesContent() {
   const [editingProperty, setEditingProperty] = useState<PropertyItem | null>(null);
   const [propertyPendingDeletion, setPropertyPendingDeletion] = useState<PropertyItem | null>(null);
 
-  const fetchProperties = async () => {
+  const fetchProperties = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
     try {
       const res = await fetch('/api/properties?admin=true');
       const data = await res.json();
@@ -40,9 +42,9 @@ function AdminPropertiesContent() {
     } catch (e) {
       console.warn('Using seeded properties fallback:', e);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     const localProps = getCachedProperties();
@@ -53,8 +55,22 @@ function AdminPropertiesContent() {
       setProperties(INITIAL_PROPERTIES);
       fetchProperties();
     }
-  }, []);
+  }, [fetchProperties]);
 
+  // Sync across open admin tabs and revalidate on focus/poll
+  useAdminSync({
+    dataType: 'properties',
+    onSync: () => {
+      const latest = getCachedProperties();
+      if (latest) {
+        setProperties(latest);
+      } else {
+        fetchProperties(true);
+      }
+    },
+    enablePolling: true,
+    pollIntervalMs: 12000,
+  });
 
   // Filtered List
   const filteredProperties = properties.filter(item => {
@@ -190,7 +206,6 @@ function AdminPropertiesContent() {
     showToast('Property updated successfully!');
   };
 
-
   return (
     <div className="space-y-6">
       {/* Header Title */}
@@ -211,10 +226,11 @@ function AdminPropertiesContent() {
               setCityFilter('all');
               setStatusFilter('all');
               setCategoryFilter('all');
+              fetchProperties(false);
             }}
             className="px-3.5 py-2 rounded-xl bg-[#0b140f] border border-emerald-900/80 text-emerald-400 text-xs font-semibold flex items-center space-x-1.5 hover:bg-emerald-950 transition-colors"
           >
-            <RefreshCw size={14} />
+            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
             <span>Reset Search</span>
           </button>
         </div>
@@ -319,7 +335,7 @@ function AdminPropertiesContent() {
                         <div className="text-[10px] text-gray-400 truncate">{item.locality}, {item.city}</div>
                       </td>
                       <td className="p-3.5 capitalize font-semibold">{item.category} ({item.type})</td>
-                      <td className="p-3.5 font-bold text-emerald-400">₹{item.price.toLocaleString('en-IN')}</td>
+                      <td className="p-3.5 font-bold text-emerald-400">₹{item.price?.toLocaleString('en-IN')}</td>
                       <td className="p-3.5 font-mono text-gray-300">{item.ownerPhone || '+91 98765 43210'}</td>
                       <td className="p-3.5">
                         <div className="flex flex-col space-y-1">
@@ -386,13 +402,13 @@ function AdminPropertiesContent() {
                           disabled={Boolean(actionPendingId)}
                           onClick={() => setPropertyPendingDeletion(item)}
                           className="px-2 py-1 rounded-xl bg-[#180a0a] border border-rose-950 text-rose-400 hover:bg-rose-950 text-[10px] font-bold transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                        title="Delete Listing"
-                      >
-                        <Trash2 size={12} />
-                      </button>
-                    </td>
-                  </tr>
-                );
+                          title="Delete Listing"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      </td>
+                    </tr>
+                  );
                 })
               )}
             </tbody>

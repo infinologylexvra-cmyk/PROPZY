@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { ShieldCheck, CheckCircle2, XCircle, Clock, FileText, Search, UserCheck, RefreshCw, ExternalLink } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { getCachedVerifications, setCachedVerifications } from '@/lib/adminCache';
+import { useAdminSync } from '@/hooks/useAdminSync';
 
 export default function AdminVerificationsPage() {
   const { showToast } = useApp();
@@ -14,8 +15,8 @@ export default function AdminVerificationsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
 
-  const fetchVerifications = async () => {
-    setLoading(true);
+  const fetchVerifications = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
     try {
       const res = await fetch('/api/admin/verifications');
       const data = await res.json();
@@ -26,18 +27,41 @@ export default function AdminVerificationsPage() {
     } catch (err) {
       console.warn('Failed to load verifications:', err);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     if (!cached) {
       fetchVerifications();
     }
-  }, []);
+  }, [cached, fetchVerifications]);
+
+  // Real-time cross-tab and cross-browser sync hook
+  useAdminSync({
+    dataType: 'verifications',
+    onSync: () => {
+      const latest = getCachedVerifications();
+      if (latest) {
+        setVerifications(latest);
+      } else {
+        fetchVerifications(true);
+      }
+    },
+    enablePolling: true,
+    pollIntervalMs: 10000,
+  });
 
   const handleAction = async (userId: string, email: string, action: 'approve' | 'reject') => {
     if (processingId) return;
+
+    // Local pre-check: verify item hasn't already been actioned
+    const targetItem = verifications.find(u => (u._id && u._id === userId) || u.email === email);
+    if (targetItem && targetItem.verificationStatus !== 'pending') {
+      showToast(`This request was already ${targetItem.verificationStatus.toUpperCase()}. Action canceled.`);
+      return;
+    }
+
     setProcessingId(userId);
     try {
       const res = await fetch('/api/admin/verifications', {
@@ -46,6 +70,7 @@ export default function AdminVerificationsPage() {
         body: JSON.stringify({ userId, email, action })
       });
       const data = await res.json();
+
       if (data.success) {
         showToast(data.message);
         setVerifications(prev => {
@@ -63,11 +88,28 @@ export default function AdminVerificationsPage() {
           return updated;
         });
       } else {
-        showToast(data.message || 'Action failed');
+        // Handle 409 conflict or duplicate action attempt gracefully
+        const actualStatus = data.verificationStatus || data.user?.verificationStatus;
+        if (actualStatus) {
+          setVerifications(prev => {
+            const updated = prev.map(u => {
+              if ((u._id && u._id === userId) || u.email === email) {
+                return {
+                  ...u,
+                  ownerVerified: actualStatus === 'approved',
+                  verificationStatus: actualStatus
+                };
+              }
+              return u;
+            });
+            setCachedVerifications(updated);
+            return updated;
+          });
+        }
+        showToast(data.message || 'Action could not be performed.');
       }
-
     } catch (e) {
-      showToast('Network error processing request');
+      showToast('Network error processing request.');
     } finally {
       setProcessingId(null);
     }
@@ -133,7 +175,7 @@ export default function AdminVerificationsPage() {
         </div>
 
         <button
-          onClick={fetchVerifications}
+          onClick={() => fetchVerifications(false)}
           className="flex items-center justify-center space-x-1.5 px-4 py-2 bg-[#091a12] border border-emerald-800 text-emerald-400 hover:bg-emerald-900/60 rounded-full text-xs font-bold transition-all cursor-pointer self-start sm:self-auto w-full sm:w-auto"
         >
           <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
