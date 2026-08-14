@@ -157,7 +157,7 @@ export default function PropertyDetailPage() {
 
       {/* Seamless Airbnb/Zillow-Style Photo Gallery Hero Grid */}
       <div className="relative rounded-3xl overflow-hidden bg-[#070d0a] border border-emerald-950/80 shadow-2xl">
-        <div className="h-[360px] sm:h-[460px] lg:h-[500px] grid grid-cols-1 lg:grid-cols-5 gap-2 p-2 bg-[#050806]">
+        <div className="h-[400px] sm:h-[540px] lg:h-[600px] grid grid-cols-1 lg:grid-cols-5 gap-2 p-2 bg-[#050806]">
           {/* Main Large Featured Tile */}
           <div className={`relative h-full rounded-2xl overflow-hidden group bg-black cursor-pointer ${images.length === 1 ? 'lg:col-span-5' : 'lg:col-span-3'}`}>
             <LazyImage
@@ -267,11 +267,11 @@ export default function PropertyDetailPage() {
       {/* Full-Screen Photo Lightbox Modal */}
       {isLightboxOpen && (
         <div
-          className="fixed inset-0 z-50 bg-black/95 backdrop-blur-2xl flex flex-col justify-between p-4 sm:p-6 text-white"
+          className="fixed inset-0 z-50 bg-black/95 backdrop-blur-2xl flex flex-col justify-between p-3 sm:p-5 text-white w-screen h-screen overflow-hidden"
           onClick={() => setIsLightboxOpen(false)}
         >
           {/* Modal Header */}
-          <div className="flex items-center justify-between border-b border-gray-800 pb-4" onClick={(e) => e.stopPropagation()}>
+          <div className="flex items-center justify-between border-b border-gray-800 pb-3" onClick={(e) => e.stopPropagation()}>
             <div>
               <h3 className="text-base font-extrabold text-white truncate max-w-md">{property.title}</h3>
               <p className="text-xs text-emerald-400 font-mono">Photo {currentImgIndex + 1} of {images.length}</p>
@@ -286,12 +286,12 @@ export default function PropertyDetailPage() {
             </button>
           </div>
 
-          {/* Main Active Image View */}
-          <div className="relative flex-1 flex items-center justify-center py-4" onClick={(e) => e.stopPropagation()}>
+          {/* Main Active Image View - 100vh viewport utilization */}
+          <div className="relative flex-1 w-full h-full flex items-center justify-center py-1 overflow-hidden" onClick={(e) => e.stopPropagation()}>
             <LazyImage
               src={images[currentImgIndex]}
               alt={property.title}
-              className="max-h-[70vh] max-w-full object-contain rounded-2xl shadow-2xl"
+              className="w-full h-full max-h-[calc(100vh-130px)] object-contain rounded-2xl shadow-2xl"
             />
 
             {images.length > 1 && (
