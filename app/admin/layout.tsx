@@ -13,11 +13,13 @@ import { useApp, useAppStore } from '@/context/AppContext';
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, logoutUser, showToast } = useApp();
+  const { user, setUser, logoutUser, showToast } = useApp();
   const [pidQuickInput, setPidQuickInput] = useState('');
   const [isHydrated, setIsHydrated] = useState(false);
+  const [isSessionChecked, setIsSessionChecked] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   React.useEffect(() => {
     const checkHydration = () => {
@@ -30,9 +32,33 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     checkHydration();
   }, []);
 
+  // Zustand rehydrates after the initial render. Restore the authoritative
+  // HttpOnly-cookie session before running the client-side admin guard so a
+  // page refresh does not incorrectly send an active admin to the login page.
+  React.useEffect(() => {
+    if (!isHydrated) return;
+
+    let active = true;
+    fetch('/api/auth/me', { cache: 'no-store' })
+      .then((res) => res.json())
+      .then((data) => {
+        if (active && data.success && data.user?.role === 'admin') {
+          setUser(data.user);
+        }
+      })
+      .catch(() => {})
+      .finally(() => {
+        if (active) setIsSessionChecked(true);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [isHydrated, setUser]);
+
   // Automatic Authorization Guard & Silent Redirection
   React.useEffect(() => {
-    if (!isHydrated || pathname === '/admin/login') return;
+    if (!isHydrated || !isSessionChecked || isLoggingOut || pathname === '/admin/login') return;
 
     if (!user || user.role !== 'admin') {
       if (user && user.role !== 'admin') {
@@ -41,7 +67,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       router.replace('/admin/login');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, pathname, isHydrated]);
+  }, [user, pathname, isHydrated, isSessionChecked, isLoggingOut]);
 
   // Bypass route guard for login page
   if (pathname === '/admin/login') {
@@ -49,7 +75,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   // Prevent rendering admin panel or restricted screen before hydration or for non-admin users
-  if (!isHydrated || !user || user.role !== 'admin') {
+  if (!isHydrated || !isSessionChecked || !user || user.role !== 'admin') {
     return null;
   }
 
@@ -136,8 +162,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         role="menuitem"
                         onClick={() => {
                           setIsAdminMenuOpen(false);
+                          setIsLoggingOut(true);
+                          router.replace('/');
                           logoutUser();
-                          router.push('/');
                         }}
                         className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left text-xs font-bold text-rose-400 rounded-xl hover:bg-rose-950/50 transition-colors"
                       >

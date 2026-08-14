@@ -5,9 +5,13 @@ import User from '@/models/User';
 import { INITIAL_PROPERTIES, PropertyItem } from '@/lib/seedData';
 import { memoryStore } from '@/lib/memoryStore';
 import { getAuthUser } from '@/lib/auth';
-import { isAdminUser, normalizeEmail, serializeProperty } from '@/lib/accessControl';
+import { canViewPropertyContactDetails, isAdminUser, isBrowserDocumentNavigation, normalizeEmail, serializeProperty } from '@/lib/accessControl';
 
 export async function GET(req: NextRequest) {
+  if (isBrowserDocumentNavigation(req)) {
+    return NextResponse.json({ success: false, message: 'Not found' }, { status: 404 });
+  }
+
   const authUser = await getAuthUser(req);
   const { searchParams } = new URL(req.url);
   const category = searchParams.get('category');
@@ -77,7 +81,9 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: visibleProperties.map((property: any) => serializeProperty(property, Boolean(authUser))),
+      data: visibleProperties.map((property: any) =>
+        serializeProperty(property, canViewPropertyContactDetails(property, authUser))
+      ),
       source: 'mongodb'
     });
   } catch (error) {
@@ -130,7 +136,9 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: visibleProperties.map((property: any) => serializeProperty(property, Boolean(authUser))),
+      data: visibleProperties.map((property: any) =>
+        serializeProperty(property, canViewPropertyContactDetails(property, authUser))
+      ),
       source: 'memory'
     });
   }

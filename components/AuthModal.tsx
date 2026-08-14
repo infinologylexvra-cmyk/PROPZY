@@ -10,7 +10,7 @@ import { sanitizeName, sanitizePhone, isValidName, isValidPhone, isValidEmail } 
 export const AuthModal: React.FC = () => {
 
   const router = useRouter();
-  const { isAuthModalOpen, closeAuthModal, setUser, user, showToast } = useApp();
+  const { isAuthModalOpen, closeAuthModal, setUser, user, logoutUser, showToast } = useApp();
   const [mode, setMode] = useState<'login' | 'register'>('login');
 
   // Registration Form State
@@ -36,17 +36,17 @@ export const AuthModal: React.FC = () => {
   if (!isAuthModalOpen) return null;
 
   // Helper for role-based navigation
-  const navigateByRole = (userRole: string) => {
+  const navigateByRole = (userRole: string, openDashboard = false) => {
     closeAuthModal();
     if (userRole === 'admin') {
       showToast('Redirecting to Admin Portal Dashboard...');
-      router.push('/admin');
-    } else if (userRole === 'owner') {
-      showToast('Redirecting to Owner Property Dashboard...');
+      router.replace('/admin');
+    } else if (openDashboard && userRole === 'owner') {
       router.push('/dashboard?tab=my-properties');
-    } else {
-      showToast('Redirecting to Tenant Dashboard...');
+    } else if (openDashboard) {
       router.push('/dashboard?tab=account');
+    } else {
+      router.replace('/');
     }
   };
 
@@ -86,18 +86,7 @@ export const AuthModal: React.FC = () => {
         setError(data.message || 'Invalid email or password.');
       }
     } catch (err: any) {
-      // Local fallback
-      const fallbackRole = (loginIdentifier.toLowerCase().includes('admin')) ? 'admin' : (loginIdentifier.toLowerCase().includes('owner') ? 'owner' : 'tenant');
-      const fallbackUser = {
-        name: loginIdentifier.split('@')[0] || 'User',
-        email: loginIdentifier.includes('@') ? loginIdentifier : `${loginIdentifier}@propzy.com`,
-
-        phone: '+91 98765 43210',
-        role: fallbackRole as any
-      };
-      setUser(fallbackUser);
-      resetForm();
-      navigateByRole(fallbackRole);
+      setError('Unable to sign in right now. Please check your connection and try again.');
     } finally {
       setSubmitting(false);
     }
@@ -158,16 +147,7 @@ export const AuthModal: React.FC = () => {
         setError(data.message || 'Registration failed.');
       }
     } catch (err: any) {
-      // Local fallback
-      const fallbackUser = {
-        name: name.trim(),
-        email: email.trim(),
-        phone: phone.trim(),
-        role: registerRole
-      };
-      setUser(fallbackUser);
-      resetForm();
-      navigateByRole(registerRole);
+      setError('Unable to create your account right now. Please check your connection and try again.');
     } finally {
       setSubmitting(false);
     }
@@ -185,9 +165,9 @@ export const AuthModal: React.FC = () => {
   };
 
   const handleLogout = () => {
-    setUser(null);
-    showToast('Logged out successfully');
+    logoutUser();
     closeAuthModal();
+    router.replace('/');
   };
 
   return (
@@ -218,7 +198,7 @@ export const AuthModal: React.FC = () => {
             
             <div className="pt-4 border-t border-emerald-950 space-y-3">
               <button
-                onClick={() => navigateByRole(user.role)}
+                onClick={() => navigateByRole(user.role, true)}
                 className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs rounded-2xl transition-colors uppercase tracking-wider cursor-pointer shadow-md"
               >
                 Go to My Dashboard →

@@ -31,6 +31,7 @@ export const serializeProperty = (property: any, includeSensitive = false) => {
   }
 
   if (!includeSensitive) {
+    delete serialized.ownerName;
     delete serialized.ownerEmail;
     delete serialized.ownerPhone;
   }
@@ -38,3 +39,15 @@ export const serializeProperty = (property: any, includeSensitive = false) => {
   delete serialized.__v;
   return serialized;
 };
+
+// Contact details are private listing data. A signed-in visitor is not, by
+// itself, allowed to receive them; only the owner of that listing or an admin
+// may do so.
+export const canViewPropertyContactDetails = (property: any, authUser?: JWTPayload | null) =>
+  isAdminUser(authUser) || isOwnedByUser(property?.ownerEmail, authUser);
+
+// API endpoints are consumed by the application with fetch/XHR. Do not render
+// their JSON when somebody navigates to the endpoint in a browser tab.
+export const isBrowserDocumentNavigation = (req: Request) =>
+  req.headers.get('sec-fetch-dest') === 'document' ||
+  req.headers.get('sec-fetch-mode') === 'navigate';

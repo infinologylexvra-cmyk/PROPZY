@@ -4,12 +4,16 @@ import Property from '@/models/Property';
 import { INITIAL_PROPERTIES } from '@/lib/seedData';
 import { memoryStore } from '@/lib/memoryStore';
 import { getAuthUser } from '@/lib/auth';
-import { isAdminUser, isOwnedByUser, serializeProperty } from '@/lib/accessControl';
+import { canViewPropertyContactDetails, isAdminUser, isBrowserDocumentNavigation, isOwnedByUser, serializeProperty } from '@/lib/accessControl';
 
 export async function GET(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  if (isBrowserDocumentNavigation(req)) {
+    return NextResponse.json({ success: false, message: 'Not found' }, { status: 404 });
+  }
+
   const { id } = await params;
   const authUser = await getAuthUser(req);
 
@@ -32,7 +36,10 @@ export async function GET(
         return NextResponse.json({ success: false, message: 'Property not found' }, { status: 404 });
       }
 
-      return NextResponse.json({ success: true, data: serializeProperty(property, Boolean(authUser)) });
+      return NextResponse.json({
+        success: true,
+        data: serializeProperty(property, canViewPropertyContactDetails(property, authUser))
+      });
     }
   } catch (err) {
     console.warn('Fallback single property fetch:', err);
@@ -47,7 +54,10 @@ export async function GET(
       return NextResponse.json({ success: false, message: 'Property not found' }, { status: 404 });
     }
 
-    return NextResponse.json({ success: true, data: serializeProperty(found, Boolean(authUser)) });
+    return NextResponse.json({
+      success: true,
+      data: serializeProperty(found, canViewPropertyContactDetails(found, authUser))
+    });
   }
 
   return NextResponse.json({ success: false, message: 'Property not found' }, { status: 404 });

@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect, Suspense } from 'react';
 import Link from 'next/link';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Search, Heart, User, ChevronDown, Home, Menu, X, ShieldCheck } from 'lucide-react';
 import { GlobalSearchBar } from '@/components/GlobalSearchBar';
 import { useApp } from '@/context/AppContext';
@@ -15,6 +15,7 @@ function NavbarContent() {
   const navContainerRef = useRef<HTMLElement>(null);
 
   const pathname = usePathname();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const categoryParam = searchParams.get('category');
 
@@ -281,6 +282,7 @@ function NavbarContent() {
                         onClick={() => {
                           setIsProfileMenuOpen(false);
                           logoutUser();
+                          router.replace('/');
                         }}
                         className="w-full text-left px-4 py-2.5 text-xs font-bold text-emerald-400 rounded-xl hover:bg-emerald-950/80 transition-colors cursor-pointer"
                       >

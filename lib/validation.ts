@@ -29,3 +29,19 @@ export const isValidEmail = (val: string): boolean => {
   const trimmed = val.trim();
   return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(trimmed);
 };
+
+export const isValidHttpUrl = (val: string): boolean => {
+  try {
+    const url = new URL(val.trim());
+    return url.protocol === 'https:' || url.protocol === 'http:';
+  } catch {
+    return false;
+  }
+};
+
+export const isValidElectricityBillDocument = (val: string): boolean => {
+  if (isValidHttpUrl(val)) return true;
+
+  const isAllowedDataUrl = /^data:(?:image\/(?:jpeg|png|webp|gif|heic|heif)|application\/pdf);base64,[a-z0-9+/=]+$/i.test(val);
+  return isAllowedDataUrl && val.length <= 7_000_000;
+};

@@ -5,14 +5,14 @@ import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import {
   Heart, User, Building, PhoneCall, ShieldCheck, CheckCircle2,
-  XCircle, RefreshCw, CreditCard, Sparkles, FileText, Download, Check, Edit3, Save, AlertTriangle
+  XCircle, RefreshCw, CreditCard, Sparkles, FileText, Download, Check, Edit3, Save, AlertTriangle, Upload
 } from 'lucide-react';
 
 import { useApp, UserProfile, BillingRecord } from '@/context/AppContext';
 import { PropertyItem, INITIAL_PROPERTIES } from '@/lib/seedData';
 import { PropertyCard } from '@/components/PropertyCard';
 import { LazyImage } from '@/components/LazyImage';
-import { sanitizeName, sanitizePhone, isValidName, isValidPhone, isValidEmail } from '@/lib/validation';
+import { sanitizeName, sanitizePhone, isValidName, isValidPhone, isValidEmail, isValidElectricityBillDocument, isValidHttpUrl } from '@/lib/validation';
 
 
 interface InquiryItem {
@@ -56,6 +56,122 @@ function DashboardContent() {
     billUrl: user?.electricityBillUrl || ''
   });
   const [submittingVerify, setSubmittingVerify] = useState(false);
+  const [billUrlError, setBillUrlError] = useState('');
+  const [billFileError, setBillFileError] = useState('');
+  const [uploadedBillName, setUploadedBillName] = useState('');
+  const [billInputMode, setBillInputMode] = useState<'url' | 'upload'>('url');
+
+  const selectBillInputMode = (mode: 'url' | 'upload') => {
+    setBillInputMode(mode);
+    setVerifyForm(prev => ({ ...prev, billUrl: '' }));
+    setUploadedBillName('');
+    setBillUrlError('');
+    setBillFileError('');
+  };
+
+  const validateBillUrl = (value: string) => {
+    const valid = isValidHttpUrl(value);
+    setBillUrlError(value.trim() && !valid ? 'Enter a valid document URL starting with http:// or https://.' : '');
+    return valid;
+  };
+
+  const validateUploadedBillFile = async (file: File): Promise<boolean> => {
+    if (file.type === 'application/pdf') {
+      const [header, footer, documentText] = await Promise.all([
+        file.slice(0, 8).text(),
+        file.slice(Math.max(file.size - 1024, 0)).text(),
+        file.text()
+      ]);
+      return header.startsWith('%PDF-') &&
+        footer.includes('%%EOF') &&
+        /(?:xref|\/Type\s*\/XRef)/.test(documentText) &&
+        /\/Type\s*\/Page\b/.test(documentText);
+    }
+
+    return new Promise((resolve) => {
+      const previewUrl = URL.createObjectURL(file);
+      const image = new Image();
+      image.onload = () => {
+        URL.revokeObjectURL(previewUrl);
+        resolve(image.naturalWidth > 0 && image.naturalHeight > 0);
+      };
+      image.onerror = () => {
+        URL.revokeObjectURL(previewUrl);
+        resolve(false);
+      };
+      image.src = previewUrl;
+    });
+  };
+
+  const handleBillFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const acceptedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/heic', 'image/heif', 'application/pdf'];
+    if (!acceptedTypes.includes(file.type)) {
+      setBillFileError('Upload a JPG, PNG, WEBP, GIF, HEIC image, or PDF file.');
+      event.target.value = '';
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setBillFileError('The document must be 5 MB or smaller.');
+      event.target.value = '';
+      return;
+    }
+
+    if (!(await validateUploadedBillFile(file))) {
+      setBillFileError('This file is corrupted or not a valid image/PDF. Please choose another document.');
+      event.target.value = '';
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const billUrl = typeof reader.result === 'string' ? reader.result : '';
+      if (!isValidElectricityBillDocument(billUrl)) {
+        setBillFileError('The uploaded file could not be processed. Please choose another document.');
+        return;
+      }
+      setVerifyForm(prev => ({ ...prev, billUrl }));
+      setUploadedBillName(file.name);
+      setBillUrlError('');
+      setBillFileError('');
+    };
+    reader.onerror = () => setBillFileError('Unable to read the selected file. Please try again.');
+    reader.readAsDataURL(file);
+    event.target.value = '';
+  };
+
+  const handleViewVerificationDocument = (documentUrl?: string) => {
+    if (!documentUrl) {
+      showToast('Your submitted document is unavailable.');
+      return;
+    }
+
+    try {
+      if (documentUrl.startsWith('data:')) {
+        const separatorIndex = documentUrl.indexOf(',');
+        if (separatorIndex === -1) throw new Error('Invalid document data');
+
+        const mimeType = documentUrl.slice(5, separatorIndex).split(';')[0];
+        const bytes = Uint8Array.from(atob(documentUrl.slice(separatorIndex + 1)), (character) => character.charCodeAt(0));
+        const blobUrl = URL.createObjectURL(new Blob([bytes], { type: mimeType }));
+        const previewWindow = window.open(blobUrl, '_blank');
+        if (!previewWindow) {
+          URL.revokeObjectURL(blobUrl);
+          showToast('Allow pop-ups to view your submitted document.');
+          return;
+        }
+        previewWindow.opener = null;
+        window.setTimeout(() => URL.revokeObjectURL(blobUrl), 5 * 60 * 1000);
+        return;
+      }
+
+      window.open(documentUrl, '_blank', 'noopener,noreferrer');
+    } catch {
+      showToast('Your submitted document could not be opened.');
+    }
+  };
 
   useEffect(() => {
     if (tabParam) {
@@ -68,6 +184,30 @@ function DashboardContent() {
       router.replace('/admin');
     }
   }, [user, router]);
+
+  // The persisted browser profile is only display state. Reconcile it with
+  // the HttpOnly-cookie session before an owner can submit verification data.
+  useEffect(() => {
+    let active = true;
+
+    fetch('/api/auth/me', { cache: 'no-store' })
+      .then((res) => res.json())
+      .then((data) => {
+        if (!active || !data.success || !data.user) return;
+
+        const displayedEmail = user?.email?.toLowerCase().trim();
+        const sessionEmail = data.user.email?.toLowerCase().trim();
+        if (displayedEmail && sessionEmail && displayedEmail !== sessionEmail) {
+          setUser(data.user);
+          showToast('Your dashboard was updated to match the active signed-in account.');
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      active = false;
+    };
+  }, [setUser, showToast, user?.email]);
 
   useEffect(() => {
     if (user) {
@@ -244,6 +384,15 @@ function DashboardContent() {
       showToast('Please provide both Consumer Number and Electricity Bill photo/link');
       return;
     }
+    if (!isValidElectricityBillDocument(verifyForm.billUrl)) {
+      if (uploadedBillName) {
+        setBillFileError('The uploaded document is invalid. Please choose another file.');
+      } else {
+        validateBillUrl(verifyForm.billUrl);
+      }
+      showToast('Please enter a valid Electricity Bill document URL or upload an image/PDF.');
+      return;
+    }
     setSubmittingVerify(true);
     try {
       const res = await fetch('/api/user/verify-owner', {
@@ -361,7 +510,10 @@ function DashboardContent() {
             </button>
 
             <button
-              onClick={logoutUser}
+              onClick={() => {
+                logoutUser();
+                router.replace('/');
+              }}
               className="w-full sm:w-auto px-5 py-2.5 bg-[#140808] hover:bg-red-950/60 text-red-400 border border-red-900/60 rounded-full text-xs font-bold transition-all"
             >
               Log Out
@@ -591,11 +743,37 @@ function DashboardContent() {
 
                 {/* Status Notice Banner or Verification Form */}
                 {user.ownerVerified || user.verificationStatus === 'approved' ? (
-                  <div className="p-4 bg-[#0d2218] border border-emerald-800/80 rounded-2xl text-xs text-emerald-300 font-medium flex items-center space-x-3">
-                    <CheckCircle2 size={20} className="text-emerald-400 shrink-0" />
-                    <div>
-                      <span className="font-bold block text-white text-sm">Account Fully Verified!</span>
-                      Your Electricity Bill and Consumer Number ({user.consumerNumber || 'Verified'}) have been approved by Admin. You can post unlimited property listings.
+                  <div className="space-y-3">
+                    <div className="p-4 bg-[#0d2218] border border-emerald-800/80 rounded-2xl text-xs text-emerald-300 font-medium flex items-center space-x-3">
+                      <CheckCircle2 size={20} className="text-emerald-400 shrink-0" />
+                      <div>
+                        <span className="font-bold block text-white text-sm">Account Fully Verified!</span>
+                        Your Electricity Bill and Consumer Number ({user.consumerNumber || 'Verified'}) have been approved by Admin. You can post unlimited property listings.
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 rounded-2xl border border-emerald-900/70 bg-[#07110b] p-3 sm:p-4 text-xs">
+                      <div className="rounded-xl border border-emerald-950 bg-[#050806] p-3">
+                        <span className="block text-gray-500 font-medium">Submitted Consumer / CA Number</span>
+                        <span className="mt-1 block font-mono font-bold text-emerald-400 text-sm">{user.consumerNumber || 'Not available'}</span>
+                      </div>
+                      <div className="rounded-xl border border-emerald-950 bg-[#050806] p-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                        <div>
+                          <span className="block text-gray-500 font-medium">Submitted Electricity Bill</span>
+                          <span className="mt-1 block font-bold text-gray-200">
+                            {user.electricityBillUrl ? (user.electricityBillUrl.startsWith('data:') ? 'Uploaded document' : 'Document URL') : 'Not available'}
+                          </span>
+                        </div>
+                        <button
+                          type="button"
+                          disabled={!user.electricityBillUrl}
+                          onClick={() => handleViewVerificationDocument(user.electricityBillUrl)}
+                          className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-emerald-800 bg-emerald-950/60 px-3 py-2 text-[11px] font-bold text-emerald-400 transition-colors hover:bg-emerald-900/60 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          <FileText size={14} />
+                          <span>View document</span>
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ) : user.verificationStatus === 'pending' ? (
@@ -621,15 +799,66 @@ function DashboardContent() {
                     </div>
 
                     <div>
-                      <label className="block text-gray-300 font-semibold mb-1">Electricity Bill Photo / Document URL *</label>
+                      <label className="block text-gray-300 font-semibold mb-2">Electricity Bill Document *</label>
+                      <div className="grid grid-cols-2 gap-2 rounded-xl border border-emerald-950 bg-[#050806] p-1.5 mb-3">
+                        <button
+                          type="button"
+                          onClick={() => selectBillInputMode('url')}
+                          className={`rounded-lg px-3 py-2 text-xs font-bold transition-colors ${billInputMode === 'url' ? 'bg-emerald-500 text-black' : 'text-gray-400 hover:text-white'}`}
+                        >
+                          Use document URL
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => selectBillInputMode('upload')}
+                          className={`rounded-lg px-3 py-2 text-xs font-bold transition-colors ${billInputMode === 'upload' ? 'bg-emerald-500 text-black' : 'text-gray-400 hover:text-white'}`}
+                        >
+                          Upload file
+                        </button>
+                      </div>
+                      {billInputMode === 'url' && (
+                        <>
                       <input
-                        type="text"
+                        type="url"
                         required
                         placeholder="Paste image link or URL of your electricity bill document"
-                        value={verifyForm.billUrl}
-                        onChange={(e) => setVerifyForm({ ...verifyForm, billUrl: e.target.value })}
-                        className="w-full px-4 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white focus:border-emerald-500 focus:outline-none placeholder-gray-600"
+                        value={uploadedBillName ? '' : verifyForm.billUrl}
+                        onChange={(e) => {
+                          const billUrl = e.target.value;
+                          setVerifyForm({ ...verifyForm, billUrl });
+                          setUploadedBillName('');
+                          validateBillUrl(billUrl);
+                        }}
+                        onBlur={(e) => validateBillUrl(e.target.value)}
+                        aria-invalid={Boolean(billUrlError)}
+                        className={`w-full px-4 py-3 bg-[#050806] border rounded-xl text-white focus:outline-none placeholder-gray-600 ${billUrlError ? 'border-red-500 focus:border-red-400' : 'border-emerald-900/80 focus:border-emerald-500'}`}
                       />
+                      {billUrlError && <p role="alert" className="text-[11px] text-red-400 mt-1">{billUrlError}</p>}
+                        </>
+                      )}
+                      {billInputMode === 'upload' && (
+                        <>
+                      <div className="mt-3 rounded-xl border border-dashed border-emerald-800/80 bg-[#07110b] px-3 py-2.5 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                        <div className="min-w-0 flex items-center gap-2 text-[11px]">
+                          <FileText size={15} className="shrink-0 text-emerald-400" />
+                          <span className={uploadedBillName ? 'truncate text-emerald-300 font-semibold' : 'text-gray-400'}>
+                            {uploadedBillName || 'Or upload a JPG, PNG, WEBP, GIF, HEIC image or PDF (max 5 MB)'}
+                          </span>
+                        </div>
+                        <label className="shrink-0 inline-flex cursor-pointer items-center justify-center gap-1.5 rounded-lg border border-emerald-800 bg-emerald-950/60 px-3 py-2 text-[11px] font-bold text-emerald-400 transition-colors hover:bg-emerald-900/60">
+                          <Upload size={13} />
+                          <span>{uploadedBillName ? 'Replace file' : 'Choose file'}</span>
+                          <input
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp,image/gif,image/heic,image/heif,application/pdf"
+                            className="hidden"
+                            onChange={handleBillFileUpload}
+                          />
+                        </label>
+                      </div>
+                      {billFileError && <p role="alert" className="text-[11px] text-red-400 mt-1">{billFileError}</p>}
+                        </>
+                      )}
                       <p className="text-[11px] text-gray-500 mt-1">
                         💡 Tip: You can paste any image link (e.g. Unsplash sample link or image URL) or upload a photo of your latest electricity bill.
                       </p>
@@ -637,7 +866,7 @@ function DashboardContent() {
 
                     <button
                       type="submit"
-                      disabled={submittingVerify}
+                      disabled={submittingVerify || !verifyForm.consumerNumber.trim() || !isValidElectricityBillDocument(verifyForm.billUrl)}
                       className="px-6 py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs rounded-full shadow-lg shadow-emerald-500/20 transition-all uppercase tracking-wider cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {submittingVerify ? 'Submitting...' : 'Submit Electricity Bill for Admin Verification'}

@@ -73,6 +73,33 @@ export default function AdminVerificationsPage() {
     }
   };
 
+  const handleViewDocument = (documentUrl: string) => {
+    try {
+      if (documentUrl.startsWith('data:')) {
+        const separatorIndex = documentUrl.indexOf(',');
+        if (separatorIndex === -1) throw new Error('Invalid document data');
+
+        const mimeType = documentUrl.slice(5, separatorIndex).split(';')[0];
+        const bytes = Uint8Array.from(atob(documentUrl.slice(separatorIndex + 1)), (character) => character.charCodeAt(0));
+        const blobUrl = URL.createObjectURL(new Blob([bytes], { type: mimeType }));
+        const previewWindow = window.open(blobUrl, '_blank', 'noopener,noreferrer');
+
+        if (!previewWindow) {
+          URL.revokeObjectURL(blobUrl);
+          showToast('Allow pop-ups to view this document.');
+          return;
+        }
+
+        window.setTimeout(() => URL.revokeObjectURL(blobUrl), 5 * 60 * 1000);
+        return;
+      }
+
+      window.open(documentUrl, '_blank', 'noopener,noreferrer');
+    } catch {
+      showToast('This document could not be opened. Ask the owner to upload it again.');
+    }
+  };
+
   const filtered = verifications.filter(v => {
     if (statusFilter !== 'all' && v.verificationStatus !== statusFilter) return false;
     if (searchTerm) {
@@ -206,26 +233,25 @@ export default function AdminVerificationsPage() {
                       <span className="text-gray-300 font-bold text-sm sm:text-xs">Document Attached</span>
                     </div>
                     {item.electricityBillUrl && (
-                      <a
-                        href={item.electricityBillUrl}
-                        target="_blank"
-                        rel="noreferrer"
+                      <button
+                        type="button"
+                        onClick={() => handleViewDocument(item.electricityBillUrl)}
                         className="px-3 py-2 bg-[#0e2418] hover:bg-emerald-900/60 text-emerald-400 border border-emerald-800/80 rounded-xl text-[11px] font-bold inline-flex items-center justify-center space-x-1 transition-all w-full sm:w-auto"
                       >
                         <span>View Document</span>
                         <ExternalLink size={12} />
-                      </a>
+                      </button>
                     )}
                   </div>
                 </div>
               </div>
 
               {/* Right Action Buttons */}
-              <div className="flex flex-row lg:flex-col items-center justify-end gap-2.5 pt-2 lg:pt-0 border-t lg:border-t-0 border-emerald-950/80 shrink-0">
+              <div className="w-full lg:w-48 shrink-0 rounded-2xl border border-emerald-950 bg-[#07110b] p-2.5 flex flex-col justify-center gap-2">
                 {item.verificationStatus === 'approved' ? (
                   <button
                     disabled
-                    className="w-full lg:w-36 py-2.5 px-4 bg-emerald-950/60 border border-emerald-800/40 text-emerald-400 font-extrabold text-xs rounded-2xl flex items-center justify-center space-x-1.5 opacity-80 cursor-not-allowed"
+                    className="w-full h-11 px-4 bg-emerald-950/60 border border-emerald-800/40 text-emerald-400 font-extrabold text-xs rounded-xl flex items-center justify-center gap-2 opacity-80 cursor-not-allowed"
                   >
                     <CheckCircle2 size={14} />
                     <span>Approved</span>
@@ -233,7 +259,7 @@ export default function AdminVerificationsPage() {
                 ) : item.verificationStatus === 'rejected' ? (
                   <button
                     disabled
-                    className="w-full lg:w-36 py-2.5 px-4 bg-red-950/60 border border-red-800/40 text-red-400 font-extrabold text-xs rounded-2xl flex items-center justify-center space-x-1.5 opacity-80 cursor-not-allowed"
+                    className="w-full h-11 px-4 bg-red-950/60 border border-red-800/40 text-red-400 font-extrabold text-xs rounded-xl flex items-center justify-center gap-2 opacity-80 cursor-not-allowed"
                   >
                     <XCircle size={14} />
                     <span>Rejected</span>
@@ -243,18 +269,18 @@ export default function AdminVerificationsPage() {
                     <button
                       disabled={Boolean(processingId)}
                       onClick={() => handleAction(item._id || item.id, item.email, 'approve')}
-                      className="flex-1 lg:w-36 py-2.5 px-4 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs rounded-2xl shadow-lg transition-all flex items-center justify-center space-x-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full h-11 px-4 bg-emerald-500 hover:bg-emerald-400 active:scale-[0.98] text-black font-extrabold text-xs rounded-xl shadow-[0_8px_20px_rgba(16,185,129,0.2)] transition-all flex items-center justify-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300 focus-visible:ring-offset-2 focus-visible:ring-offset-[#07110b] disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <CheckCircle2 size={14} />
-                      <span>{processingId === (item._id || item.id) ? 'Processing...' : 'Approve Owner'}</span>
+                      <CheckCircle2 size={15} />
+                      <span>{processingId === (item._id || item.id) ? 'Processing...' : 'Approve owner'}</span>
                     </button>
                     <button
                       disabled={Boolean(processingId)}
                       onClick={() => handleAction(item._id || item.id, item.email, 'reject')}
-                      className="flex-1 lg:w-36 py-2.5 px-4 bg-[#180909] hover:bg-red-950 text-red-400 border border-red-900/60 font-extrabold text-xs rounded-2xl transition-all flex items-center justify-center space-x-1.5 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full h-10 px-4 bg-transparent hover:bg-red-950/50 active:scale-[0.98] text-red-400 hover:text-red-300 border border-red-900/70 hover:border-red-700 font-extrabold text-xs rounded-xl transition-all flex items-center justify-center gap-2 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#07110b] disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <XCircle size={14} />
-                      <span>Reject Request</span>
+                      <XCircle size={15} />
+                      <span>Reject request</span>
                     </button>
                   </>
                 )}

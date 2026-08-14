@@ -5,7 +5,7 @@ import { useParams, useRouter, notFound } from 'next/navigation';
 import Link from 'next/link';
 import { 
   ShieldCheck, MapPin, Bed, Bath, Maximize, Heart, PhoneCall, 
-  ChevronLeft, ChevronRight, Check, Share2, Calculator, Sparkles, Building2, User, Copy 
+  ChevronLeft, ChevronRight, Check, User, Copy
 } from 'lucide-react';
 import { PropertyItem, INITIAL_PROPERTIES } from '@/lib/seedData';
 import { useApp } from '@/context/AppContext';
@@ -62,6 +62,8 @@ export default function PropertyDetailPage() {
   const images = property.images && property.images.length > 0
     ? property.images
     : ['https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=800&q=80'];
+  const hasPrivateContactAccess = Boolean(property.ownerName && property.ownerPhone);
+  const listedBy = hasPrivateContactAccess ? property.ownerName : 'Verified owner';
 
   const formatPrice = (val: number) => {
     if (val >= 10000000) return `₹${(val / 10000000).toFixed(2)} Cr`;
@@ -252,7 +254,7 @@ export default function PropertyDetailPage() {
                 <span className="text-xs text-gray-500 block">Listed By</span>
                 <h4 className="text-base font-bold text-gray-900 flex items-center space-x-1.5">
                   <User size={16} className="text-emerald-500" />
-                  <span>{property.ownerName}</span>
+                  <span>{listedBy}</span>
                 </h4>
                 <span className="text-[10px] uppercase font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">
                   {property.ownerRole}
@@ -260,7 +262,7 @@ export default function PropertyDetailPage() {
               </div>
 
               <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center font-bold text-lg">
-                {property.ownerName.charAt(0)}
+                {listedBy.charAt(0)}
               </div>
             </div>
 
@@ -280,20 +282,6 @@ export default function PropertyDetailPage() {
                 <span>Get Owner Contact Number</span>
               </button>
 
-              <button
-                onClick={() => {
-                  if (!user) {
-                    showToast('Please login to contact owner on WhatsApp');
-                    openAuthModal();
-                    return;
-                  }
-                  const cleanPhone = property.ownerPhone ? property.ownerPhone.replace(/\D/g, '') : '';
-                  window.open(`https://wa.me/${cleanPhone}?text=Hi,%20I%20am%20interested%20in%20your%20property%20PID%20${property.pid}`, '_blank');
-                }}
-                className="w-full py-3.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-2xl font-bold text-xs transition-colors flex items-center justify-center space-x-2 cursor-pointer"
-              >
-                <span>Chat on WhatsApp</span>
-              </button>
             </div>
 
             <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100 text-[11px] text-gray-600 space-y-2">

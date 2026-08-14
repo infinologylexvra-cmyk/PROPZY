@@ -42,6 +42,9 @@ export async function POST(req: NextRequest) {
     if (!userId && !email) {
       return NextResponse.json({ success: false, message: 'User ID or Email is required' }, { status: 400 });
     }
+    if (action !== 'approve' && action !== 'reject') {
+      return NextResponse.json({ success: false, message: 'Invalid verification action' }, { status: 400 });
+    }
 
     const query = userId ? { _id: userId } : { email: email.toLowerCase().trim() };
     const isApprove = action === 'approve';
@@ -53,7 +56,25 @@ export async function POST(req: NextRequest) {
 
     try {
       await connectToDatabase();
-      const updatedUser = await User.findOneAndUpdate(query, { $set: updateFields }, { new: true }).select('-password');
+      // This is intentionally a conditional update. MongoDB evaluates the
+      // pending-status condition atomically, so two admins cannot approve and
+      // reject the same request from separate tabs/browsers.
+      const updatedUser = await User.findOneAndUpdate(
+        { ...query, verificationStatus: 'pending' },
+        { $set: updateFields },
+        { new: true }
+      ).select('-password');
+
+      if (!updatedUser) {
+        const currentUser = await User.findOne(query).select('verificationStatus').lean();
+        if (!currentUser) {
+          return NextResponse.json({ success: false, message: 'Verification request not found.' }, { status: 404 });
+        }
+        return NextResponse.json({
+          success: false,
+          message: `This request was already ${currentUser.verificationStatus}. The queue has been refreshed.`
+        }, { status: 409 });
+      }
 
       return NextResponse.json({
         success: true,
@@ -62,10 +83,9 @@ export async function POST(req: NextRequest) {
       });
     } catch (dbErr: any) {
       return NextResponse.json({
-        success: true,
-        user: { email, ...updateFields },
-        message: `Owner verification ${isApprove ? 'APPROVED' : 'REJECTED'}`
-      });
+        success: false,
+        message: 'Unable to update this verification right now. Please try again.'
+      }, { status: 503 });
     }
   } catch (error: any) {
     return NextResponse.json({ success: false, message: error.message || 'Action failed' }, { status: 500 });

@@ -50,7 +50,7 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({ property, onClose })
           <div className="space-y-2">
             <h3 className="text-xl font-bold text-white">Login Required</h3>
             <p className="text-xs text-gray-400">
-              You must be logged in to contact the owner or view direct contact details for <strong className="text-emerald-400">{property.pid}</strong>.
+              You must be logged in to send an inquiry for <strong className="text-emerald-400">{property.pid}</strong>.
             </p>
           </div>
 
@@ -145,7 +145,7 @@ export const InquiryModal: React.FC<InquiryModalProps> = ({ property, onClose })
               The owner/manager for <strong className="text-emerald-400">{property.pid} ({property.locality})</strong> has received your request.
             </p>
             <div className="p-3.5 bg-[#050806] rounded-xl border border-emerald-900/60 text-xs text-gray-300">
-              Direct Owner Phone: <strong className="text-emerald-400">{property.ownerPhone}</strong> ({property.ownerName})
+              Your details were shared securely with the property owner/manager. They can contact you directly.
             </div>
             <button
               onClick={onClose}
