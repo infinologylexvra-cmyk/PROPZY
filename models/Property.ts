@@ -33,18 +33,17 @@ const PropertySchema: Schema = new Schema({
   category: { 
     type: String, 
     enum: ['rent', 'buy', 'sell', 'pg', 'commercial'], 
-    required: true,
-    index: true 
+    required: true
   },
   type: { 
     type: String, 
     enum: ['house', 'flat', 'pg', 'commercial', 'plot'], 
     required: true 
   },
-  city: { type: String, required: true, index: true },
+  city: { type: String, required: true },
   locality: { type: String, required: true, index: true },
   address: { type: String, required: true },
-  price: { type: Number, required: true, index: true },
+  price: { type: Number, required: true },
   deposit: { type: Number, default: 0 },
   bedrooms: { type: Number, default: 1 },
   bathrooms: { type: Number, default: 1 },

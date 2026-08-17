@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import User from '@/models/User';
+import Property from '@/models/Property';
 
 // GET /api/user/wishlist?email=user@example.com OR ?userId=123
 export async function GET(req: NextRequest) {
@@ -24,9 +25,36 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ success: false, message: 'User not found' }, { status: 404 });
     }
 
+    const currentWishlist: string[] = user.wishlist || [];
+
+    if (currentWishlist.length === 0) {
+      return NextResponse.json({ success: true, wishlist: [] });
+    }
+
+    // Verify which property PIDs / IDs currently exist in the database
+    const existingProperties = await Property.find({
+      $or: [
+        { pid: { $in: currentWishlist } },
+        { _id: { $in: currentWishlist.filter((id: string) => id.match(/^[0-9a-fA-F]{24}$/)) } }
+      ]
+    }).select('pid _id').lean();
+
+    const validPids = new Set<string>();
+    existingProperties.forEach((p: any) => {
+      if (p.pid) validPids.add(p.pid);
+      if (p._id) validPids.add(p._id.toString());
+    });
+
+    const sanitizedWishlist = currentWishlist.filter((id: string) => validPids.has(id));
+
+    // If any deleted properties were removed, update user document in database
+    if (sanitizedWishlist.length !== currentWishlist.length) {
+      await User.updateOne(filter, { $set: { wishlist: sanitizedWishlist } });
+    }
+
     return NextResponse.json({
       success: true,
-      wishlist: user.wishlist || []
+      wishlist: sanitizedWishlist
     });
   } catch (error: any) {
     return NextResponse.json({ success: false, message: error.message || 'Error fetching wishlist' }, { status: 500 });
@@ -48,9 +76,25 @@ export async function POST(req: NextRequest) {
     if (email) filter.email = email.trim().toLowerCase();
     else if (userId) filter._id = userId;
 
+    // Filter incoming wishlist to only keep property PIDs that exist in the database
+    const existingProperties = await Property.find({
+      $or: [
+        { pid: { $in: wishlist } },
+        { _id: { $in: wishlist.filter((id: string) => typeof id === 'string' && id.match(/^[0-9a-fA-F]{24}$/)) } }
+      ]
+    }).select('pid _id').lean();
+
+    const validPids = new Set<string>();
+    existingProperties.forEach((p: any) => {
+      if (p.pid) validPids.add(p.pid);
+      if (p._id) validPids.add(p._id.toString());
+    });
+
+    const sanitizedWishlist = wishlist.filter((id: string) => validPids.has(id));
+
     const updatedUser = await User.findOneAndUpdate(
       filter,
-      { $set: { wishlist } },
+      { $set: { wishlist: sanitizedWishlist } },
       { new: true, runValidators: true }
     );
 

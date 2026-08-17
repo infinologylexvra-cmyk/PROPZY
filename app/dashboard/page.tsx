@@ -277,10 +277,7 @@ function DashboardContent() {
       }
     } catch (e) {
       console.warn('Dashboard fetch fallback:', e);
-      const filteredWishlist = INITIAL_PROPERTIES.filter((p: any) =>
-        wishlist.includes(p.pid) || (p.id && wishlist.includes(p.id))
-      );
-      setSavedProperties(filteredWishlist);
+      setSavedProperties([]);
     } finally {
       setLoading(false);
     }

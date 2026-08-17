@@ -6,23 +6,17 @@ import { INITIAL_PROPERTIES, PropertyItem } from '@/lib/seedData';
 import { memoryStore } from '@/lib/memoryStore';
 import { getAuthUser } from '@/lib/auth';
 import { canViewPropertyContactDetails, isAdminUser, isBrowserDocumentNavigation, normalizeEmail, serializeProperty } from '@/lib/accessControl';
+import { 
+  getPropertiesCache, 
+  setPropertiesCache, 
+  clearPropertiesCache, 
+  getInFlight, 
+  setInFlight, 
+  deleteInFlight, 
+  buildPropertyCacheKey 
+} from '@/lib/propertiesCache';
 
 export const runtime = 'nodejs';
-
-// In-Memory Fast API Cache Layer
-interface CacheEntry {
-  payload: any;
-  timestamp: number;
-}
-const apiPropertiesCache = new Map<string, CacheEntry>();
-const CACHE_TTL_MS = 30000; // 30 Seconds TTL
-
-// In-Flight Request Deduplication Map
-const inFlightRequests = new Map<string, Promise<any>>();
-
-function clearPropertiesApiCache() {
-  apiPropertiesCache.clear();
-}
 
 export async function GET(req: NextRequest) {
   const tStart = performance.now();
@@ -35,47 +29,48 @@ export async function GET(req: NextRequest) {
     // 1. Authentication
     const tAuthStart = performance.now();
     const authUser = await getAuthUser(req);
-    const tAuthEnd = performance.now();
-    const durAuth = (tAuthEnd - tAuthStart).toFixed(2);
+    const durAuth = (performance.now() - tAuthStart).toFixed(2);
 
-    // 2. Build Deterministic Cache Key (with strict role / user isolation)
-    const { searchParams } = new URL(req.url);
-    const sortedParams = Array.from(searchParams.entries())
-      .sort(([a], [b]) => a.localeCompare(b))
+    // 2. Build Deterministic Cache Key (with strict role/user isolation)
+    const searchParams = req.nextUrl.searchParams;
+    const cacheKey = buildPropertyCacheKey(searchParams, authUser);
+
+    // Filter summaries for diagnostic logs
+    const filterSummary = Array.from(searchParams.entries())
+      .filter(([k]) => k !== 'admin')
       .map(([k, v]) => `${k}=${v}`)
-      .join('&');
-
-    const cacheIdentity = !authUser
-      ? 'guest'
-      : isAdminUser(authUser)
-      ? 'admin'
-      : `user:${authUser.id || 'auth'}`;
-
-    const cacheKey = `prop:${cacheIdentity}:${sortedParams}`;
+      .join(', ') || 'none';
 
     // 3. Fast Cache Lookup
     const tCacheStart = performance.now();
-    const cached = apiPropertiesCache.get(cacheKey);
-    if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
+    const cached = getPropertiesCache(cacheKey);
+    if (cached) {
+      const durCache = (performance.now() - tCacheStart).toFixed(2);
       const tTotal = (performance.now() - tStart).toFixed(2);
+      const returnedCount = cached.payload?.data?.length || 0;
+
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(`\n[API Properties]\n  Cache: HIT\n  DB Query: skipped\n  Filters: ${filterSummary}\n  Returned: ${returnedCount} properties\n  Total: ${tTotal}ms\n`);
+      }
+
       return NextResponse.json(cached.payload, {
         headers: {
-          'Cache-Control': 'public, s-maxage=12, stale-while-revalidate=45',
+          'Cache-Control': 'public, s-maxage=45, stale-while-revalidate=60',
           'X-Cache-Status': 'HIT',
-          'Server-Timing': `auth;dur=${durAuth}, cache;dur=${(performance.now() - tCacheStart).toFixed(2)}, total;dur=${tTotal}`
+          'Server-Timing': `auth;dur=${durAuth}, cache;dur=${durCache}, total;dur=${tTotal}`
         }
       });
     }
 
     // 4. In-Flight Request Deduplication (reuse concurrent query promise)
-    const existingInFlight = inFlightRequests.get(cacheKey);
+    const existingInFlight = getInFlight(cacheKey);
     if (existingInFlight) {
       try {
         const result = await existingInFlight;
         const tTotal = (performance.now() - tStart).toFixed(2);
         return NextResponse.json(result.payload, {
           headers: {
-            'Cache-Control': 'public, s-maxage=12, stale-while-revalidate=45',
+            'Cache-Control': 'public, s-maxage=45, stale-while-revalidate=60',
             'X-Cache-Status': 'DEDUP',
             'Server-Timing': `auth;dur=${durAuth}, dedup;dur=${tTotal}, total;dur=${tTotal}`
           }
@@ -107,18 +102,8 @@ export async function GET(req: NextRequest) {
     // 5. Execute DB Query with Promise In-Flight Registration
     const executeQuery = async () => {
       const tConnStart = performance.now();
-      const mongooseInstance = await connectToDatabase();
-      const tConnEnd = performance.now();
-      const durConn = (tConnEnd - tConnStart).toFixed(2);
-
-      // Diagnostic: inspect topology state immediately after connectToDatabase()
-      const client = (mongooseInstance.connection as any).getClient?.();
-      const topology = client?.topology;
-      const serversBefore = topology?.description?.servers ? Array.from(topology.description.servers.keys()) : [];
-      const topologyTypeBefore = topology?.description?.type || 'unknown';
-
-      // 1. Time immediately after connectToDatabase()
-      const tAfterConn = performance.now();
+      await connectToDatabase();
+      const durConn = (performance.now() - tConnStart).toFixed(2);
 
       // Build MongoDB filter
       const filter: any = {};
@@ -164,22 +149,16 @@ export async function GET(req: NextRequest) {
       const skip = (page - 1) * limit;
       const fetchLimit = includeTotal ? limit : limit + 1;
 
-      // 2. Time before creating Mongoose query
-      const tBeforeQueryCreate = performance.now();
-
-      // Projected listing fields
+      // 2. Projected lightweight listing fields
       const projection = 'pid title category type city locality address price deposit bedrooms bathrooms areaSqFt furnishing verified featured images ownerEmail ownerRole available createdAt';
 
+      const tQueryStart = performance.now();
       const dataQuery = Property.find(filter)
         .select(projection)
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(fetchLimit)
         .lean();
-
-      // 3. Time before .exec()
-      const tBeforeExec = performance.now();
-      const durQueryBuild = (tBeforeExec - tBeforeQueryCreate).toFixed(2);
 
       let properties: any[] = [];
       let totalCount: number | undefined;
@@ -195,20 +174,7 @@ export async function GET(req: NextRequest) {
         properties = await dataQuery.exec();
       }
 
-      // 4. Time immediately after .exec()
-      const tAfterExec = performance.now();
-      const durExec = (tAfterExec - tBeforeExec).toFixed(2);
-      const durQuery = (tAfterExec - tBeforeQueryCreate).toFixed(2);
-
-      const serversAfter = topology?.description?.servers ? Array.from(topology.description.servers.keys()) : [];
-      const topologyTypeAfter = topology?.description?.type || 'unknown';
-
-      console.log(`\n🔍 [DIAGNOSTIC TIMINGS]`);
-      console.log(`   1. connectToDatabase(): ${durConn} ms (readyState: ${mongooseInstance.connection.readyState})`);
-      console.log(`   2. Topology before query: Type=${topologyTypeBefore}, Known Servers=[${serversBefore.join(', ')}]`);
-      console.log(`   3. Query Object Build: ${durQueryBuild} ms`);
-      console.log(`   4. Query .exec() execution: ${durExec} ms`);
-      console.log(`   5. Topology after query: Type=${topologyTypeAfter}, Known Servers=[${serversAfter.join(', ')}]\n`);
+      const durQuery = (performance.now() - tQueryStart).toFixed(2);
 
       let hasMore = false;
       if (!includeTotal) {
@@ -239,34 +205,33 @@ export async function GET(req: NextRequest) {
         source: 'mongodb'
       };
 
-      // Cache sanitized response
-      apiPropertiesCache.set(cacheKey, { payload, timestamp: Date.now() });
+      // Cache sanitized response in server cache
+      setPropertiesCache(cacheKey, payload);
 
       return {
         payload,
-        timings: { durConn, durQuery, durExec, durQueryBuild, durAccess }
+        timings: { durConn, durQuery, durAccess }
       };
     };
 
     // Register in-flight promise
     const queryPromise = executeQuery();
-    inFlightRequests.set(cacheKey, queryPromise);
+    setInFlight(cacheKey, queryPromise);
 
     try {
       const { payload, timings } = await queryPromise;
       const tTotal = (performance.now() - tStart).toFixed(2);
+      const returnedCount = payload?.data?.length || 0;
 
       if (process.env.NODE_ENV !== 'production') {
-        console.log(
-          `[API Properties] Auth: ${durAuth}ms | DB Conn: ${timings.durConn}ms | Query Build: ${timings.durQueryBuild}ms | Query Exec: ${timings.durExec}ms | Access: ${timings.durAccess}ms | Total: ${tTotal}ms`
-        );
+        console.log(`\n[API Properties]\n  Cache: MISS\n  DB Connection: ${timings.durConn}ms\n  DB Query: ${timings.durQuery}ms\n  Filters: ${filterSummary}\n  Returned: ${returnedCount} properties\n  Total: ${tTotal}ms\n`);
       }
 
       return NextResponse.json(payload, {
         headers: {
-          'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60',
+          'Cache-Control': 'public, s-maxage=45, stale-while-revalidate=60',
           'X-Cache-Status': 'MISS',
-          'Server-Timing': `auth;dur=${durAuth}, db_conn;dur=${timings.durConn}, db_build;dur=${timings.durQueryBuild}, db_exec;dur=${timings.durExec}, access;dur=${timings.durAccess}, total;dur=${tTotal}`
+          'Server-Timing': `auth;dur=${durAuth}, db_conn;dur=${timings.durConn}, db_query;dur=${timings.durQuery}, access;dur=${timings.durAccess}, total;dur=${tTotal}`
         }
       });
     } catch (error: any) {
@@ -291,7 +256,7 @@ export async function GET(req: NextRequest) {
       }, { status: 503 });
     } finally {
       // Guaranteed in-flight promise cleanup
-      inFlightRequests.delete(cacheKey);
+      deleteInFlight(cacheKey);
     }
   } catch (fatalError: any) {
     console.error('[FATAL GET ERROR]:', fatalError);
@@ -364,7 +329,7 @@ export async function POST(req: NextRequest) {
       createdAt: new Date()
     };
 
-    clearPropertiesApiCache();
+    clearPropertiesCache();
 
     try {
       await connectToDatabase();

@@ -15,6 +15,31 @@ export async function POST(req: NextRequest) {
       const dbUser: any = await User.findOne({ email: email.toLowerCase().trim() }).select('-password').lean();
 
       if (dbUser) {
+        const currentWishlist: string[] = dbUser.wishlist || [];
+        let sanitizedWishlist = currentWishlist;
+
+        if (currentWishlist.length > 0) {
+          const Property = (await import('@/models/Property')).default;
+          const existingProps = await Property.find({
+            $or: [
+              { pid: { $in: currentWishlist } },
+              { _id: { $in: currentWishlist.filter((id: string) => id.match(/^[0-9a-fA-F]{24}$/)) } }
+            ]
+          }).select('pid _id').lean();
+
+          const validPids = new Set<string>();
+          existingProps.forEach((p: any) => {
+            if (p.pid) validPids.add(p.pid);
+            if (p._id) validPids.add(p._id.toString());
+          });
+
+          sanitizedWishlist = currentWishlist.filter((id: string) => validPids.has(id));
+
+          if (sanitizedWishlist.length !== currentWishlist.length) {
+            await User.updateOne({ _id: dbUser._id }, { $set: { wishlist: sanitizedWishlist } });
+          }
+        }
+
         const userProfile = {
           id: dbUser._id?.toString(),
           name: dbUser.name,
@@ -22,7 +47,7 @@ export async function POST(req: NextRequest) {
           phone: dbUser.phone,
           role: dbUser.role,
           city: dbUser.city || 'Mohali',
-          wishlist: dbUser.wishlist || [],
+          wishlist: sanitizedWishlist,
           ownerVerified: dbUser.ownerVerified || false,
           verificationStatus: dbUser.verificationStatus || 'none',
           electricityBillUrl: dbUser.electricityBillUrl || '',

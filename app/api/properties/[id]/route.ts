@@ -5,6 +5,7 @@ import { INITIAL_PROPERTIES } from '@/lib/seedData';
 import { memoryStore } from '@/lib/memoryStore';
 import { getAuthUser } from '@/lib/auth';
 import { canViewPropertyContactDetails, isAdminUser, isBrowserDocumentNavigation, isOwnedByUser, serializeProperty } from '@/lib/accessControl';
+import { clearPropertiesCache } from '@/lib/propertiesCache';
 
 export async function GET(
   req: NextRequest,
@@ -111,6 +112,9 @@ export async function PATCH(
       memoryStore[memIndex] = { ...memoryStore[memIndex], ...body };
     }
 
+    // Invalidate server-side property listings cache
+    clearPropertiesCache();
+
     return NextResponse.json({ success: true, data: serializeProperty(updated || (memIndex !== -1 ? memoryStore[memIndex] : null), true) });
   } catch (err: any) {
     console.error('PATCH Error:', err.message);
@@ -159,6 +163,9 @@ export async function DELETE(
     if (memIndex !== -1) {
       memoryStore.splice(memIndex, 1);
     }
+
+    // Invalidate server-side property listings cache
+    clearPropertiesCache();
 
     return NextResponse.json({ success: true, data: serializeProperty(deleted || null, true) });
   } catch (err: any) {

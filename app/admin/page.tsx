@@ -4,7 +4,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { 
   Building, ShieldCheck, MessageSquare, Users, FileText, 
-  ArrowUpRight, Clock, PlusCircle, CheckCircle2, XCircle, Search, Sparkles, RefreshCw
+  ArrowUpRight, Clock, PlusCircle, CheckCircle2, XCircle, Search, Sparkles, RefreshCw,
+  Trash2, AlertTriangle
 } from 'lucide-react';
 import { PropertyItem, INITIAL_PROPERTIES, INITIAL_INQUIRIES } from '@/lib/seedData';
 import { useApp } from '@/context/AppContext';
@@ -17,6 +18,7 @@ export default function AdminOverviewPage() {
   const [inquiries, setInquiries] = useState<any[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [actionPendingId, setActionPendingId] = useState<string | null>(null);
+  const [propertyPendingDeletion, setPropertyPendingDeletion] = useState<PropertyItem | null>(null);
 
   const fetchData = useCallback(async () => {
     try {
@@ -122,6 +124,28 @@ export default function AdminOverviewPage() {
     }
 
     showToast(newStatus ? 'Property verified successfully!' : 'Property marked as unverified');
+  };
+
+  const handleDelete = async () => {
+    if (!propertyPendingDeletion || actionPendingId) return;
+    const id = propertyPendingDeletion.pid || propertyPendingDeletion._id || propertyPendingDeletion.id;
+    if (!id) return;
+
+    setActionPendingId(id);
+    setProperties(prev => {
+      const updated = prev.filter(p => p._id !== id && p.pid !== id && p.id !== id);
+      setCachedProperties(updated);
+      return updated;
+    });
+    setPropertyPendingDeletion(null);
+
+    try {
+      await fetch(`/api/properties/${id}`, { method: 'DELETE' });
+    } catch (e) {
+    } finally {
+      setActionPendingId(null);
+    }
+    showToast('Property listing deleted successfully.');
   };
 
   const citiesSummary = [
@@ -362,17 +386,28 @@ export default function AdminOverviewPage() {
                     )}
                   </td>
                   <td className="p-3 text-right">
-                    <button
-                      disabled={Boolean(actionPendingId)}
-                      onClick={() => handleVerifyToggle(item.pid || item._id || item.id, !!item.verified)}
-                      className={`px-3 py-1 rounded-xl text-[11px] font-extrabold border transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
-                        item.verified
-                          ? 'bg-[#140b0d] text-rose-400 border-rose-900/80 hover:bg-rose-950'
-                          : 'bg-emerald-500 hover:bg-emerald-400 text-black border-emerald-500'
-                      }`}
-                    >
-                      {item.verified ? 'Unverify' : 'Verify Now'}
-                    </button>
+                    <div className="flex items-center justify-end space-x-2">
+                      <button
+                        disabled={Boolean(actionPendingId)}
+                        onClick={() => handleVerifyToggle(item.pid || item._id || item.id, !!item.verified)}
+                        className={`px-3 py-1 rounded-xl text-[11px] font-extrabold border transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
+                          item.verified
+                            ? 'bg-[#140b0d] text-rose-400 border-rose-900/80 hover:bg-rose-950'
+                            : 'bg-emerald-500 hover:bg-emerald-400 text-black border-emerald-500'
+                        }`}
+                      >
+                        {item.verified ? 'Unverify' : 'Verify Now'}
+                      </button>
+
+                      <button
+                        disabled={Boolean(actionPendingId)}
+                        onClick={() => setPropertyPendingDeletion(item)}
+                        className="p-1.5 rounded-xl bg-[#140b0d] text-rose-400 hover:text-white hover:bg-rose-600 border border-rose-900/80 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                        title="Delete Property"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -380,6 +415,37 @@ export default function AdminOverviewPage() {
           </table>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {propertyPendingDeletion && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+          <div className="bg-[#0a110d] border border-rose-900/60 rounded-3xl p-6 max-w-sm w-full space-y-4 shadow-2xl">
+            <div className="w-12 h-12 rounded-full bg-rose-950/80 border border-rose-800/80 text-rose-400 flex items-center justify-center mx-auto">
+              <AlertTriangle size={24} />
+            </div>
+            <div className="text-center space-y-1">
+              <h3 className="text-base font-extrabold text-white">Delete Property Listing?</h3>
+              <p className="text-xs text-gray-400">
+                Are you sure you want to permanently remove <span className="font-mono text-emerald-400 font-bold">{propertyPendingDeletion.pid}</span> ({propertyPendingDeletion.title})?
+              </p>
+            </div>
+            <div className="flex space-x-3 pt-2">
+              <button
+                onClick={() => setPropertyPendingDeletion(null)}
+                className="flex-1 py-2.5 rounded-xl bg-[#050806] border border-emerald-950 text-gray-300 font-bold text-xs hover:bg-[#0e1813] cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                className="flex-1 py-2.5 rounded-xl bg-rose-600 text-white font-extrabold text-xs hover:bg-rose-700 shadow-lg shadow-rose-950/50 cursor-pointer"
+              >
+                Yes, Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

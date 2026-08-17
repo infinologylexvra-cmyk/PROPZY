@@ -14,6 +14,30 @@ export async function GET(req: NextRequest) {
       await connectToDatabase();
       const dbUser: any = await User.findById(authUser.id).select('-password').lean();
       if (dbUser) {
+        const rawWishlist: string[] = dbUser.wishlist || [];
+        let validWishlist = rawWishlist;
+        if (rawWishlist.length > 0) {
+          const Property = (await import('@/models/Property')).default;
+          const existingProps = await Property.find({
+            $or: [
+              { pid: { $in: rawWishlist } },
+              { _id: { $in: rawWishlist.filter((id: string) => id.match(/^[0-9a-fA-F]{24}$/)) } }
+            ]
+          }).select('pid _id').lean();
+
+          const validPids = new Set<string>();
+          existingProps.forEach((p: any) => {
+            if (p.pid) validPids.add(p.pid);
+            if (p._id) validPids.add(p._id.toString());
+          });
+
+          validWishlist = rawWishlist.filter((id: string) => validPids.has(id));
+
+          if (validWishlist.length !== rawWishlist.length) {
+            await User.updateOne({ _id: dbUser._id }, { $set: { wishlist: validWishlist } });
+          }
+        }
+
         return NextResponse.json({
           success: true,
           user: {
@@ -23,7 +47,7 @@ export async function GET(req: NextRequest) {
             phone: dbUser.phone,
             role: dbUser.role,
             city: dbUser.city || 'Mohali',
-            wishlist: dbUser.wishlist || [],
+            wishlist: validWishlist,
             ownerVerified: dbUser.ownerVerified || false,
             verificationStatus: dbUser.verificationStatus || 'none',
             electricityBillUrl: dbUser.electricityBillUrl || '',

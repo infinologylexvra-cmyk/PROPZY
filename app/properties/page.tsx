@@ -9,6 +9,7 @@ import { InquiryModal } from '@/components/InquiryModal';
 import { SkeletonGrid } from '@/components/Loader';
 import { CallToActionBanner } from '@/components/CallToActionBanner';
 import { useApp } from '@/context/AppContext';
+import { getClientPropertiesCache, setClientPropertiesCache } from '@/lib/clientPropertiesCache';
 
 function PropertySearchContent() {
   const { user, openAuthModal, showToast } = useApp();
@@ -80,7 +81,38 @@ function PropertySearchContent() {
   }, [searchParams]);
 
   const fetchFilteredProperties = async () => {
-    // 1. Cancel previous in-flight request
+    // Build query params
+    const params = new URLSearchParams();
+    if (category !== 'all') params.set('category', category);
+    if (city !== 'all') params.set('city', city);
+    if (locality) params.set('locality', locality);
+    if (pidSearch) params.set('pid', pidSearch);
+    if (type !== 'all') params.set('type', type);
+    if (bedrooms !== 'all') params.set('bedrooms', bedrooms);
+    if (verifiedOnly) params.set('verified', 'true');
+    if (debouncedMaxPrice) params.set('maxPrice', debouncedMaxPrice.toString());
+
+    const clientCacheKey = params.toString();
+
+    // 1. Client-Side Instant Cache Check
+    const cached = getClientPropertiesCache(clientCacheKey);
+    let shouldFetch = true;
+
+    if (cached && Array.isArray(cached.data)) {
+      setProperties(cached.data);
+      setLoading(false);
+
+      // If client cache is fresh (< 30 seconds), avoid network fetch
+      if (Date.now() - cached.timestamp < 30000) {
+        shouldFetch = false;
+      }
+    } else {
+      setLoading(true);
+    }
+
+    if (!shouldFetch) return;
+
+    // 2. Cancel previous in-flight request
     if (abortControllerRef.current) {
       abortControllerRef.current.abort();
     }
@@ -88,19 +120,8 @@ function PropertySearchContent() {
     abortControllerRef.current = controller;
     const currentRequestId = ++latestRequestIdRef.current;
 
-    setLoading(true);
     try {
-      const params = new URLSearchParams();
-      if (category !== 'all') params.set('category', category);
-      if (city !== 'all') params.set('city', city);
-      if (locality) params.set('locality', locality);
-      if (pidSearch) params.set('pid', pidSearch);
-      if (type !== 'all') params.set('type', type);
-      if (bedrooms !== 'all') params.set('bedrooms', bedrooms);
-      if (verifiedOnly) params.set('verified', 'true');
-      if (debouncedMaxPrice) params.set('maxPrice', debouncedMaxPrice.toString());
-
-      const res = await fetch(`/api/properties?${params.toString()}`, {
+      const res = await fetch(`/api/properties?${clientCacheKey}`, {
         signal: controller.signal
       });
 
@@ -111,6 +132,7 @@ function PropertySearchContent() {
 
       if (data.success && Array.isArray(data.data)) {
         setProperties(data.data);
+        setClientPropertiesCache(clientCacheKey, data.data, data.pagination);
       } else {
         setProperties([]);
       }
@@ -268,11 +290,10 @@ function PropertySearchContent() {
                     <button
                       key={cat}
                       onClick={() => handleCategoryChange(cat)}
-                      className={`px-3 py-2 rounded-xl cursor-pointer text-xs font-semibold capitalize border transition-all ${
-                        category === cat
+                      className={`px-3 py-2 rounded-xl cursor-pointer text-xs font-semibold capitalize border transition-all ${category === cat
                           ? 'bg-emerald-500 text-black border-emerald-500 font-extrabold shadow-md'
                           : 'bg-[#050806] text-gray-400 border-emerald-950'
-                      }`}
+                        }`}
                     >
                       {cat}
                     </button>
@@ -344,11 +365,10 @@ function PropertySearchContent() {
                     <button
                       key={bhk}
                       onClick={() => setBedrooms(bhk)}
-                      className={`flex-1 py-2 rounded-xl text-xs font-bold border transition-all ${
-                        bedrooms === bhk
+                      className={`flex-1 py-2 rounded-xl text-xs font-bold border transition-all ${bedrooms === bhk
                           ? 'bg-emerald-500 text-black border-emerald-500'
                           : 'bg-[#050806] text-gray-400 border-emerald-950'
-                      }`}
+                        }`}
                     >
                       {bhk === 'all' ? 'All' : `${bhk} BHK`}
                     </button>
@@ -403,11 +423,10 @@ function PropertySearchContent() {
                   <button
                     key={cat}
                     onClick={() => handleCategoryChange(cat)}
-                    className={`px-3 py-2 rounded-xl text-xs font-semibold capitalize border transition-all ${
-                      category === cat
+                    className={`px-3 py-2 rounded-xl text-xs font-semibold capitalize border transition-all ${category === cat
                         ? 'bg-emerald-500 text-black border-emerald-500 font-extrabold shadow-md'
                         : 'bg-[#050806] text-gray-400 border-emerald-950 hover:text-white'
-                    }`}
+                      }`}
                   >
                     {cat}
                   </button>
@@ -479,11 +498,10 @@ function PropertySearchContent() {
                   <button
                     key={bhk}
                     onClick={() => setBedrooms(bhk)}
-                    className={`flex-1 py-2 rounded-xl text-xs font-bold border transition-all ${
-                      bedrooms === bhk
+                    className={`flex-1 py-2 rounded-xl text-xs font-bold border transition-all ${bedrooms === bhk
                         ? 'bg-emerald-500 text-black border-emerald-500'
                         : 'bg-[#050806] text-gray-400 border-emerald-950 hover:text-white'
-                    }`}
+                      }`}
                   >
                     {bhk === 'all' ? 'All' : `${bhk} BHK`}
                   </button>

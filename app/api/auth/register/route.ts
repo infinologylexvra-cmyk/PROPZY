@@ -58,12 +58,11 @@ export async function POST(req: NextRequest) {
           return NextResponse.json({ success: false, message: 'An account with this email address already exists. Please login instead.' }, { status: 400 });
         }
 
-        // UserSchema pre-save hook will hash password if not already hashed
         const newUser = await User.create({
           name: name.trim(),
           email: cleanEmail,
           phone: phone.trim(),
-          password,
+          password: hashedPassword,
           role: selectedRole,
           wishlist: []
         });

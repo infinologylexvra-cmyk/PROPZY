@@ -105,13 +105,37 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ success: false, message: 'Invalid password. Please re-enter your password.' }, { status: 400 });
       }
 
+      const rawWishlist: string[] = foundUser.wishlist || [];
+      let validWishlist = rawWishlist;
+      if (rawWishlist.length > 0) {
+        const Property = (await import('@/models/Property')).default;
+        const existingProps = await Property.find({
+          $or: [
+            { pid: { $in: rawWishlist } },
+            { _id: { $in: rawWishlist.filter((id: string) => id.match(/^[0-9a-fA-F]{24}$/)) } }
+          ]
+        }).select('pid _id').lean();
+
+        const validPids = new Set<string>();
+        existingProps.forEach((p: any) => {
+          if (p.pid) validPids.add(p.pid);
+          if (p._id) validPids.add(p._id.toString());
+        });
+
+        validWishlist = rawWishlist.filter((id: string) => validPids.has(id));
+
+        if (validWishlist.length !== rawWishlist.length) {
+          await User.updateOne({ _id: foundUser._id }, { $set: { wishlist: validWishlist } });
+        }
+      }
+
       return createAuthResponse({
         id: foundUser._id.toString(),
         name: foundUser.name,
         email: foundUser.email,
         phone: foundUser.phone,
         role: foundUser.role,
-        wishlist: foundUser.wishlist || []
+        wishlist: validWishlist
       }, `Welcome back, ${foundUser.name}!`);
     }
 
