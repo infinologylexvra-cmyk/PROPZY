@@ -25,7 +25,7 @@ function PropertySearchContent() {
   const urlVerified = searchParams.get('verified') === 'true';
 
   const isBuyOrSell = (c: string) => c === 'buy' || c === 'sell';
-  const defaultRentMax = 20000000; // 2 Cr
+  const defaultRentMax = 1500000; // 15 Lakh
   const defaultBuyMax = 50000000; // 5 Cr
 
   const rawUrlMax = searchParams.get('maxPrice');
@@ -42,9 +42,14 @@ function PropertySearchContent() {
   const [bedrooms, setBedrooms] = useState(urlBedrooms);
   const [verifiedOnly, setVerifiedOnly] = useState(urlVerified);
 
-  const [properties, setProperties] = useState<PropertyItem[]>(INITIAL_PROPERTIES);
+  const [properties, setProperties] = useState<PropertyItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [displayedCount, setDisplayedCount] = useState(6);
   const [selectedPropertyForInquiry, setSelectedPropertyForInquiry] = useState<PropertyItem | null>(null);
+
+  const loadMoreRef = useRef<HTMLDivElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const latestRequestIdRef = useRef<number>(0);
 
   const handleCategoryChange = (newCat: string) => {
     setCategory(newCat);
@@ -75,6 +80,14 @@ function PropertySearchContent() {
   }, [searchParams]);
 
   const fetchFilteredProperties = async () => {
+    // 1. Cancel previous in-flight request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+    const currentRequestId = ++latestRequestIdRef.current;
+
     setLoading(true);
     try {
       const params = new URLSearchParams();
@@ -85,16 +98,30 @@ function PropertySearchContent() {
       if (type !== 'all') params.set('type', type);
       if (bedrooms !== 'all') params.set('bedrooms', bedrooms);
       if (verifiedOnly) params.set('verified', 'true');
-      if (maxPrice) params.set('maxPrice', maxPrice.toString());
+      if (debouncedMaxPrice) params.set('maxPrice', debouncedMaxPrice.toString());
 
-      const res = await fetch(`/api/properties?${params.toString()}`);
+      const res = await fetch(`/api/properties?${params.toString()}`, {
+        signal: controller.signal
+      });
+
       const data = await res.json();
-      if (data.success && data.data) {
+
+      // Guard: Ignore if a newer request was dispatched in the meantime
+      if (currentRequestId !== latestRequestIdRef.current) return;
+
+      if (data.success && Array.isArray(data.data)) {
         setProperties(data.data);
       } else {
         setProperties([]);
       }
-    } catch (e) {
+    } catch (e: any) {
+      // Ignore intentional abort cancellations silently
+      if (e?.name === 'AbortError' || controller.signal.aborted) {
+        return;
+      }
+
+      if (currentRequestId !== latestRequestIdRef.current) return;
+
       console.warn('API error, filtering locally:', e);
       let list = [...INITIAL_PROPERTIES];
       if (category !== 'all') {
@@ -114,22 +141,56 @@ function PropertySearchContent() {
 
       setProperties(list);
     } finally {
-      setLoading(false);
+      if (currentRequestId === latestRequestIdRef.current) {
+        setLoading(false);
+      }
     }
   };
 
-  // Debounce maxPrice so dragging the slider doesn't fire 50+ API calls
+  // Debounce maxPrice slider changes (400ms) to avoid request flooding
   const [debouncedMaxPrice, setDebouncedMaxPrice] = useState(maxPrice);
   useEffect(() => {
     const timer = setTimeout(() => setDebouncedMaxPrice(maxPrice), 400);
     return () => clearTimeout(timer);
   }, [maxPrice]);
 
+  // Clean up in-flight abort controller on unmount
+  useEffect(() => {
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, []);
+
   useEffect(() => {
     fetchFilteredProperties();
   }, [category, city, locality, pidSearch, debouncedMaxPrice, type, bedrooms, verifiedOnly]);
 
+  // Reset lazy load batch size whenever filter options change
+  useEffect(() => {
+    setDisplayedCount(6);
+  }, [category, city, locality, pidSearch, debouncedMaxPrice, type, bedrooms, verifiedOnly]);
 
+  // Lazy Progressive Scroll Observer: loads items dynamically on scroll
+  useEffect(() => {
+    if (loading || displayedCount >= properties.length) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setDisplayedCount((prev) => Math.min(prev + 6, properties.length));
+        }
+      },
+      { rootMargin: '300px' }
+    );
+
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [loading, displayedCount, properties.length]);
 
   const handleResetFilters = () => {
     setCategory('all');
@@ -140,8 +201,11 @@ function PropertySearchContent() {
     setType('all');
     setBedrooms('all');
     setVerifiedOnly(false);
+    setDisplayedCount(6);
     router.push('/properties');
   };
+
+  const visibleProperties = properties.slice(0, displayedCount);
 
   return (
     <div className="bg-[#050806] text-gray-100 min-h-screen">
@@ -247,6 +311,29 @@ function PropertySearchContent() {
                   <option value="pg">PG / Hostel</option>
                   <option value="commercial">Commercial</option>
                 </select>
+              </div>
+
+              {/* Max Budget Slider */}
+              <div>
+                <div className="flex justify-between text-xs font-semibold mb-2">
+                  <span className="text-gray-300">Max Budget</span>
+                  <span className="text-emerald-400 font-extrabold">
+                    {`₹${maxPrice.toLocaleString('en-IN')}`}
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min={isBuyOrSell(category) ? 1000000 : 5000}
+                  max={isBuyOrSell(category) ? defaultBuyMax : defaultRentMax}
+                  step={isBuyOrSell(category) ? 500000 : 5000}
+                  value={maxPrice > (isBuyOrSell(category) ? defaultBuyMax : defaultRentMax) ? (isBuyOrSell(category) ? defaultBuyMax : defaultRentMax) : maxPrice}
+                  onChange={(e) => setMaxPrice(Number(e.target.value))}
+                  className="w-full accent-emerald-500 cursor-pointer"
+                />
+                <div className="flex justify-between text-[10px] text-gray-400 mt-1">
+                  <span>{isBuyOrSell(category) ? '₹10 Lakhs' : '₹5,000'}</span>
+                  <span>{isBuyOrSell(category) ? '₹5 Cr+' : '₹15 Lakhs+'}</span>
+                </div>
               </div>
 
               {/* Bedrooms */}
@@ -361,32 +448,26 @@ function PropertySearchContent() {
               </select>
             </div>
 
-            {/* Dynamic Max Budget Slider */}
+            {/* Max Budget Slider */}
             <div>
-              <div className="flex justify-between items-center text-xs font-semibold text-gray-300 mb-2">
-                <span>{isBuyOrSell(category) ? 'Max Purchase Price' : 'Max Monthly Rent'}</span>
-                <span className="text-emerald-400 font-bold">
-                  {maxPrice >= (isBuyOrSell(category) ? defaultBuyMax : defaultRentMax)
-                    ? (isBuyOrSell(category) ? '₹5.00 Cr+' : '₹2.00 Cr+')
-                    : maxPrice >= 10000000
-                      ? `₹${(maxPrice / 10000000).toFixed(2)} Cr`
-                      : maxPrice >= 100000
-                        ? `₹${(maxPrice / 100000).toFixed(1)} Lakhs`
-                        : `₹${maxPrice.toLocaleString('en-IN')}`}
+              <div className="flex justify-between text-xs font-semibold mb-2">
+                <span className="text-gray-300">Max Budget</span>
+                <span className="text-emerald-400 font-extrabold">
+                  {`₹${maxPrice.toLocaleString('en-IN')}`}
                 </span>
               </div>
               <input
                 type="range"
                 min={isBuyOrSell(category) ? 1000000 : 5000}
                 max={isBuyOrSell(category) ? defaultBuyMax : defaultRentMax}
-                step={isBuyOrSell(category) ? 500000 : 50000}
+                step={isBuyOrSell(category) ? 500000 : 5000}
                 value={maxPrice > (isBuyOrSell(category) ? defaultBuyMax : defaultRentMax) ? (isBuyOrSell(category) ? defaultBuyMax : defaultRentMax) : maxPrice}
                 onChange={(e) => setMaxPrice(Number(e.target.value))}
                 className="w-full accent-emerald-500 cursor-pointer"
               />
               <div className="flex justify-between text-[10px] text-gray-400 mt-1">
                 <span>{isBuyOrSell(category) ? '₹10 Lakhs' : '₹5,000'}</span>
-                <span>{isBuyOrSell(category) ? '₹5 Cr+' : '₹2 Cr+'}</span>
+                <span>{isBuyOrSell(category) ? '₹5 Cr+' : '₹15 Lakhs+'}</span>
               </div>
             </div>
 
@@ -428,7 +509,7 @@ function PropertySearchContent() {
           </aside>
 
           {/* Main Property Listings Grid */}
-          <main className="md:col-span-2 lg:col-span-3">
+          <main className="md:col-span-2 lg:col-span-3 space-y-6">
             {loading ? (
               <SkeletonGrid count={6} />
             ) : properties.length === 0 ? (
@@ -448,22 +529,35 @@ function PropertySearchContent() {
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {properties.map((property) => (
-                  <PropertyCard
-                    key={property.id || property.pid}
-                    property={property}
-                    onContactClick={(p) => {
-                      if (!user) {
-                        showToast('Please login to contact the property owner');
-                        openAuthModal();
-                        return;
-                      }
-                      setSelectedPropertyForInquiry(p);
-                    }}
-                  />
-                ))}
-              </div>
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {visibleProperties.map((property) => (
+                    <PropertyCard
+                      key={property.id || property.pid}
+                      property={property}
+                      onContactClick={(p) => {
+                        if (!user) {
+                          showToast('Please login to contact the property owner');
+                          openAuthModal();
+                          return;
+                        }
+                        setSelectedPropertyForInquiry(p);
+                      }}
+                    />
+                  ))}
+                </div>
+
+                {/* Progressive Infinite Scroll Sentinel */}
+                {displayedCount < properties.length && (
+                  <div
+                    ref={loadMoreRef}
+                    className="py-10 text-center text-xs text-emerald-400 font-bold flex items-center justify-center space-x-2"
+                  >
+                    <RefreshCw size={18} className="animate-spin text-emerald-400" />
+                    <span>Loading more verified properties ({visibleProperties.length} of {properties.length})...</span>
+                  </div>
+                )}
+              </>
             )}
           </main>
         </div>

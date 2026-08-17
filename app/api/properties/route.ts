@@ -7,140 +7,299 @@ import { memoryStore } from '@/lib/memoryStore';
 import { getAuthUser } from '@/lib/auth';
 import { canViewPropertyContactDetails, isAdminUser, isBrowserDocumentNavigation, normalizeEmail, serializeProperty } from '@/lib/accessControl';
 
+export const runtime = 'nodejs';
+
+// In-Memory Fast API Cache Layer
+interface CacheEntry {
+  payload: any;
+  timestamp: number;
+}
+const apiPropertiesCache = new Map<string, CacheEntry>();
+const CACHE_TTL_MS = 30000; // 30 Seconds TTL
+
+// In-Flight Request Deduplication Map
+const inFlightRequests = new Map<string, Promise<any>>();
+
+function clearPropertiesApiCache() {
+  apiPropertiesCache.clear();
+}
+
 export async function GET(req: NextRequest) {
-  if (isBrowserDocumentNavigation(req)) {
-    return NextResponse.json({ success: false, message: 'Not found' }, { status: 404 });
-  }
-
-  const authUser = await getAuthUser(req);
-  const { searchParams } = new URL(req.url);
-  const category = searchParams.get('category');
-  const city = searchParams.get('city');
-  const locality = searchParams.get('locality');
-  const maxPrice = searchParams.get('maxPrice');
-  const type = searchParams.get('type');
-  const pid = searchParams.get('pid');
-  const bedrooms = searchParams.get('bedrooms');
-  const search = searchParams.get('search');
-  const verified = searchParams.get('verified');
-  const admin = searchParams.get('admin');
-
-  if (admin === 'true' && !isAdminUser(authUser)) {
-    return NextResponse.json({ success: false, message: 'Forbidden. Admin privileges required.' }, { status: 403 });
-  }
+  const tStart = performance.now();
 
   try {
-    await connectToDatabase();
+    if (isBrowserDocumentNavigation(req)) {
+      return NextResponse.json({ success: false, message: 'Not found' }, { status: 404 });
+    }
 
-    // Build MongoDB query
-    const filter: any = {};
+    // 1. Authentication
+    const tAuthStart = performance.now();
+    const authUser = await getAuthUser(req);
+    const tAuthEnd = performance.now();
+    const durAuth = (tAuthEnd - tAuthStart).toFixed(2);
 
-    if (category && category !== 'all') {
-      if (category === 'buy' || category === 'sell') {
-        filter.category = { $in: ['buy', 'sell'] };
+    // 2. Build Deterministic Cache Key (with strict role / user isolation)
+    const { searchParams } = new URL(req.url);
+    const sortedParams = Array.from(searchParams.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([k, v]) => `${k}=${v}`)
+      .join('&');
+
+    const cacheIdentity = !authUser
+      ? 'guest'
+      : isAdminUser(authUser)
+      ? 'admin'
+      : `user:${authUser.id || 'auth'}`;
+
+    const cacheKey = `prop:${cacheIdentity}:${sortedParams}`;
+
+    // 3. Fast Cache Lookup
+    const tCacheStart = performance.now();
+    const cached = apiPropertiesCache.get(cacheKey);
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
+      const tTotal = (performance.now() - tStart).toFixed(2);
+      return NextResponse.json(cached.payload, {
+        headers: {
+          'Cache-Control': 'public, s-maxage=12, stale-while-revalidate=45',
+          'X-Cache-Status': 'HIT',
+          'Server-Timing': `auth;dur=${durAuth}, cache;dur=${(performance.now() - tCacheStart).toFixed(2)}, total;dur=${tTotal}`
+        }
+      });
+    }
+
+    // 4. In-Flight Request Deduplication (reuse concurrent query promise)
+    const existingInFlight = inFlightRequests.get(cacheKey);
+    if (existingInFlight) {
+      try {
+        const result = await existingInFlight;
+        const tTotal = (performance.now() - tStart).toFixed(2);
+        return NextResponse.json(result.payload, {
+          headers: {
+            'Cache-Control': 'public, s-maxage=12, stale-while-revalidate=45',
+            'X-Cache-Status': 'DEDUP',
+            'Server-Timing': `auth;dur=${durAuth}, dedup;dur=${tTotal}, total;dur=${tTotal}`
+          }
+        });
+      } catch {
+        // If the in-flight request errored, proceed to execute independently
+      }
+    }
+
+    // Query Parameters
+    const category = searchParams.get('category');
+    const city = searchParams.get('city');
+    const locality = searchParams.get('locality');
+    const maxPrice = searchParams.get('maxPrice');
+    const type = searchParams.get('type');
+    const pid = searchParams.get('pid');
+    const bedrooms = searchParams.get('bedrooms');
+    const search = searchParams.get('search');
+    const verified = searchParams.get('verified');
+    const admin = searchParams.get('admin');
+    const page = Math.max(1, Number(searchParams.get('page')) || 1);
+    const limit = Math.min(100, Math.max(1, Number(searchParams.get('limit')) || 24));
+    const includeTotal = searchParams.get('includeTotal') === 'true';
+
+    if (admin === 'true' && !isAdminUser(authUser)) {
+      return NextResponse.json({ success: false, message: 'Forbidden. Admin privileges required.' }, { status: 403 });
+    }
+
+    // 5. Execute DB Query with Promise In-Flight Registration
+    const executeQuery = async () => {
+      const tConnStart = performance.now();
+      const mongooseInstance = await connectToDatabase();
+      const tConnEnd = performance.now();
+      const durConn = (tConnEnd - tConnStart).toFixed(2);
+
+      // Diagnostic: inspect topology state immediately after connectToDatabase()
+      const client = (mongooseInstance.connection as any).getClient?.();
+      const topology = client?.topology;
+      const serversBefore = topology?.description?.servers ? Array.from(topology.description.servers.keys()) : [];
+      const topologyTypeBefore = topology?.description?.type || 'unknown';
+
+      // 1. Time immediately after connectToDatabase()
+      const tAfterConn = performance.now();
+
+      // Build MongoDB filter
+      const filter: any = {};
+
+      if (category && category !== 'all') {
+        if (category === 'buy' || category === 'sell') {
+          filter.category = { $in: ['buy', 'sell'] };
+        } else {
+          filter.category = category;
+        }
+      }
+      if (city && city !== 'all') filter.city = new RegExp(city, 'i');
+      if (locality) filter.locality = new RegExp(locality, 'i');
+      if (type && type !== 'all') filter.type = type;
+      if (pid) filter.pid = pid.trim().toUpperCase();
+      if (bedrooms && bedrooms !== 'all') filter.bedrooms = Number(bedrooms);
+      if (maxPrice) filter.price = { $lte: Number(maxPrice) };
+
+      if (search) {
+        filter.$or = [
+          { title: new RegExp(search, 'i') },
+          { locality: new RegExp(search, 'i') },
+          { city: new RegExp(search, 'i') },
+          { address: new RegExp(search, 'i') },
+          { pid: new RegExp(search, 'i') }
+        ];
+      }
+
+      // Role-based visibility filtering in DB query
+      if (!isAdminUser(authUser) || admin !== 'true') {
+        if (!authUser) {
+          // Guests only see verified listings
+          filter.verified = true;
+        } else if (verified !== 'all' && verified !== 'false') {
+          // Regular user: verified listings OR listings owned by this user
+          filter.$or = [
+            { verified: true },
+            { ownerEmail: authUser.email.toLowerCase().trim() }
+          ];
+        }
+      }
+
+      const skip = (page - 1) * limit;
+      const fetchLimit = includeTotal ? limit : limit + 1;
+
+      // 2. Time before creating Mongoose query
+      const tBeforeQueryCreate = performance.now();
+
+      // Projected listing fields
+      const projection = 'pid title category type city locality address price deposit bedrooms bathrooms areaSqFt furnishing verified featured images ownerEmail ownerRole available createdAt';
+
+      const dataQuery = Property.find(filter)
+        .select(projection)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(fetchLimit)
+        .lean();
+
+      // 3. Time before .exec()
+      const tBeforeExec = performance.now();
+      const durQueryBuild = (tBeforeExec - tBeforeQueryCreate).toFixed(2);
+
+      let properties: any[] = [];
+      let totalCount: number | undefined;
+
+      if (includeTotal) {
+        const [fetchedProps, count] = await Promise.all([
+          dataQuery.exec(),
+          Property.countDocuments(filter).exec()
+        ]);
+        properties = fetchedProps;
+        totalCount = count;
       } else {
-        filter.category = category;
-      }
-    }
-    if (city && city !== 'all') filter.city = new RegExp(city, 'i');
-    if (locality) filter.locality = new RegExp(locality, 'i');
-    if (type && type !== 'all') filter.type = type;
-    if (pid) filter.pid = pid.trim().toUpperCase();
-    if (bedrooms && bedrooms !== 'all') filter.bedrooms = Number(bedrooms);
-    if (maxPrice) filter.price = { $lte: Number(maxPrice) };
-    
-    if (search) {
-      filter.$or = [
-        { title: new RegExp(search, 'i') },
-        { locality: new RegExp(search, 'i') },
-        { city: new RegExp(search, 'i') },
-        { address: new RegExp(search, 'i') },
-        { pid: new RegExp(search, 'i') }
-      ];
-    }
-
-    const properties = await Property.find(filter).sort({ createdAt: -1 }).lean();
-    const normalizedAuthEmail = normalizeEmail(authUser?.email);
-    const visibleProperties = properties.filter((property: any) => {
-      if (admin === 'true' && isAdminUser(authUser)) {
-        return true;
+        properties = await dataQuery.exec();
       }
 
-      const isOwner = Boolean(normalizedAuthEmail && normalizeEmail(property.ownerEmail) === normalizedAuthEmail);
+      // 4. Time immediately after .exec()
+      const tAfterExec = performance.now();
+      const durExec = (tAfterExec - tBeforeExec).toFixed(2);
+      const durQuery = (tAfterExec - tBeforeQueryCreate).toFixed(2);
 
-      if (!authUser) {
-        return property.verified === true;
+      const serversAfter = topology?.description?.servers ? Array.from(topology.description.servers.keys()) : [];
+      const topologyTypeAfter = topology?.description?.type || 'unknown';
+
+      console.log(`\n🔍 [DIAGNOSTIC TIMINGS]`);
+      console.log(`   1. connectToDatabase(): ${durConn} ms (readyState: ${mongooseInstance.connection.readyState})`);
+      console.log(`   2. Topology before query: Type=${topologyTypeBefore}, Known Servers=[${serversBefore.join(', ')}]`);
+      console.log(`   3. Query Object Build: ${durQueryBuild} ms`);
+      console.log(`   4. Query .exec() execution: ${durExec} ms`);
+      console.log(`   5. Topology after query: Type=${topologyTypeAfter}, Known Servers=[${serversAfter.join(', ')}]\n`);
+
+      let hasMore = false;
+      if (!includeTotal) {
+        hasMore = properties.length > limit;
+        if (hasMore) {
+          properties = properties.slice(0, limit);
+        }
+      } else if (totalCount !== undefined) {
+        hasMore = page * limit < totalCount;
       }
 
-      if (verified === 'all' || verified === 'false') {
-        return property.verified === true || isOwner;
-      }
-
-      return property.verified === true || isOwner;
-    });
-
-    return NextResponse.json({
-      success: true,
-      data: visibleProperties.map((property: any) =>
+      // 6. Access Control & Owner Contact Masking
+      const tAccessStart = performance.now();
+      const sanitizedProperties = properties.map((property: any) =>
         serializeProperty(property, canViewPropertyContactDetails(property, authUser))
-      ),
-      source: 'mongodb'
-    });
-  } catch (error) {
-    // In-memory filtering fallback
-
-    let filtered = [...memoryStore];
-
-    if (category && category !== 'all') {
-      if (category === 'buy' || category === 'sell') {
-        filtered = filtered.filter(p => p.category === 'buy' || p.category === 'sell');
-      } else {
-        filtered = filtered.filter(p => p.category === category);
-      }
-    }
-    if (city && city !== 'all') filtered = filtered.filter(p => p.city.toLowerCase() === city.toLowerCase());
-    if (locality) filtered = filtered.filter(p => p.locality.toLowerCase().includes(locality.toLowerCase()));
-    if (type && type !== 'all') filtered = filtered.filter(p => p.type === type);
-    if (pid) filtered = filtered.filter(p => p.pid.toUpperCase() === pid.trim().toUpperCase());
-    if (bedrooms && bedrooms !== 'all') filtered = filtered.filter(p => p.bedrooms === Number(bedrooms));
-    if (maxPrice) filtered = filtered.filter(p => p.price <= Number(maxPrice));
-    
-    if (search) {
-      const q = search.toLowerCase();
-      filtered = filtered.filter(p => 
-        p.title.toLowerCase().includes(q) || 
-        p.locality.toLowerCase().includes(q) || 
-        p.city.toLowerCase().includes(q) || 
-        p.pid.toLowerCase().includes(q)
       );
+      const durAccess = (performance.now() - tAccessStart).toFixed(2);
+
+      const payload = {
+        success: true,
+        data: sanitizedProperties,
+        pagination: {
+          page,
+          limit,
+          hasMore,
+          ...(totalCount !== undefined ? { total: totalCount, totalPages: Math.ceil(totalCount / limit) } : {})
+        },
+        source: 'mongodb'
+      };
+
+      // Cache sanitized response
+      apiPropertiesCache.set(cacheKey, { payload, timestamp: Date.now() });
+
+      return {
+        payload,
+        timings: { durConn, durQuery, durExec, durQueryBuild, durAccess }
+      };
+    };
+
+    // Register in-flight promise
+    const queryPromise = executeQuery();
+    inFlightRequests.set(cacheKey, queryPromise);
+
+    try {
+      const { payload, timings } = await queryPromise;
+      const tTotal = (performance.now() - tStart).toFixed(2);
+
+      if (process.env.NODE_ENV !== 'production') {
+        console.log(
+          `[API Properties] Auth: ${durAuth}ms | DB Conn: ${timings.durConn}ms | Query Build: ${timings.durQueryBuild}ms | Query Exec: ${timings.durExec}ms | Access: ${timings.durAccess}ms | Total: ${tTotal}ms`
+        );
+      }
+
+      return NextResponse.json(payload, {
+        headers: {
+          'Cache-Control': 'public, s-maxage=30, stale-while-revalidate=60',
+          'X-Cache-Status': 'MISS',
+          'Server-Timing': `auth;dur=${durAuth}, db_conn;dur=${timings.durConn}, db_build;dur=${timings.durQueryBuild}, db_exec;dur=${timings.durExec}, access;dur=${timings.durAccess}, total;dur=${tTotal}`
+        }
+      });
+    } catch (error: any) {
+      console.error('[API Properties Error]:', error.message);
+
+      // If a stale cache entry exists, return it with a stale indicator
+      if (cached) {
+        return NextResponse.json({
+          ...cached.payload,
+          source: 'cache-stale',
+          warning: 'Serving stale cache due to database unavailability'
+        }, {
+          headers: { 'X-Cache-Status': 'STALE' }
+        });
+      }
+
+      // Fail quickly with clear 503 instead of fabricating data
+      return NextResponse.json({
+        success: false,
+        message: 'Database temporarily unavailable. Please try again.',
+        error: error.message
+      }, { status: 503 });
+    } finally {
+      // Guaranteed in-flight promise cleanup
+      inFlightRequests.delete(cacheKey);
     }
-
-    const normalizedAuthEmail = normalizeEmail(authUser?.email);
-    const visibleProperties = filtered.filter((property: any) => {
-      if (admin === 'true' && isAdminUser(authUser)) {
-        return true;
-      }
-
-      const isOwner = Boolean(normalizedAuthEmail && normalizeEmail(property.ownerEmail) === normalizedAuthEmail);
-
-      if (!authUser) {
-        return property.verified === true;
-      }
-
-      if (verified === 'all' || verified === 'false') {
-        return property.verified === true || isOwner;
-      }
-
-      return property.verified === true || isOwner;
-    });
-
+  } catch (fatalError: any) {
+    console.error('[FATAL GET ERROR]:', fatalError);
     return NextResponse.json({
-      success: true,
-      data: visibleProperties.map((property: any) =>
-        serializeProperty(property, canViewPropertyContactDetails(property, authUser))
-      ),
-      source: 'memory'
-    });
+      success: false,
+      message: fatalError.message || 'Internal error',
+      stack: fatalError.stack
+    }, { status: 500 });
   }
 }
 
@@ -204,6 +363,8 @@ export async function POST(req: NextRequest) {
       available: true,
       createdAt: new Date()
     };
+
+    clearPropertiesApiCache();
 
     try {
       await connectToDatabase();

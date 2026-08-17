@@ -157,8 +157,8 @@ To prevent fraudulent listings, only verified property owners can post listings:
 ### 5.2 Property Search & Price Slider System ([app/properties/page.tsx](file:///c:/Users/amank/Desktop/LetsRentz/letsrentz-app/app/properties/page.tsx))
 
 - **Price Bounds**:
-  - Rent / PG: Up to **₹5 Lakh**
-  - Buy / Sale: Up to **₹2 Crore** (`20,000,000`)
+  - Rent / PG / Commercial: Up to **₹15 Lakh** (`1,500,000`)
+  - Buy / Sale: Up to **₹5 Crore** (`50,000,000`)
 - **Debounced Slider**: 400ms debounce prevents API flooding while dragging the range slider.
 - **Filters**: Category (`rent`, `buy`, `pg`, `commercial`), Property Type (`flat`, `house`, `commercial`, `plot`), City, Bedrooms, Furnishing, Verified Only.
 

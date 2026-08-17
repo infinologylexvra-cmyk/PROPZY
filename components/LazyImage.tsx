@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Image as ImageIcon } from 'lucide-react';
 
 const loadedImageUrls = new Set<string>();
@@ -36,12 +36,42 @@ export const LazyImage: React.FC<LazyImageProps> = ({
   const imgSrc = error ? optimizedFallback : optimizedSrc;
   
   const [loaded, setLoaded] = useState(() => loadedImageUrls.has(imgSrc));
+  const [isVisible, setIsVisible] = useState(() => loadedImageUrls.has(imgSrc));
+  const containerRef = useRef<HTMLDivElement>(null);
 
+  // 1. Intersection Observer: Only activate network fetch when element enters viewport
   useEffect(() => {
     if (loadedImageUrls.has(imgSrc)) {
+      setIsVisible(true);
       setLoaded(true);
       return;
     }
+
+    if (typeof window === 'undefined' || !('IntersectionObserver' in window)) {
+      setIsVisible(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '250px' }
+    );
+
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, [imgSrc]);
+
+  // 2. Pre-fetch image JS object only when visible
+  useEffect(() => {
+    if (!isVisible || loadedImageUrls.has(imgSrc)) return;
 
     const img = new window.Image();
     img.src = imgSrc;
@@ -58,10 +88,10 @@ export const LazyImage: React.FC<LazyImageProps> = ({
         setLoaded(true);
       };
     }
-  }, [imgSrc]);
+  }, [isVisible, imgSrc]);
 
   return (
-    <div className={`relative overflow-hidden bg-[#0d1c14] ${className}`}>
+    <div ref={containerRef} className={`relative overflow-hidden bg-[#0d1c14] ${className}`}>
       {/* Skeleton Shimmer Overlay */}
       {!loaded && !error && (
         <div className="absolute inset-0 bg-gradient-to-r from-[#0a140f] via-[#11291d] to-[#0a140f] animate-pulse flex items-center justify-center">
@@ -69,24 +99,26 @@ export const LazyImage: React.FC<LazyImageProps> = ({
         </div>
       )}
 
-      <img
-        src={imgSrc}
-        alt={alt}
-        loading="lazy"
-        decoding="async"
-        onLoad={() => {
-          loadedImageUrls.add(imgSrc);
-          setLoaded(true);
-        }}
-        onError={() => {
-          setError(true);
-          setLoaded(true);
-        }}
-        className={`w-full h-full object-cover transition-opacity duration-300 ease-out ${
-          loaded ? 'opacity-100' : 'opacity-0'
-        }`}
-        {...props}
-      />
+      {isVisible && (
+        <img
+          src={imgSrc}
+          alt={alt}
+          loading="lazy"
+          decoding="async"
+          onLoad={() => {
+            loadedImageUrls.add(imgSrc);
+            setLoaded(true);
+          }}
+          onError={() => {
+            setError(true);
+            setLoaded(true);
+          }}
+          className={`w-full h-full object-cover transition-opacity duration-300 ease-out ${
+            loaded ? 'opacity-100' : 'opacity-0'
+          }`}
+          {...props}
+        />
+      )}
     </div>
   );
 };

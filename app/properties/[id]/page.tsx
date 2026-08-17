@@ -201,8 +201,70 @@ export default function PropertyDetailPage() {
             </div>
           </div>
 
-          {/* Right Thumbnails 2x2 Grid Layout */}
-          {images.length > 1 && (
+          {/* Right Thumbnails Dynamic Grid Layout */}
+          {images.length === 2 && (
+            <div className="hidden lg:block lg:col-span-2 h-full">
+              <button
+                type="button"
+                onClick={() => setCurrentImgIndex(1)}
+                className={`relative w-full h-full rounded-2xl overflow-hidden border-2 transition-all cursor-pointer group bg-black ${
+                  currentImgIndex === 1 ? 'border-emerald-500 ring-2 ring-emerald-500/40' : 'border-transparent opacity-90 hover:opacity-100'
+                }`}
+              >
+                <LazyImage src={images[1]} alt="Photo 2" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+              </button>
+            </div>
+          )}
+
+          {images.length === 3 && (
+            <div className="hidden lg:grid lg:col-span-2 grid-rows-2 gap-2 h-full">
+              {[1, 2].map((actualIndex) => (
+                <button
+                  key={actualIndex}
+                  type="button"
+                  onClick={() => setCurrentImgIndex(actualIndex)}
+                  className={`relative w-full h-full rounded-2xl overflow-hidden border-2 transition-all cursor-pointer group bg-black ${
+                    currentImgIndex === actualIndex ? 'border-emerald-500 ring-2 ring-emerald-500/40' : 'border-transparent opacity-90 hover:opacity-100'
+                  }`}
+                >
+                  <LazyImage src={images[actualIndex]} alt={`Photo ${actualIndex + 1}`} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                </button>
+              ))}
+            </div>
+          )}
+
+          {images.length === 4 && (
+            <div className="hidden lg:grid lg:col-span-2 grid-rows-2 gap-2 h-full">
+              {/* Top Row: Photo #2 spanning full width of right column */}
+              <button
+                type="button"
+                onClick={() => setCurrentImgIndex(1)}
+                className={`relative w-full h-full rounded-2xl overflow-hidden border-2 transition-all cursor-pointer group bg-black ${
+                  currentImgIndex === 1 ? 'border-emerald-500 ring-2 ring-emerald-500/40' : 'border-transparent opacity-90 hover:opacity-100'
+                }`}
+              >
+                <LazyImage src={images[1]} alt="Photo 2" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+              </button>
+
+              {/* Bottom Row: Photo #3 & Photo #4 side-by-side */}
+              <div className="grid grid-cols-2 gap-2 h-full">
+                {[2, 3].map((actualIndex) => (
+                  <button
+                    key={actualIndex}
+                    type="button"
+                    onClick={() => setCurrentImgIndex(actualIndex)}
+                    className={`relative w-full h-full rounded-2xl overflow-hidden border-2 transition-all cursor-pointer group bg-black ${
+                      currentImgIndex === actualIndex ? 'border-emerald-500 ring-2 ring-emerald-500/40' : 'border-transparent opacity-90 hover:opacity-100'
+                    }`}
+                  >
+                    <LazyImage src={images[actualIndex]} alt={`Photo ${actualIndex + 1}`} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {images.length >= 5 && (
             <div className="hidden lg:grid lg:col-span-2 grid-cols-2 grid-rows-2 gap-2 h-full">
               {images.slice(1, 5).map((imgUrl, idx) => {
                 const actualIndex = idx + 1;
@@ -242,13 +304,6 @@ export default function PropertyDetailPage() {
                   </button>
                 );
               })}
-
-              {/* Pad grid if less than 5 images */}
-              {images.length < 5 && Array.from({ length: 5 - images.length }).map((_, padIdx) => (
-                <div key={`pad-${padIdx}`} className="w-full h-full rounded-2xl bg-[#09120c] border border-emerald-950/60 flex items-center justify-center text-gray-600">
-                  <ImageIcon size={20} className="opacity-40" />
-                </div>
-              ))}
             </div>
           )}
         </div>
@@ -286,12 +341,12 @@ export default function PropertyDetailPage() {
             </button>
           </div>
 
-          {/* Main Active Image View - 100vh viewport utilization */}
-          <div className="relative flex-1 w-full h-full flex items-center justify-center py-1 overflow-hidden" onClick={(e) => e.stopPropagation()}>
+          {/* Main Active Image View - Medium Crisp Sizing */}
+          <div className="relative flex-1 w-full flex items-center justify-center py-2 overflow-hidden" onClick={(e) => e.stopPropagation()}>
             <LazyImage
               src={images[currentImgIndex]}
               alt={property.title}
-              className="w-full h-full max-h-[calc(100vh-130px)] object-contain rounded-2xl shadow-2xl"
+              className="max-h-[75vh] max-w-4xl lg:max-w-5xl w-auto h-auto object-contain rounded-2xl shadow-2xl"
             />
 
             {images.length > 1 && (
