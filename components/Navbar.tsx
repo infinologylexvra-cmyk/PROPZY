@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { Search, Heart, User, ChevronDown, Home, Menu, X, ShieldCheck } from 'lucide-react';
+import { Search, Heart, User, ChevronDown, Home, Menu, X, ShieldCheck, Plus } from 'lucide-react';
 import { GlobalSearchBar } from '@/components/GlobalSearchBar';
 import { useApp } from '@/context/AppContext';
 
@@ -148,14 +148,16 @@ function NavbarContent() {
             <GlobalSearchBar mode="public" className="hidden lg:block w-64 md:w-72" />
 
             {/* Post Property Button */}
-            {user?.role === 'owner' && <Link
-              href="/post-property"
-              onClick={() => setActiveItem('sell')}
-              className="hidden sm:flex items-center space-x-1 px-4 sm:px-5 py-2 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-all"
-            >
-              <span>Post Property</span>
-              <span className="text-sm font-bold ml-1">→</span>
-            </Link>}
+            {user?.role === 'owner' && (
+              <Link
+                href="/post-property"
+                onClick={() => setActiveItem('sell')}
+                className="hidden sm:inline-flex items-center justify-center space-x-1.5 px-4 py-2 h-9 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs shadow-md shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-all whitespace-nowrap shrink-0 cursor-pointer active:scale-95"
+              >
+                <Plus size={14} className="stroke-[2.5]" />
+                <span>Post Property</span>
+              </Link>
+            )}
 
             {/* Saved Wishlist Icon */}
             <Link

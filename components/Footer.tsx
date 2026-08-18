@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
   Home, ShieldCheck, Phone, Mail, MapPin, Smartphone, ArrowRight,
-  Globe, Instagram, Linkedin, Twitter, Facebook, UserCheck, Percent, Heart
+  Globe, Instagram, Linkedin, Twitter, Facebook, UserCheck, Percent, Heart,
+  Building, Building2, Landmark, Hotel, Castle
 } from 'lucide-react';
 
 import { isValidEmail } from '@/lib/validation';
@@ -25,12 +26,11 @@ export const Footer: React.FC = () => {
   };
 
   const majorCities = [
-    { name: 'Mohali', href: '/properties?city=Mohali' },
-    { name: 'Chandigarh', href: '/properties?city=Chandigarh' },
-    { name: 'Zirakpur', href: '/properties?city=Zirakpur' },
-    { name: 'Panchkula', href: '/properties?city=Panchkula' },
-    { name: 'Kharar', href: '/properties?city=Kharar' },
-    { name: '+ More', href: '/localities' },
+    { name: 'Mohali', href: '/properties?city=Mohali', icon: Building2 },
+    { name: 'Chandigarh', href: '/properties?city=Chandigarh', icon: Landmark },
+    { name: 'Zirakpur', href: '/properties?city=Zirakpur', icon: Building },
+    { name: 'Panchkula', href: '/properties?city=Panchkula', icon: Hotel },
+    { name: 'Kharar', href: '/properties?city=Kharar', icon: Castle },
   ];
 
 
@@ -218,16 +218,19 @@ export const Footer: React.FC = () => {
               SERVING MAJOR CITIES
             </div>
             <div className="flex flex-wrap justify-start gap-4">
-              {majorCities.map((c, idx) => (
-                <Link key={idx} href={c.href} className="flex flex-col items-center space-y-1 group cursor-pointer">
-                  <div className="w-10 h-10 rounded-full bg-[#0a1b12] border border-emerald-900/60 group-hover:border-emerald-500 group-hover:bg-emerald-500 group-hover:text-black text-emerald-400 flex items-center justify-center transition-all shadow-sm">
-                    <Home size={16} />
-                  </div>
-                  <span className="text-[10px] text-gray-400 group-hover:text-white font-medium transition-colors text-center">
-                    {c.name}
-                  </span>
-                </Link>
-              ))}
+              {majorCities.map((c, idx) => {
+                const IconComponent = c.icon;
+                return (
+                  <Link key={idx} href={c.href} className="flex flex-col items-center space-y-1.5 group cursor-pointer">
+                    <div className="w-10 h-10 rounded-full bg-[#0a1b12] border border-emerald-900/60 group-hover:border-emerald-500 group-hover:bg-emerald-500 group-hover:text-black text-emerald-400 flex items-center justify-center transition-all shadow-sm">
+                      <IconComponent size={16} strokeWidth={1.75} />
+                    </div>
+                    <span className="text-[10px] text-gray-400 group-hover:text-white font-medium transition-colors text-center">
+                      {c.name}
+                    </span>
+                  </Link>
+                );
+              })}
 
             </div>
           </div>
