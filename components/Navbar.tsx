@@ -92,53 +92,55 @@ function NavbarContent() {
     <header className="sticky top-0 z-50 bg-[#060907]/95 backdrop-blur-xl border-b border-emerald-950/60">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
-          {/* Brand Logo */}
-          <Link
-            href="/"
-            onClick={() => setActiveItem('home')}
-            className="flex items-center space-x-2.5 group"
-          >
-            <div className="w-9 h-9 rounded-xl bg-emerald-500 flex items-center justify-center text-black shadow-lg shadow-emerald-500/25 group-hover:scale-105 transition-transform">
-              <Home size={20} className="stroke-[2.5]" />
-            </div>
-            <span className="text-xl font-extrabold tracking-wider uppercase text-white font-sans">
-              PROP<span className="text-emerald-400">ZY</span>
-            </span>
-          </Link>
+          <div className="flex items-center space-x-8 md:space-x-10 lg:space-x-12 shrink-0">
+            {/* Brand Logo */}
+            <Link
+              href="/"
+              onClick={() => setActiveItem('home')}
+              className="flex items-center space-x-2.5 group shrink-0"
+            >
+              <div className="w-9 h-9 rounded-xl bg-emerald-500 flex items-center justify-center text-black shadow-lg shadow-emerald-500/25 group-hover:scale-105 transition-transform">
+                <Home size={20} className="stroke-[2.5]" />
+              </div>
+              <span className="text-xl font-extrabold tracking-wider uppercase text-white font-sans">
+                PROP<span className="text-emerald-400">ZY</span>
+              </span>
+            </Link>
 
-          {/* Center Navigation Links with Smooth Sliding Animated Underline */}
-          <nav
-            ref={navContainerRef}
-            className="relative hidden xl:flex items-center space-x-6 lg:space-x-7 text-xs font-semibold tracking-wide py-2"
-          >
-            {navItems.map((item) => {
-              const isActive = activeItem === item.key;
-              return (
-                <Link
-                  key={item.key}
-                  href={item.href}
-                  data-nav-key={item.key}
-                  onClick={() => setActiveItem(item.key)}
-                  className={`py-1 transition-colors duration-200 ${isActive
-                      ? 'text-emerald-400 font-extrabold'
-                      : 'text-gray-300 hover:text-emerald-400'
-                    }`}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
+            {/* Center Navigation Links with Smooth Sliding Animated Underline */}
+            <nav
+              ref={navContainerRef}
+              className="relative hidden xl:flex items-center space-x-6 lg:space-x-7 text-xs font-semibold tracking-wide py-2"
+            >
+              {navItems.map((item) => {
+                const isActive = activeItem === item.key;
+                return (
+                  <Link
+                    key={item.key}
+                    href={item.href}
+                    data-nav-key={item.key}
+                    onClick={() => setActiveItem(item.key)}
+                    className={`py-1 transition-colors duration-200 ${isActive
+                        ? 'text-emerald-400 font-extrabold'
+                        : 'text-gray-300 hover:text-emerald-400'
+                      }`}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
 
-            {/* Smooth Sliding Emerald Underline Indicator */}
-            <span
-              className="absolute bottom-0 h-[2.5px] bg-emerald-400 rounded-full transition-all duration-300 ease-out shadow-sm shadow-emerald-400/50"
-              style={{
-                left: `${indicatorStyle.left}px`,
-                width: `${indicatorStyle.width}px`,
-                opacity: indicatorStyle.opacity,
-              }}
-            />
-          </nav>
+              {/* Smooth Sliding Emerald Underline Indicator */}
+              <span
+                className="absolute bottom-0 h-[2.5px] bg-emerald-400 rounded-full transition-all duration-300 ease-out shadow-sm shadow-emerald-400/50"
+                style={{
+                  left: `${indicatorStyle.left}px`,
+                  width: `${indicatorStyle.width}px`,
+                  opacity: indicatorStyle.opacity,
+                }}
+              />
+            </nav>
+          </div>
 
           {/* Right Action Buttons */}
           <div className="flex items-center space-x-2 sm:space-x-3.5">
