@@ -8,6 +8,8 @@ import { Footer } from '@/components/Footer';
 import { Toast } from '@/components/Toast';
 import { ClientModals } from '@/components/ClientModals';
 import { HideOnRoute } from '@/components/HideOnRoute';
+import { AdminRouteGuard } from '@/components/AdminRouteGuard';
+import { GlobalProgressBar } from '@/components/GlobalProgressBar';
 
 const playfair = Playfair_Display({
   subsets: ['latin'],
@@ -38,6 +40,8 @@ export default function RootLayout({
       </head>
       <body className="bg-[#050806] text-gray-100 antialiased min-h-screen flex flex-col font-sans selection:bg-emerald-500 selection:text-black">
         <AppProvider>
+          <GlobalProgressBar />
+          <AdminRouteGuard />
           <HideOnRoute prefix="/admin">
             <Navbar />
           </HideOnRoute>

@@ -16,6 +16,7 @@ import { InquiryModal } from '@/components/InquiryModal';
 import { useApp } from '@/context/AppContext';
 import { LazyImage } from '@/components/LazyImage';
 import { CallToActionBanner } from '@/components/CallToActionBanner';
+import { SkeletonPropertyCard } from '@/components/Loader';
 
 export default function HomePage() {
   const router = useRouter();
@@ -373,24 +374,32 @@ export default function HomePage() {
           className="flex space-x-6 overflow-x-auto pb-6 pt-1 snap-x snap-mandatory scroll-smooth no-scrollbar"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
-          {properties.map((prop) => (
-            <div
-              key={prop.id || prop.pid}
-              className="w-71.25 sm:w-80 lg:w-85 shrink-0 snap-start"
-            >
-              <PropertyCard
-                property={prop}
-                onContactClick={(p) => {
-                  if (!user) {
-                    showToast('Please login to contact the property owner');
-                    openAuthModal();
-                    return;
-                  }
-                  setSelectedPropertyForInquiry(p);
-                }}
-              />
-            </div>
-          ))}
+          {loading && properties.length === 0 ? (
+            Array.from({ length: 4 }).map((_, i) => (
+              <div key={`skel-${i}`} className="w-71.25 sm:w-80 lg:w-85 shrink-0 snap-start">
+                <SkeletonPropertyCard />
+              </div>
+            ))
+          ) : (
+            properties.map((prop) => (
+              <div
+                key={prop.id || prop.pid}
+                className="w-71.25 sm:w-80 lg:w-85 shrink-0 snap-start"
+              >
+                <PropertyCard
+                  property={prop}
+                  onContactClick={(p) => {
+                    if (!user) {
+                      showToast('Please login to contact the property owner');
+                      openAuthModal();
+                      return;
+                    }
+                    setSelectedPropertyForInquiry(p);
+                  }}
+                />
+              </div>
+            ))
+          )}
         </div>
 
         {/* Explore All Properties Button */}

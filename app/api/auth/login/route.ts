@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { connectToDatabase } from '@/lib/mongodb';
 import User from '@/models/User';
-import { memoryUsers } from '@/lib/memoryStore';
 import { signJWT, setAuthCookie } from '@/lib/auth';
 
 export async function POST(req: NextRequest) {
@@ -10,13 +9,21 @@ export async function POST(req: NextRequest) {
     const { identifier, password } = await req.json();
 
     if (!identifier || !password) {
-      return NextResponse.json({ success: false, message: 'Please enter your email/username and password.' }, { status: 400 });
+      return NextResponse.json(
+        { success: false, message: 'Please enter your email/mobile and password.' },
+        { status: 400 }
+      );
     }
 
     const cleanInput = identifier.trim().toLowerCase();
+    const adminEmail = (process.env.ADMIN_ID || 'admin@propzy.com').toLowerCase().trim();
+    const adminPassword = process.env.ADMIN_PASSWORD || 'admin';
 
     // Helper to generate response with JWT cookie
-    const createAuthResponse = async (userPayload: { id: string; name: string; email: string; phone: string; role: 'tenant' | 'owner' | 'admin'; wishlist?: string[] }, message: string) => {
+    const createAuthResponse = async (
+      userPayload: { id: string; name: string; email: string; phone: string; role: 'tenant' | 'owner' | 'admin'; wishlist?: string[] },
+      message: string
+    ) => {
       const token = await signJWT({
         id: userPayload.id,
         name: userPayload.name,
@@ -34,80 +41,71 @@ export async function POST(req: NextRequest) {
       return setAuthCookie(response, token);
     };
 
-    // 1. Instant check for admin credentials shortcut (No DB wait needed)
+    // 1. Strict configured Admin credentials check
     if (
-      (cleanInput === 'admin@propzy.com' || cleanInput === 'admin@letsrentz.com' || cleanInput === 'admin' || cleanInput === 'guptaaman6376@gmail.com') &&
-      (password === 'admin' || password === 'admin123' || password.length >= 4)
+      (cleanInput === adminEmail || cleanInput === 'admin' || cleanInput === 'admin@letsrentz.com') &&
+      password === adminPassword
     ) {
       return createAuthResponse({
         id: 'admin-001',
         name: 'Admin Operations',
-        email: cleanInput.includes('@') ? cleanInput : 'admin@propzy.com',
+        email: cleanInput.includes('@') ? cleanInput : adminEmail,
         phone: '+91 99999 00000',
-        role: 'admin'
+        role: 'admin',
+        wishlist: []
       }, 'Admin login successful!');
     }
 
+    // 2. Connect to MongoDB Atlas
+    await connectToDatabase();
 
-    // 2. Connect to MongoDB Atlas with error catch
-    let dbConnected = false;
-    try {
-      await connectToDatabase();
-      dbConnected = true;
-    } catch (dbErr: any) {
-      console.warn('Database connection issue during login:', dbErr.message);
+    // 3. Look up user strictly in MongoDB database
+    const foundUser = await User.findOne({
+      $or: [
+        { email: cleanInput },
+        { phone: cleanInput }
+      ]
+    });
+
+    if (!foundUser) {
+      return NextResponse.json(
+        { success: false, message: 'No account found with this email or mobile number. Please register first.' },
+        { status: 401 }
+      );
     }
 
-    // 3. Query MongoDB Atlas user collection safely with try/catch
-    let foundUser = null;
-    if (dbConnected) {
-      try {
-        foundUser = await User.findOne({
-          $or: [
-            { email: cleanInput },
-            { phone: cleanInput },
-            { name: new RegExp(`^${cleanInput}$`, 'i') }
-          ]
-        }).maxTimeMS(4000);
-      } catch (queryErr: any) {
-        console.warn('Atlas query TLS/network error:', queryErr.message);
-        dbConnected = false;
-      }
-    }
-
-    if (foundUser) {
-      let isMatch = false;
-      if (foundUser.password) {
-        if (typeof foundUser.comparePassword === 'function') {
-          isMatch = await foundUser.comparePassword(password);
-        } else {
-          // Fallback if Mongoose methods not hydrated
-          const stored = foundUser.password;
-          if (stored.startsWith('$2a$') || stored.startsWith('$2b$') || stored.startsWith('$2y$')) {
-            isMatch = await bcrypt.compare(password, stored);
-          } else {
-            isMatch = stored === password;
-          }
-        }
-
-        // Auto-upgrade legacy plain text password in DB if it matched
-        if (isMatch && foundUser.password && !foundUser.password.startsWith('$2a$') && !foundUser.password.startsWith('$2b$') && !foundUser.password.startsWith('$2y$')) {
+    // 4. Strictly verify password with bcrypt
+    let isMatch = false;
+    if (foundUser.password) {
+      const stored = foundUser.password;
+      if (stored.startsWith('$2a$') || stored.startsWith('$2b$') || stored.startsWith('$2y$')) {
+        isMatch = await bcrypt.compare(password, stored);
+      } else {
+        // Fallback for legacy plain-text password, if any
+        isMatch = stored === password;
+        if (isMatch) {
+          // Upgrade plain text to bcrypt hash
           try {
-            foundUser.password = password; // pre-save hook will hash it
+            const salt = await bcrypt.genSalt(10);
+            foundUser.password = await bcrypt.hash(password, salt);
             await foundUser.save();
-          } catch (upgradeErr) {
-            console.warn('Could not upgrade legacy password hash:', upgradeErr);
-          }
+          } catch (e) {}
         }
       }
+    }
 
-      if (!isMatch) {
-        return NextResponse.json({ success: false, message: 'Invalid password. Please re-enter your password.' }, { status: 400 });
-      }
+    if (!isMatch) {
+      return NextResponse.json(
+        { success: false, message: 'Incorrect password. Please verify and try again.' },
+        { status: 401 }
+      );
+    }
 
-      const rawWishlist: string[] = foundUser.wishlist || [];
-      let validWishlist = rawWishlist;
-      if (rawWishlist.length > 0) {
+    // Clean up wishlist to only include existing properties
+    const rawWishlist: string[] = foundUser.wishlist || [];
+    let validWishlist = rawWishlist;
+    if (rawWishlist.length > 0) {
+      try {
         const Property = (await import('@/models/Property')).default;
         const existingProps = await Property.find({
           $or: [
@@ -127,60 +125,23 @@ export async function POST(req: NextRequest) {
         if (validWishlist.length !== rawWishlist.length) {
           await User.updateOne({ _id: foundUser._id }, { $set: { wishlist: validWishlist } });
         }
-      }
-
-      return createAuthResponse({
-        id: foundUser._id.toString(),
-        name: foundUser.name,
-        email: foundUser.email,
-        phone: foundUser.phone,
-        role: foundUser.role,
-        wishlist: validWishlist
-      }, `Welcome back, ${foundUser.name}!`);
+      } catch (e) {}
     }
 
-    // 4. Memory users check (includes registered & fallback demo profiles)
-    const memMatch = memoryUsers.find(u => 
-      u.email.toLowerCase() === cleanInput || u.phone === cleanInput || u.name.toLowerCase() === cleanInput
-    );
+    return createAuthResponse({
+      id: foundUser._id.toString(),
+      name: foundUser.name,
+      email: foundUser.email,
+      phone: foundUser.phone,
+      role: foundUser.role,
+      wishlist: validWishlist
+    }, `Welcome back, ${foundUser.name}!`);
 
-    if (memMatch) {
-      let isMemMatch = false;
-      if (memMatch.password) {
-        if (memMatch.password.startsWith('$2a$') || memMatch.password.startsWith('$2b$') || memMatch.password.startsWith('$2y$')) {
-          isMemMatch = await bcrypt.compare(password, memMatch.password);
-        } else {
-          isMemMatch = memMatch.password === password || password === '123456' || password === 'password123';
-        }
-      }
-
-      if (!isMemMatch) {
-        return NextResponse.json({ success: false, message: 'Invalid password. Please re-enter your password.' }, { status: 400 });
-      }
-      return createAuthResponse({
-        id: memMatch.id,
-        name: memMatch.name,
-        email: memMatch.email,
-        phone: memMatch.phone,
-        role: memMatch.role
-      }, `Welcome back, ${memMatch.name}!`);
-    }
-
-    // 5. Emergency profile creation so no user login ever fails due to database unavailability
-    const dynamicUser = {
-      id: `usr-dyn-${Date.now()}`,
-      name: cleanInput.includes('@') ? cleanInput.split('@')[0] : cleanInput,
-      email: cleanInput.includes('@') ? cleanInput : `${cleanInput}@propzy.com`,
-      phone: '+91 98765 00000',
-      role: 'tenant' as const
-    };
-
-    return createAuthResponse(dynamicUser, `Welcome back, ${dynamicUser.name}!`);
   } catch (error: any) {
-    console.error('Login Error:', error);
+    console.error('Authentication Error:', error);
     return NextResponse.json({
       success: false,
-      message: error.message || 'Login failed'
+      message: 'Authentication failed. Please check your connection and try again.'
     }, { status: 500 });
   }
 }

@@ -1,8 +1,9 @@
 import mongoose from 'mongoose';
 import dns from 'dns';
 
-// Optimize Node.js DNS resolution order on Windows for IPv4
+// Fix Node.js Windows DNS SRV resolution for MongoDB Atlas
 try {
+  dns.setServers(['8.8.8.8', '1.1.1.1', '8.8.4.4']);
   dns.setDefaultResultOrder('ipv4first');
 } catch (e) {}
 
@@ -48,12 +49,13 @@ export async function connectToDatabase() {
   if (!cached.promise) {
     const opts: mongoose.ConnectOptions = {
       bufferCommands: false,
-      autoIndex: false, // Prevents Mongoose from blocking on cloud createIndexes during query
+      autoIndex: false,
       minPoolSize: isServerless ? 0 : 2,
       maxPoolSize: isServerless ? 2 : 10,
-      serverSelectionTimeoutMS: 3000, // Fast failure to avoid hanging requests
-      connectTimeoutMS: 5000,
-      family: 4, // Force IPv4 resolution on Windows for Atlas SRV
+      serverSelectionTimeoutMS: 10000, // 10s for reliable DNS/TLS handshake
+      connectTimeoutMS: 10000,
+      socketTimeoutMS: 20000,
+      family: 4, // Force IPv4
     };
 
     cached.promise = mongoose

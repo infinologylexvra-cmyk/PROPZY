@@ -8,6 +8,7 @@ interface CacheEntry {
 // In-Memory Fast API Server Cache Layer
 const apiPropertiesCache = new Map<string, CacheEntry>();
 export const SERVER_CACHE_TTL_MS = 45000; // 45 Seconds Server TTL
+export const SERVER_CACHE_STALE_TTL_MS = 5 * 60 * 1000; // 5 Minutes Stale TTL Fallback
 
 // In-Flight Request Deduplication Map
 const inFlightRequests = new Map<string, Promise<any>>();
@@ -34,6 +35,15 @@ export function getPropertiesCache(key: string): CacheEntry | undefined {
   const entry = apiPropertiesCache.get(key);
   if (!entry) return undefined;
   if (Date.now() - entry.timestamp > SERVER_CACHE_TTL_MS) {
+    return undefined;
+  }
+  return entry;
+}
+
+export function getStalePropertiesCache(key: string): CacheEntry | undefined {
+  const entry = apiPropertiesCache.get(key);
+  if (!entry) return undefined;
+  if (Date.now() - entry.timestamp > SERVER_CACHE_STALE_TTL_MS) {
     apiPropertiesCache.delete(key);
     return undefined;
   }

@@ -3,8 +3,8 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { 
-  Home, ShieldCheck, Phone, Mail, MapPin, Smartphone, ArrowRight, 
+import {
+  Home, ShieldCheck, Phone, Mail, MapPin, Smartphone, ArrowRight,
   Globe, Instagram, Linkedin, Twitter, Facebook, UserCheck, Percent, Heart
 } from 'lucide-react';
 
@@ -63,7 +63,7 @@ export const Footer: React.FC = () => {
 
             {/* Social Icons Row */}
             <div className="flex items-center space-x-2 pt-2">
-              {[Globe, Instagram, Linkedin, Twitter, Facebook].map((Icon, idx) => (
+              {[Instagram, Linkedin, Twitter, Facebook].map((Icon, idx) => (
                 <a
                   key={idx}
                   href="#"
@@ -185,16 +185,16 @@ export const Footer: React.FC = () => {
         {/* ─────────────────────────────────────────────────────────────
             APP DOWNLOAD & SERVING MAJOR CITIES
         ───────────────────────────────────────────────────────────── */}
-        <div className="border-b border-dashed border-emerald-900/60 pb-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+        <div className="border-b border-dashed border-emerald-900/60 pb-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* App Store Buttons */}
           <div className="lg:col-span-5 space-y-3">
-            <div className="text-[11px] font-extrabold uppercase text-emerald-400 tracking-wider">
+            <div className="text-[11px] font-extrabold uppercase text-emerald-400 tracking-wider leading-none">
               GET THE PROPZY APP
             </div>
             <p className="text-xs text-gray-400">
               Find, shortlist & manage properties on the go.
             </p>
-            <div className="flex items-center space-x-3 pt-1">
+            <div className="flex flex-wrap items-center gap-3 pt-1">
               <a
                 href="#"
                 className="px-4 py-2 bg-[#09110c] hover:bg-[#121c16] border border-emerald-950 rounded-2xl text-xs font-bold text-white flex items-center space-x-2 transition-colors"
@@ -214,16 +214,16 @@ export const Footer: React.FC = () => {
 
           {/* Serving Major Cities */}
           <div className="lg:col-span-7 space-y-3">
-            <div className="text-[11px] font-extrabold uppercase text-emerald-400 tracking-wider">
+            <div className="text-[11px] font-extrabold uppercase text-emerald-400 tracking-wider leading-none">
               SERVING MAJOR CITIES
             </div>
-            <div className="flex flex-wrap justify-center md:justify-start  gap-4">
+            <div className="flex flex-wrap justify-start gap-4">
               {majorCities.map((c, idx) => (
                 <Link key={idx} href={c.href} className="flex flex-col items-center space-y-1 group cursor-pointer">
-                  <div className="w-10 h-10 rounded-full bg-[#0a1b12] border border-emerald-900/60 group-hover:border-emerald-500 group-hover:bg-emerald-500 group-hover:text-black text-emerald-400 flex items-center justify-center transition-all">
+                  <div className="w-10 h-10 rounded-full bg-[#0a1b12] border border-emerald-900/60 group-hover:border-emerald-500 group-hover:bg-emerald-500 group-hover:text-black text-emerald-400 flex items-center justify-center transition-all shadow-sm">
                     <Home size={16} />
                   </div>
-                  <span className="text-[10px] text-gray-400 group-hover:text-white font-medium transition-colors">
+                  <span className="text-[10px] text-gray-400 group-hover:text-white font-medium transition-colors text-center">
                     {c.name}
                   </span>
                 </Link>

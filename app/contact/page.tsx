@@ -192,7 +192,11 @@ export default function ContactPage() {
                 </button>
 
                 <p className="text-[11px] text-gray-500 text-center font-normal pt-1">
-                  By submitting, you agree to our <span className="text-gray-300 underline underline-offset-2">Privacy Policy</span>. We never share your data.
+                  By submitting, you agree to our{' '}
+                  <Link href="/privacy" className="text-gray-300 hover:text-emerald-400 underline underline-offset-2 transition-colors cursor-pointer">
+                    Privacy Policy
+                  </Link>
+                  . We never share your data.
                 </p>
               </form>
             )}

@@ -144,6 +144,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
   };
 
   const formatPrice = (val: number) => {
+    if (typeof val !== 'number' || isNaN(val) || !val) return '₹0';
     if (val >= 10000000) return `₹${(val / 10000000).toFixed(2)} Cr`;
     if (val >= 100000) return `₹${(val / 100000).toFixed(2)} Lakh`;
     return `₹${val.toLocaleString('en-IN')}`;

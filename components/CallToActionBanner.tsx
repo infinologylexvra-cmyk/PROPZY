@@ -46,9 +46,21 @@ export const CallToActionBanner: React.FC<CallToActionBannerProps> = ({
               {titleItalic}
             </span>
           </h2>
-          <p className="text-xs sm:text-sm text-gray-300 font-medium max-w-md mx-auto md:mx-0">
-            {description}
-          </p>
+          <div className="flex flex-wrap items-center justify-center md:justify-start gap-x-6 gap-y-1 text-xs sm:text-sm text-gray-300 font-medium max-w-xl mx-auto md:mx-0 pt-0.5">
+            {description.includes('.') && description.split('.').filter(Boolean).length > 1 ? (
+              description
+                .split('.')
+                .map((s) => s.trim())
+                .filter(Boolean)
+                .map((item, index) => (
+                  <span key={index} className="whitespace-nowrap">
+                    {item}.
+                  </span>
+                ))
+            ) : (
+              <span>{description}</span>
+            )}
+          </div>
         </div>
       </div>
 

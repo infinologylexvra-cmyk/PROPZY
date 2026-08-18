@@ -2,9 +2,21 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { X, Mail, Lock, User, ShieldCheck, UserCheck, KeyRound, Building, Home, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { 
+  X, Mail, Lock, User, ShieldCheck, UserCheck, KeyRound, Building, 
+  Home, ArrowRight, Eye, EyeOff, Check, CheckCircle2, XCircle, AlertCircle, MapPin 
+} from 'lucide-react';
 import { useApp } from '@/context/AppContext';
-import { sanitizeName, sanitizePhone, isValidName, isValidPhone, isValidEmail } from '@/lib/validation';
+import { 
+  sanitizeName, 
+  sanitizePhone, 
+  isValidName, 
+  isValidPhone, 
+  isValidEmail,
+  checkPasswordCriteria,
+  isValidStrongPassword,
+  getPasswordValidationMessage
+} from '@/lib/validation';
 
 
 export const AuthModal: React.FC = () => {
@@ -17,6 +29,7 @@ export const AuthModal: React.FC = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [city, setCity] = useState('Mohali');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [registerRole, setRegisterRole] = useState<'tenant' | 'owner'>('tenant');
@@ -115,8 +128,14 @@ export const AuthModal: React.FC = () => {
       return;
     }
 
+    const passwordError = getPasswordValidationMessage(password);
+    if (passwordError) {
+      setError(passwordError);
+      return;
+    }
+
     if (password !== confirmPassword) {
-      setError('Passwords do not match. Please re-enter your password.');
+      setError('Passwords do not match. Please re-enter matching passwords.');
       return;
     }
 
@@ -132,6 +151,7 @@ export const AuthModal: React.FC = () => {
           name: name.trim(),
           email: email.trim(),
           phone: phone.trim(),
+          city: city.trim() || 'Mohali',
           password,
           role: registerRole
         })
@@ -157,6 +177,7 @@ export const AuthModal: React.FC = () => {
     setName('');
     setEmail('');
     setPhone('');
+    setCity('Mohali');
     setPassword('');
     setConfirmPassword('');
     setLoginIdentifier('');
@@ -422,10 +443,38 @@ export const AuthModal: React.FC = () => {
                   </div>
                 </div>
 
+                {/* City / Location Selection */}
+                <div>
+                  <label className="block text-xs font-semibold text-gray-300 mb-1">City / Region *</label>
+                  <div className="flex items-center border border-emerald-900/80 bg-[#050806] rounded-xl overflow-hidden focus-within:border-emerald-500 transition-all pr-3">
+                    <span className="px-3 text-emerald-400">
+                      <MapPin size={16} />
+                    </span>
+                    <select
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                      className="w-full py-3 text-xs text-white bg-transparent focus:outline-none cursor-pointer font-semibold"
+                      required
+                    >
+                      <option value="Mohali" className="bg-[#0a110d] text-white">Mohali</option>
+                      <option value="Chandigarh" className="bg-[#0a110d] text-white">Chandigarh</option>
+                      <option value="Zirakpur" className="bg-[#0a110d] text-white">Zirakpur</option>
+                      <option value="Kharar" className="bg-[#0a110d] text-white">Kharar</option>
+                      <option value="Panchkula" className="bg-[#0a110d] text-white">Panchkula</option>
+                    </select>
+                  </div>
+                </div>
+
                 {/* Password */}
                 <div>
                   <label className="block text-xs font-semibold text-gray-300 mb-1">Create Password</label>
-                  <div className="flex items-center border border-emerald-900/80 bg-[#050806] rounded-xl overflow-hidden focus-within:border-emerald-500 transition-all pr-2">
+                  <div className={`flex items-center border bg-[#050806] rounded-xl overflow-hidden transition-all pr-2 ${
+                    password.length > 0
+                      ? checkPasswordCriteria(password).isValid
+                        ? 'border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.2)]'
+                        : 'border-amber-700/80 focus-within:border-amber-400'
+                      : 'border-emerald-900/80 focus-within:border-emerald-500'
+                  }`}>
                     <span className="px-3 text-emerald-400">
                       <Lock size={16} />
                     </span>
@@ -446,12 +495,90 @@ export const AuthModal: React.FC = () => {
                       {showRegisterPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>
                   </div>
+
+                  {/* Real-time Password Strength Meter & Security Criteria Checklist */}
+                  {password.length > 0 && (() => {
+                    const criteria = checkPasswordCriteria(password);
+                    return (
+                      <div className="mt-2.5 p-3 rounded-2xl bg-[#060e09] border border-emerald-950/90 space-y-2.5">
+                        {/* Header & Level Label */}
+                        <div className="flex items-center justify-between text-[11px] font-bold">
+                          <span className="text-gray-400">Password Strength:</span>
+                          <span className={
+                            criteria.score <= 2
+                              ? 'text-rose-400 font-extrabold'
+                              : criteria.score <= 4
+                              ? 'text-amber-400 font-extrabold'
+                              : 'text-emerald-400 font-extrabold flex items-center space-x-1'
+                          }>
+                            {criteria.score <= 1 && 'Weak (Incomplete)'}
+                            {criteria.score === 2 && 'Fair (Weak)'}
+                            {criteria.score === 3 && 'Moderate'}
+                            {criteria.score === 4 && 'Good (Almost ready)'}
+                            {criteria.score === 5 && 'Strong & Secure ✓'}
+                          </span>
+                        </div>
+
+                        {/* Segmented Strength Bar (5 Criteria) */}
+                        <div className="grid grid-cols-5 gap-1.5 h-1.5 w-full">
+                          {Array.from({ length: 5 }).map((_, idx) => (
+                            <div
+                              key={idx}
+                              className={`h-full rounded-full transition-all duration-300 ${
+                                idx < criteria.score
+                                  ? criteria.score <= 2
+                                    ? 'bg-rose-500 shadow-[0_0_6px_rgba(244,63,94,0.6)]'
+                                    : criteria.score <= 4
+                                    ? 'bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.6)]'
+                                    : 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]'
+                                  : 'bg-emerald-950/70 border border-emerald-900/30'
+                              }`}
+                            />
+                          ))}
+                        </div>
+
+                        {/* 5 Security Requirements Checklist */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 pt-1 text-[11px]">
+                          <div className={`flex items-center space-x-1.5 transition-colors ${criteria.minLength ? 'text-emerald-400 font-bold' : 'text-gray-500'}`}>
+                            <Check size={13} className={criteria.minLength ? 'text-emerald-400 stroke-[3]' : 'text-gray-600'} />
+                            <span>8+ characters</span>
+                          </div>
+
+                          <div className={`flex items-center space-x-1.5 transition-colors ${criteria.hasUppercase ? 'text-emerald-400 font-bold' : 'text-gray-500'}`}>
+                            <Check size={13} className={criteria.hasUppercase ? 'text-emerald-400 stroke-[3]' : 'text-gray-600'} />
+                            <span>1 uppercase letter (A-Z)</span>
+                          </div>
+
+                          <div className={`flex items-center space-x-1.5 transition-colors ${criteria.hasLowercase ? 'text-emerald-400 font-bold' : 'text-gray-500'}`}>
+                            <Check size={13} className={criteria.hasLowercase ? 'text-emerald-400 stroke-[3]' : 'text-gray-600'} />
+                            <span>1 lowercase letter (a-z)</span>
+                          </div>
+
+                          <div className={`flex items-center space-x-1.5 transition-colors ${criteria.hasNumber ? 'text-emerald-400 font-bold' : 'text-gray-500'}`}>
+                            <Check size={13} className={criteria.hasNumber ? 'text-emerald-400 stroke-[3]' : 'text-gray-600'} />
+                            <span>1 number (0-9)</span>
+                          </div>
+
+                          <div className={`flex items-center space-x-1.5 col-span-1 sm:col-span-2 transition-colors ${criteria.hasSpecial ? 'text-emerald-400 font-bold' : 'text-gray-500'}`}>
+                            <Check size={13} className={criteria.hasSpecial ? 'text-emerald-400 stroke-[3]' : 'text-gray-600'} />
+                            <span>1 special symbol (!@#$%^&*...)</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 {/* Confirm Password */}
                 <div>
                   <label className="block text-xs font-semibold text-gray-300 mb-1">Confirm Password</label>
-                  <div className="flex items-center border border-emerald-900/80 bg-[#050806] rounded-xl overflow-hidden focus-within:border-emerald-500 transition-all pr-2">
+                  <div className={`flex items-center border bg-[#050806] rounded-xl overflow-hidden transition-all pr-2 ${
+                    confirmPassword.length > 0
+                      ? password === confirmPassword
+                        ? 'border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.2)]'
+                        : 'border-rose-700/80 focus-within:border-rose-400'
+                      : 'border-emerald-900/80 focus-within:border-emerald-500'
+                  }`}>
                     <span className="px-3 text-emerald-400">
                       <KeyRound size={16} />
                     </span>
@@ -472,6 +599,22 @@ export const AuthModal: React.FC = () => {
                       {showConfirmPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                     </button>
                   </div>
+
+                  {confirmPassword.length > 0 && (
+                    <div className="mt-1.5 flex items-center space-x-1.5 text-[11px] font-bold">
+                      {password === confirmPassword ? (
+                        <span className="text-emerald-400 flex items-center space-x-1">
+                          <CheckCircle2 size={13} />
+                          <span>Passwords match securely</span>
+                        </span>
+                      ) : (
+                        <span className="text-rose-400 flex items-center space-x-1">
+                          <XCircle size={13} />
+                          <span>Passwords do not match</span>
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <button

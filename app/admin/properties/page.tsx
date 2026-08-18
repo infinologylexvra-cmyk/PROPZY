@@ -10,6 +10,7 @@ import { PropertyItem, INITIAL_PROPERTIES } from '@/lib/seedData';
 import { useApp } from '@/context/AppContext';
 import { getCachedProperties, setCachedProperties } from '@/lib/adminCache';
 import { useAdminSync } from '@/hooks/useAdminSync';
+import { TableSkeletonLoader, BrandSpinner } from '@/components/Loader';
 
 function AdminPropertiesContent() {
   const searchParams = useSearchParams();
@@ -74,15 +75,16 @@ function AdminPropertiesContent() {
 
   // Filtered List
   const filteredProperties = properties.filter(item => {
+    if (!item) return false;
     if (searchTerm) {
       const q = searchTerm.toLowerCase();
-      const matchPid = item.pid.toLowerCase().includes(q);
-      const matchTitle = item.title.toLowerCase().includes(q);
-      const matchLocality = item.locality.toLowerCase().includes(q);
+      const matchPid = (item.pid || '').toLowerCase().includes(q);
+      const matchTitle = (item.title || '').toLowerCase().includes(q);
+      const matchLocality = (item.locality || '').toLowerCase().includes(q);
       if (!matchPid && !matchTitle && !matchLocality) return false;
     }
 
-    if (cityFilter !== 'all' && !item.city.toLowerCase().includes(cityFilter.toLowerCase())) {
+    if (cityFilter !== 'all' && !(item.city || '').toLowerCase().includes(cityFilter.toLowerCase())) {
       return false;
     }
 
@@ -318,7 +320,9 @@ function AdminPropertiesContent() {
               </tr>
             </thead>
             <tbody className="divide-y divide-emerald-950/60">
-              {filteredProperties.length === 0 ? (
+              {loading && properties.length === 0 ? (
+                <TableSkeletonLoader rows={6} cols={7} message="Loading properties..." />
+              ) : filteredProperties.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="p-8 text-center text-gray-400">
                     No properties match your filter criteria.
@@ -558,7 +562,11 @@ function AdminPropertiesContent() {
 
 export default function AdminPropertiesPage() {
   return (
-    <Suspense fallback={<div className="text-gray-400 p-8">Loading properties manager...</div>}>
+    <Suspense fallback={
+      <div className="min-h-[50vh] flex items-center justify-center">
+        <BrandSpinner message="Loading properties manager..." size="md" />
+      </div>
+    }>
       <AdminPropertiesContent />
     </Suspense>
   );

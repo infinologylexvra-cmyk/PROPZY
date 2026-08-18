@@ -5,6 +5,7 @@ import { ShieldCheck, CheckCircle2, XCircle, Clock, FileText, Search, UserCheck,
 import { useApp } from '@/context/AppContext';
 import { getCachedVerifications, setCachedVerifications } from '@/lib/adminCache';
 import { useAdminSync } from '@/hooks/useAdminSync';
+import { BrandSpinner } from '@/components/Loader';
 
 export default function AdminVerificationsPage() {
   const { showToast } = useApp();
@@ -215,9 +216,8 @@ export default function AdminVerificationsPage() {
 
       {/* Verifications List */}
       {loading ? (
-        <div className="text-center py-16 text-xs text-gray-400">
-          <RefreshCw size={24} className="animate-spin mx-auto mb-2 text-emerald-400" />
-          Loading Electricity Bill submissions...
+        <div className="bg-[#0a110d] rounded-3xl border border-emerald-950/90 p-8 shadow-xl">
+          <BrandSpinner message="Loading Electricity Bill submissions..." size="md" />
         </div>
       ) : filtered.length === 0 ? (
         <div className="bg-[#0a110d] rounded-3xl border border-emerald-950 p-8 sm:p-12 text-center space-y-3">

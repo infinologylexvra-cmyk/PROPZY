@@ -47,18 +47,7 @@ export default function AdminLoginPage() {
         setError(data.message || 'Invalid Admin credentials.');
       }
     } catch (err) {
-      // Local fallback for offline testing
-      const adminUser: UserProfile = {
-        name: 'Admin Operations',
-        phone: '+91 99999 88888',
-        email: adminId.includes('@') ? adminId.trim() : 'admin@propzy.com',
-        role: 'admin',
-        city: 'Mohali',
-        joinedDate: 'August 2024',
-      };
-      setUser(adminUser);
-      showToast('Admin authentication successful!');
-      router.push('/admin');
+      setError('Unable to authenticate right now. Please verify your credentials and connection.');
     } finally {
       setSubmitting(false);
     }

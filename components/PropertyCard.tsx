@@ -84,9 +84,8 @@ export const PropertyCard: React.FC<PropertyCardProps> = React.memo(({ property,
             e.stopPropagation();
             toggleWishlist(property.pid || property.id);
           }}
-          className={`absolute top-3 right-3 p-2 rounded-full backdrop-blur-md transition-transform active:scale-90 z-20 ${
-            wish ? 'bg-emerald-500 text-black' : 'bg-black/60 text-gray-300 hover:bg-black/90 hover:text-white'
-          }`}
+          className={`absolute top-3 right-3 p-2 rounded-full backdrop-blur-md transition-transform active:scale-90 z-20 ${wish ? 'bg-emerald-500 text-black' : 'bg-black/60 text-gray-300 hover:bg-black/90 hover:text-white'
+            }`}
           title="Save Property"
         >
           <Heart size={16} fill={wish ? 'currentColor' : 'none'} />

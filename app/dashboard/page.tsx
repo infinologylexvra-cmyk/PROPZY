@@ -12,6 +12,7 @@ import { useApp, UserProfile, BillingRecord } from '@/context/AppContext';
 import { PropertyItem, INITIAL_PROPERTIES } from '@/lib/seedData';
 import { PropertyCard } from '@/components/PropertyCard';
 import { LazyImage } from '@/components/LazyImage';
+import { BrandSpinner } from '@/components/Loader';
 import { sanitizeName, sanitizePhone, isValidName, isValidPhone, isValidEmail, isValidElectricityBillDocument, isValidHttpUrl } from '@/lib/validation';
 
 
@@ -1120,7 +1121,11 @@ function DashboardContent() {
 
 export default function DashboardPage() {
   return (
-    <Suspense fallback={<div className="p-12 text-center text-xs text-gray-500 bg-[#050806] min-h-screen">Loading dashboard...</div>}>
+    <Suspense fallback={
+      <div className="min-h-[70vh] flex items-center justify-center">
+        <BrandSpinner message="Loading user dashboard..." size="lg" />
+      </div>
+    }>
       <DashboardContent />
     </Suspense>
   );

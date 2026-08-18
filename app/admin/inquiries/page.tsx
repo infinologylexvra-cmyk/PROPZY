@@ -9,6 +9,7 @@ import { INITIAL_INQUIRIES } from '@/lib/seedData';
 import { useApp } from '@/context/AppContext';
 import { getCachedInquiries, setCachedInquiries } from '@/lib/adminCache';
 import { useAdminSync } from '@/hooks/useAdminSync';
+import { TableSkeletonLoader } from '@/components/Loader';
 
 export default function AdminInquiriesPage() {
   const { showToast } = useApp();
@@ -134,7 +135,9 @@ export default function AdminInquiriesPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-emerald-950/60">
-              {filteredInquiries.length === 0 ? (
+              {loading && inquiries.length === 0 ? (
+                <TableSkeletonLoader rows={5} cols={5} message="Loading tenant leads..." />
+              ) : filteredInquiries.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="p-8 text-center text-gray-400">
                     No leads found matching status filter.

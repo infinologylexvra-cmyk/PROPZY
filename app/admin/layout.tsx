@@ -1,13 +1,14 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
 import { 
-  Search, ShieldCheck, Menu, ChevronDown, LayoutDashboard, ClipboardCheck, Users, LogOut
+  Search, ShieldCheck, Menu, ChevronDown, LayoutDashboard, ClipboardCheck, Users, LogOut, Home
 } from 'lucide-react';
 import { GlobalSearchBar } from '@/components/GlobalSearchBar';
 import { AdminSidebar } from '@/components/AdminSidebar';
+import { BrandSpinner } from '@/components/Loader';
 import { useApp, useAppStore } from '@/context/AppContext';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -20,8 +21,37 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isAdminMenuOpen, setIsAdminMenuOpen] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [showExitConfirm, setShowExitConfirm] = useState(false);
+  const adminMenuRef = useRef<HTMLDivElement>(null);
 
-  React.useEffect(() => {
+  // Close Admin menu when clicking anywhere outside
+  useEffect(() => {
+    if (!isAdminMenuOpen) return;
+
+    const handleClickOutside = (event: MouseEvent | TouchEvent) => {
+      if (adminMenuRef.current && !adminMenuRef.current.contains(event.target as Node)) {
+        setIsAdminMenuOpen(false);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsAdminMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isAdminMenuOpen]);
+
+  useEffect(() => {
     const checkHydration = () => {
       if (useAppStore.persist?.hasHydrated?.()) {
         setIsHydrated(true);
@@ -32,10 +62,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     checkHydration();
   }, []);
 
-  // Zustand rehydrates after the initial render. Restore the authoritative
-  // HttpOnly-cookie session before running the client-side admin guard so a
-  // page refresh does not incorrectly send an active admin to the login page.
-  React.useEffect(() => {
+  // Restore authoritative HttpOnly-cookie session
+  useEffect(() => {
     if (!isHydrated) return;
 
     let active = true;
@@ -57,7 +85,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }, [isHydrated, setUser]);
 
   // Automatic Authorization Guard & Silent Redirection
-  React.useEffect(() => {
+  useEffect(() => {
     if (!isHydrated || !isSessionChecked || isLoggingOut || pathname === '/admin/login') return;
 
     if (!user || user.role !== 'admin') {
@@ -66,17 +94,29 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       }
       router.replace('/admin/login');
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, pathname, isHydrated, isSessionChecked, isLoggingOut]);
+  }, [user, pathname, isHydrated, isSessionChecked, isLoggingOut, router, showToast]);
 
-  // Bypass route guard for login page
+  const handleConfirmExit = () => {
+    setIsAdminMenuOpen(false);
+    setIsLoggingOut(true);
+    try {
+      logoutUser();
+    } catch (e) {}
+    window.location.href = '/';
+  };
+
+  // 1. Bypass route guard for login page
   if (pathname === '/admin/login') {
     return <>{children}</>;
   }
 
-  // Prevent rendering admin panel or restricted screen before hydration or for non-admin users
+  // 2. Prevent rendering admin panel before hydration or for non-admin users
   if (!isHydrated || !isSessionChecked || !user || user.role !== 'admin') {
-    return null;
+    return (
+      <div className="bg-[#050806] min-h-screen flex items-center justify-center">
+        <BrandSpinner message="Authenticating Admin Portal..." size="lg" />
+      </div>
+    );
   }
 
   return (
@@ -109,7 +149,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <button
                 type="button"
                 onClick={() => setIsMobileSidebarOpen(true)}
-                className="lg:hidden inline-flex h-11 w-11 items-center justify-center rounded-xl bg-[#0a1610] border border-emerald-900/80 text-emerald-400"
+                className="lg:hidden inline-flex h-11 w-11 items-center justify-center rounded-xl bg-[#0a1610] border border-emerald-900/80 text-emerald-400 cursor-pointer"
                 aria-label="Open admin navigation"
               >
                 <Menu size={18} />
@@ -120,19 +160,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             {/* Right Controls */}
             <div className="flex items-center justify-between lg:justify-end gap-3 sm:gap-4 w-full lg:w-auto flex-wrap">
               {/* Admin Portal Menu */}
-              <div className="relative">
+              <div className="relative" ref={adminMenuRef}>
                 <button
                   type="button"
                   onClick={() => setIsAdminMenuOpen((open) => !open)}
                   aria-expanded={isAdminMenuOpen}
                   aria-haspopup="menu"
-                  className="flex items-center space-x-2 px-3 py-1.5 rounded-full bg-[#0a1610] border border-emerald-900/80 hover:border-emerald-500/70 text-xs min-w-0 transition-colors"
+                  className="flex items-center space-x-2 px-3 py-1.5 rounded-full bg-[#0a1610] border border-emerald-900/80 hover:border-emerald-500/70 text-xs min-w-0 transition-colors cursor-pointer"
                 >
                   <div className="w-6 h-6 rounded-full bg-emerald-500 text-black font-extrabold flex items-center justify-center text-xs">
-                    {user.name.charAt(0)}
+                    {(user.name || 'Admin').charAt(0)}
                   </div>
                   <span className="font-bold text-white truncate max-w-28 sm:max-w-none">
-                    {user.name.split(' ')[0]}
+                    {(user.name || 'Admin').split(' ')[0]}
                   </span>
                   <span className="hidden sm:inline text-[10px] font-extrabold text-emerald-400 bg-emerald-950 border border-emerald-800/80 px-2 py-0.5 rounded-full">
                     ADMIN
@@ -156,17 +196,26 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                         <Users size={15} /> Tenant Leads
                       </Link>
                     </div>
-                    <div className="pt-1.5 border-t border-emerald-950">
+                    <div className="pt-1.5 border-t border-emerald-950 space-y-1">
                       <button
                         type="button"
                         role="menuitem"
                         onClick={() => {
                           setIsAdminMenuOpen(false);
-                          setIsLoggingOut(true);
-                          router.replace('/');
-                          logoutUser();
+                          setShowExitConfirm(true);
                         }}
-                        className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left text-xs font-bold text-rose-400 rounded-xl hover:bg-rose-950/50 transition-colors"
+                        className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left text-xs font-bold text-gray-300 hover:text-emerald-400 rounded-xl hover:bg-emerald-950/50 transition-colors cursor-pointer"
+                      >
+                        <Home size={15} /> Back to Website
+                      </button>
+                      <button
+                        type="button"
+                        role="menuitem"
+                        onClick={() => {
+                          setIsAdminMenuOpen(false);
+                          setShowExitConfirm(true);
+                        }}
+                        className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left text-xs font-bold text-rose-400 rounded-xl hover:bg-rose-950/50 transition-colors cursor-pointer"
                       >
                         <LogOut size={15} /> Logout
                       </button>
@@ -184,6 +233,41 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </main>
         </div>
       </div>
+
+      {/* Exit Confirmation Dialog */}
+      {showExitConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
+          <div className="bg-[#0a110d] border border-amber-900/60 rounded-3xl p-6 max-w-sm w-full space-y-4 shadow-2xl">
+            <div className="w-12 h-12 rounded-full bg-amber-950/80 border border-amber-800/80 text-amber-400 flex items-center justify-center mx-auto">
+              <LogOut size={24} />
+            </div>
+
+            <div className="text-center space-y-1.5">
+              <h3 className="text-base font-extrabold text-white">Back to Website?</h3>
+              <p className="text-xs text-gray-300 leading-relaxed">
+                You will be <strong className="text-amber-400">logged out</strong> from your admin account before returning to the home page.
+              </p>
+            </div>
+
+            <div className="flex space-x-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowExitConfirm(false)}
+                className="flex-1 py-2.5 rounded-xl bg-[#050806] border border-emerald-950 text-gray-300 font-bold text-xs hover:bg-[#0e1813] transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirmExit}
+                className="flex-1 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs shadow-lg shadow-emerald-500/20 transition-all cursor-pointer"
+              >
+                OK, Log Out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

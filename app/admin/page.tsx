@@ -11,6 +11,7 @@ import { PropertyItem, INITIAL_PROPERTIES, INITIAL_INQUIRIES } from '@/lib/seedD
 import { useApp } from '@/context/AppContext';
 import { getCachedProperties, setCachedProperties, getCachedInquiries, setCachedInquiries } from '@/lib/adminCache';
 import { useAdminSync } from '@/hooks/useAdminSync';
+import { TableSkeletonLoader } from '@/components/Loader';
 
 export default function AdminOverviewPage() {
   const { showToast } = useApp();
@@ -149,11 +150,11 @@ export default function AdminOverviewPage() {
   };
 
   const citiesSummary = [
-    { city: 'Mohali', count: properties.filter(p => p.city.toLowerCase().includes('mohali')).length },
-    { city: 'Chandigarh', count: properties.filter(p => p.city.toLowerCase().includes('chandigarh')).length },
-    { city: 'Zirakpur', count: properties.filter(p => p.city.toLowerCase().includes('zirakpur')).length },
-    { city: 'Kharar', count: properties.filter(p => p.city.toLowerCase().includes('kharar')).length },
-    { city: 'Panchkula', count: properties.filter(p => p.city.toLowerCase().includes('panchkula')).length },
+    { city: 'Mohali', count: properties.filter(p => (p.city || '').toLowerCase().includes('mohali')).length },
+    { city: 'Chandigarh', count: properties.filter(p => (p.city || '').toLowerCase().includes('chandigarh')).length },
+    { city: 'Zirakpur', count: properties.filter(p => (p.city || '').toLowerCase().includes('zirakpur')).length },
+    { city: 'Kharar', count: properties.filter(p => (p.city || '').toLowerCase().includes('kharar')).length },
+    { city: 'Panchkula', count: properties.filter(p => (p.city || '').toLowerCase().includes('panchkula')).length },
   ];
 
   return (
@@ -365,12 +366,15 @@ export default function AdminOverviewPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-emerald-950/60">
-              {properties.slice(0, 6).map((item) => (
+              {properties.length === 0 ? (
+                <TableSkeletonLoader rows={4} cols={7} message="Loading property queue..." />
+              ) : (
+                properties.slice(0, 6).map((item) => (
                 <tr key={item.id || item.pid} className="hover:bg-[#07120a] transition-colors">
                   <td className="p-3 font-mono font-bold text-emerald-400">{item.pid}</td>
                   <td className="p-3 font-bold text-white max-w-xs truncate">{item.title}</td>
-                  <td className="p-3 text-gray-300">{item.locality}, {item.city}</td>
-                  <td className="p-3 font-bold text-emerald-400">₹{item.price?.toLocaleString('en-IN')}</td>
+                  <td className="p-3 text-gray-300">{(item.locality || '')}, {(item.city || '')}</td>
+                  <td className="p-3 font-bold text-emerald-400">₹{(item.price || 0).toLocaleString('en-IN')}</td>
                   <td className="p-3 font-mono text-gray-300">{item.ownerPhone || '+91 98765 43210'}</td>
                   <td className="p-3">
                     {item.verified ? (
@@ -410,7 +414,8 @@ export default function AdminOverviewPage() {
                     </div>
                   </td>
                 </tr>
-              ))}
+                ))
+              )}
             </tbody>
           </table>
         </div>

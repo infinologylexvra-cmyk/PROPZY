@@ -8,6 +8,7 @@ import { getAuthUser } from '@/lib/auth';
 import { canViewPropertyContactDetails, isAdminUser, isBrowserDocumentNavigation, normalizeEmail, serializeProperty } from '@/lib/accessControl';
 import { 
   getPropertiesCache, 
+  getStalePropertiesCache,
   setPropertiesCache, 
   clearPropertiesCache, 
   getInFlight, 
@@ -132,18 +133,47 @@ export async function GET(req: NextRequest) {
         ];
       }
 
-      // Role-based visibility filtering in DB query
-      if (!isAdminUser(authUser) || admin !== 'true') {
-        if (!authUser) {
-          // Guests only see verified listings
-          filter.verified = true;
-        } else if (verified !== 'all' && verified !== 'false') {
-          // Regular user: verified listings OR listings owned by this user
-          filter.$or = [
+      // Verified status filtering & visibility access control
+      if (verified === 'all') {
+        // Used by Dashboard "My Properties" tab and Admin Portal
+        if (isAdminUser(authUser) && admin === 'true') {
+          // Admin portal viewing all listings -> no verified filter
+        } else if (authUser?.email) {
+          // Owner in Dashboard: verified listings + their own unverified listings
+          const userVisibilityOr = [
             { verified: true },
             { ownerEmail: authUser.email.toLowerCase().trim() }
           ];
+
+          if (filter.$or) {
+            filter.$and = [
+              { $or: filter.$or },
+              { $or: userVisibilityOr }
+            ];
+            delete filter.$or;
+          } else {
+            filter.$or = userVisibilityOr;
+          }
+        } else {
+          // Unauthenticated users never see unverified listings
+          filter.verified = true;
         }
+      } else if (verified === 'false') {
+        // Explicitly requested unverified listings only (Admin moderation or Owner pending tab)
+        if (isAdminUser(authUser)) {
+          filter.verified = false;
+        } else if (authUser?.email) {
+          filter.verified = false;
+          filter.ownerEmail = authUser.email.toLowerCase().trim();
+        } else {
+          // Guests cannot view unverified listings
+          filter.verified = false;
+          filter._id = null; // Yields 0 results
+        }
+      } else {
+        // Standard public browsing (/properties, homepage, search, or verified='true'):
+        // STRICTLY VERIFIED PROPERTIES ONLY
+        filter.verified = true;
       }
 
       const skip = (page - 1) * limit;
@@ -238,9 +268,10 @@ export async function GET(req: NextRequest) {
       console.error('[API Properties Error]:', error.message);
 
       // If a stale cache entry exists, return it with a stale indicator
-      if (cached) {
+      const staleCache = getStalePropertiesCache(cacheKey);
+      if (staleCache) {
         return NextResponse.json({
-          ...cached.payload,
+          ...staleCache.payload,
           source: 'cache-stale',
           warning: 'Serving stale cache due to database unavailability'
         }, {
@@ -297,6 +328,17 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    const cleanedImages = Array.isArray(body.images) 
+      ? body.images.filter((img: string) => typeof img === 'string' && img.trim().length > 0)
+      : [];
+
+    if (cleanedImages.length === 0) {
+      return NextResponse.json({
+        success: false,
+        message: 'At least one property photo is required. Please upload photos before posting.'
+      }, { status: 400 });
+    }
+
     const pidGenerated = body.pid || `LR-${Math.floor(100 + Math.random() * 900)}`;
     const resolvedOwnerName = existingUser?.name || authUser.name || body.ownerName || 'Property Owner';
     const resolvedOwnerPhone = existingUser?.phone || body.ownerPhone || '+91 98765 43210';
@@ -318,7 +360,7 @@ export async function POST(req: NextRequest) {
       furnishing: validFurnishing.includes(body.furnishing) ? body.furnishing : 'semi-furnished',
       verified: body.verified !== undefined ? body.verified : false,
       featured: body.featured !== undefined ? body.featured : false,
-      images: Array.isArray(body.images) && body.images.length > 0 ? body.images : ['https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=800&q=80'],
+      images: cleanedImages,
       description: body.description || `Property listing in ${body.locality || 'Mohali'}.`,
       amenities: Array.isArray(body.amenities) ? body.amenities : ['Power Backup', 'Car Parking'],
       ownerName: resolvedOwnerName,

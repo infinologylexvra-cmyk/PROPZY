@@ -99,7 +99,10 @@ function PropertySearchContent() {
     let shouldFetch = true;
 
     if (cached && Array.isArray(cached.data)) {
-      setProperties(cached.data);
+      const filteredCached = verifiedOnly
+        ? cached.data.filter((p: any) => p.verified === true)
+        : cached.data;
+      setProperties(filteredCached);
       setLoading(false);
 
       // If client cache is fresh (< 30 seconds), avoid network fetch
@@ -130,9 +133,31 @@ function PropertySearchContent() {
       // Guard: Ignore if a newer request was dispatched in the meantime
       if (currentRequestId !== latestRequestIdRef.current) return;
 
-      if (data.success && Array.isArray(data.data)) {
-        setProperties(data.data);
-        setClientPropertiesCache(clientCacheKey, data.data, data.pagination);
+      if (res.ok && data.success && Array.isArray(data.data)) {
+        const filteredData = verifiedOnly
+          ? data.data.filter((p: any) => p.verified === true)
+          : data.data;
+        setProperties(filteredData);
+        setClientPropertiesCache(clientCacheKey, filteredData, data.pagination);
+      } else if (!res.ok) {
+        // Fallback to local verified properties when API is temporarily 503 or offline
+        let list = [...INITIAL_PROPERTIES];
+        if (category !== 'all') {
+          if (category === 'buy' || category === 'sell') {
+            list = list.filter(p => p.category === 'buy' || p.category === 'sell');
+          } else {
+            list = list.filter(p => p.category === category);
+          }
+        }
+        if (city !== 'all') list = list.filter(p => p.city.toLowerCase().includes(city.toLowerCase()));
+        if (locality) list = list.filter(p => p.locality.toLowerCase().includes(locality.toLowerCase()));
+        if (pidSearch) list = list.filter(p => p.pid.toUpperCase().includes(pidSearch.toUpperCase()));
+        if (type !== 'all') list = list.filter(p => p.type === type);
+        if (bedrooms !== 'all') list = list.filter(p => p.bedrooms === Number(bedrooms));
+        if (verifiedOnly) list = list.filter(p => p.verified);
+        list = list.filter(p => p.price <= maxPrice);
+
+        setProperties(list);
       } else {
         setProperties([]);
       }
@@ -291,8 +316,8 @@ function PropertySearchContent() {
                       key={cat}
                       onClick={() => handleCategoryChange(cat)}
                       className={`px-3 py-2 rounded-xl cursor-pointer text-xs font-semibold capitalize border transition-all ${category === cat
-                          ? 'bg-emerald-500 text-black border-emerald-500 font-extrabold shadow-md'
-                          : 'bg-[#050806] text-gray-400 border-emerald-950'
+                        ? 'bg-emerald-500 text-black border-emerald-500 font-extrabold shadow-md'
+                        : 'bg-[#050806] text-gray-400 border-emerald-950'
                         }`}
                     >
                       {cat}
@@ -366,8 +391,8 @@ function PropertySearchContent() {
                       key={bhk}
                       onClick={() => setBedrooms(bhk)}
                       className={`flex-1 py-2 rounded-xl text-xs font-bold border transition-all ${bedrooms === bhk
-                          ? 'bg-emerald-500 text-black border-emerald-500'
-                          : 'bg-[#050806] text-gray-400 border-emerald-950'
+                        ? 'bg-emerald-500 text-black border-emerald-500'
+                        : 'bg-[#050806] text-gray-400 border-emerald-950'
                         }`}
                     >
                       {bhk === 'all' ? 'All' : `${bhk} BHK`}
@@ -424,8 +449,8 @@ function PropertySearchContent() {
                     key={cat}
                     onClick={() => handleCategoryChange(cat)}
                     className={`px-3 py-2 rounded-xl text-xs font-semibold capitalize border transition-all ${category === cat
-                        ? 'bg-emerald-500 text-black border-emerald-500 font-extrabold shadow-md'
-                        : 'bg-[#050806] text-gray-400 border-emerald-950 hover:text-white'
+                      ? 'bg-emerald-500 text-black border-emerald-500 font-extrabold shadow-md'
+                      : 'bg-[#050806] text-gray-400 border-emerald-950 hover:text-white'
                       }`}
                   >
                     {cat}
@@ -499,8 +524,8 @@ function PropertySearchContent() {
                     key={bhk}
                     onClick={() => setBedrooms(bhk)}
                     className={`flex-1 py-2 rounded-xl text-xs font-bold border transition-all ${bedrooms === bhk
-                        ? 'bg-emerald-500 text-black border-emerald-500'
-                        : 'bg-[#050806] text-gray-400 border-emerald-950 hover:text-white'
+                      ? 'bg-emerald-500 text-black border-emerald-500'
+                      : 'bg-[#050806] text-gray-400 border-emerald-950 hover:text-white'
                       }`}
                   >
                     {bhk === 'all' ? 'All' : `${bhk} BHK`}
@@ -602,7 +627,11 @@ function PropertySearchContent() {
 
 export default function PropertySearchPage() {
   return (
-    <Suspense fallback={<div className="p-12 text-center text-xs text-gray-500 bg-[#050806] min-h-screen">Loading search engine...</div>}>
+    <Suspense fallback={
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        <SkeletonGrid count={6} />
+      </div>
+    }>
       <PropertySearchContent />
     </Suspense>
   );

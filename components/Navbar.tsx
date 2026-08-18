@@ -119,11 +119,10 @@ function NavbarContent() {
                   href={item.href}
                   data-nav-key={item.key}
                   onClick={() => setActiveItem(item.key)}
-                  className={`py-1 transition-colors duration-200 ${
-                    isActive
+                  className={`py-1 transition-colors duration-200 ${isActive
                       ? 'text-emerald-400 font-extrabold'
                       : 'text-gray-300 hover:text-emerald-400'
-                  }`}
+                    }`}
                 >
                   {item.label}
                 </Link>
@@ -394,11 +393,10 @@ function NavbarContent() {
                   setActiveItem(item.key);
                   setIsMobileMenuOpen(false);
                 }}
-                className={`px-3 py-2 rounded-xl text-xs font-bold transition-all ${
-                  activeItem === item.key
+                className={`px-3 py-2 rounded-xl text-xs font-bold transition-all ${activeItem === item.key
                     ? 'bg-emerald-950/90 text-emerald-400 border border-emerald-800/60'
                     : 'bg-[#0b140f] text-gray-300 hover:text-emerald-400 hover:bg-emerald-950/40'
-                }`}
+                  }`}
               >
                 {item.label}
               </Link>

@@ -45,3 +45,62 @@ export const isValidElectricityBillDocument = (val: string): boolean => {
   const isAllowedDataUrl = /^data:(?:image\/(?:jpeg|png|webp|gif|heic|heif)|application\/pdf);base64,[a-z0-9+/=]+$/i.test(val);
   return isAllowedDataUrl && val.length <= 7_000_000;
 };
+
+// ─────────────────────────────────────────────────────────────
+// Strong Password Validation Helpers
+// ─────────────────────────────────────────────────────────────
+
+export interface PasswordCriteria {
+  minLength: boolean;      // At least 8 characters
+  hasUppercase: boolean;   // At least 1 uppercase (A-Z)
+  hasLowercase: boolean;   // At least 1 lowercase (a-z)
+  hasNumber: boolean;      // At least 1 number (0-9)
+  hasSpecial: boolean;     // At least 1 special character (!@#$%^&*...)
+  isValid: boolean;        // All 5 criteria satisfied
+  score: number;           // Count of passed criteria (0 to 5)
+}
+
+export const checkPasswordCriteria = (password: string): PasswordCriteria => {
+  const pwd = password || '';
+  const minLength = pwd.length >= 8;
+  const hasUppercase = /[A-Z]/.test(pwd);
+  const hasLowercase = /[a-z]/.test(pwd);
+  const hasNumber = /[0-9]/.test(pwd);
+  const hasSpecial = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?~`^]/.test(pwd);
+
+  const score = [minLength, hasUppercase, hasLowercase, hasNumber, hasSpecial].filter(Boolean).length;
+  const isValid = score === 5;
+
+  return {
+    minLength,
+    hasUppercase,
+    hasLowercase,
+    hasNumber,
+    hasSpecial,
+    isValid,
+    score
+  };
+};
+
+export const isValidStrongPassword = (password: string): boolean => {
+  return checkPasswordCriteria(password).isValid;
+};
+
+export const getPasswordValidationMessage = (password: string): string | null => {
+  if (!password || password.trim() === '') {
+    return 'Password is required.';
+  }
+
+  const criteria = checkPasswordCriteria(password);
+  if (criteria.isValid) return null;
+
+  const missing: string[] = [];
+  if (!criteria.minLength) missing.push('at least 8 characters');
+  if (!criteria.hasUppercase) missing.push('1 uppercase letter (A-Z)');
+  if (!criteria.hasLowercase) missing.push('1 lowercase letter (a-z)');
+  if (!criteria.hasNumber) missing.push('1 number (0-9)');
+  if (!criteria.hasSpecial) missing.push('1 special character (e.g. !@#$%^&*)');
+
+  return `Password is not strong enough. Missing: ${missing.join(', ')}.`;
+};
+

@@ -27,7 +27,7 @@ export default function NotFound() {
             Lost in Property Search?
           </h1>
           <p className="text-sm sm:text-base text-gray-400 max-w-md mx-auto leading-relaxed">
-            The page or listing you are looking for might have been moved, unlisted by the owner, or doesn&apos;t exist.
+            This listing is no longer available. It may have been removed by the owner.
           </p>
         </div>
 
