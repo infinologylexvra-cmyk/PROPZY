@@ -36,7 +36,7 @@ function AdminPropertiesContent() {
     try {
       const res = await fetch('/api/properties?admin=true');
       const data = await res.json();
-      if (data.success && Array.isArray(data.data) && data.data.length > 0) {
+      if (data.success && Array.isArray(data.data)) {
         setProperties(data.data);
         setCachedProperties(data.data);
       }

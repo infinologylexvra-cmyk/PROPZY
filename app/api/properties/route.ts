@@ -134,12 +134,19 @@ export async function GET(req: NextRequest) {
       }
 
       // Verified status filtering & visibility access control
-      if (verified === 'all') {
-        // Used by Dashboard "My Properties" tab and Admin Portal
-        if (isAdminUser(authUser) && admin === 'true') {
-          // Admin portal viewing all listings -> no verified filter
-        } else if (authUser?.email) {
-          // Owner in Dashboard: verified listings + their own unverified listings
+      const isAdminView = isAdminUser(authUser) && admin === 'true';
+
+      if (isAdminView) {
+        // Admin Portal: sees ALL listings (verified & pending review) by default unless explicitly filtering
+        if (verified === 'true') {
+          filter.verified = true;
+        } else if (verified === 'false') {
+          filter.verified = false;
+        }
+        // If verified is not passed or verified === 'all', no filter.verified is applied -> Admin sees all!
+      } else if (verified === 'all') {
+        // Used by Dashboard "My Properties" tab for logged-in owners
+        if (authUser?.email) {
           const userVisibilityOr = [
             { verified: true },
             { ownerEmail: authUser.email.toLowerCase().trim() }
@@ -159,10 +166,8 @@ export async function GET(req: NextRequest) {
           filter.verified = true;
         }
       } else if (verified === 'false') {
-        // Explicitly requested unverified listings only (Admin moderation or Owner pending tab)
-        if (isAdminUser(authUser)) {
-          filter.verified = false;
-        } else if (authUser?.email) {
+        // Explicitly requested unverified listings only (e.g. Owner pending tab)
+        if (authUser?.email) {
           filter.verified = false;
           filter.ownerEmail = authUser.email.toLowerCase().trim();
         } else {

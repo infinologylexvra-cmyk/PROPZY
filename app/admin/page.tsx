@@ -30,7 +30,7 @@ export default function AdminOverviewPage() {
 
       if (propsRes && propsRes.ok) {
         const propsData = await propsRes.json();
-        if (propsData.success && Array.isArray(propsData.data) && propsData.data.length > 0) {
+        if (propsData.success && Array.isArray(propsData.data)) {
           setProperties(propsData.data);
           setCachedProperties(propsData.data);
         }
@@ -38,7 +38,7 @@ export default function AdminOverviewPage() {
 
       if (inqRes && inqRes.ok) {
         const inqData = await inqRes.json();
-        if (inqData.success && Array.isArray(inqData.data) && inqData.data.length > 0) {
+        if (inqData.success && Array.isArray(inqData.data)) {
           setInquiries(inqData.data);
           setCachedInquiries(inqData.data);
         }
