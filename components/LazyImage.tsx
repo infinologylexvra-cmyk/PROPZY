@@ -8,10 +8,27 @@ const loadedImageUrls = new Set<string>();
 
 export function optimizeImageUrl(url: string, width = 600, quality = 70): string {
   if (!url) return 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=600&q=70';
+  
+  // Base64 strings: return as-is for backward compatibility
+  if (url.startsWith('data:image/')) {
+    return url;
+  }
+
+  // Cloudinary image URL optimization
+  if (url.includes('res.cloudinary.com') && url.includes('/image/upload/')) {
+    // If transformations are already present in URL, avoid duplicate insertion
+    if (url.includes('/image/upload/f_auto') || url.includes('/image/upload/q_auto') || url.includes('/image/upload/w_')) {
+      return url;
+    }
+    return url.replace('/image/upload/', `/image/upload/f_auto,q_auto,w_${width},c_limit/`);
+  }
+
+  // Unsplash image optimization
   if (url.includes('images.unsplash.com')) {
     const baseUrl = url.split('?')[0];
     return `${baseUrl}?auto=format&fit=crop&w=${width}&q=${quality}`;
   }
+
   return url;
 }
 

@@ -6,6 +6,7 @@ import { memoryStore } from '@/lib/memoryStore';
 import { getAuthUser } from '@/lib/auth';
 import { canViewPropertyContactDetails, isAdminUser, isBrowserDocumentNavigation, isOwnedByUser, serializeProperty } from '@/lib/accessControl';
 import { clearPropertiesCache } from '@/lib/propertiesCache';
+import { extractPublicIdFromUrl, deleteCloudinaryImage } from '@/lib/cloudinary';
 
 export async function GET(
   req: NextRequest,
@@ -157,6 +158,18 @@ export async function DELETE(
     let deleted = await Property.findOneAndDelete({ $or: [{ pid: id }, { pid: normalizedPid }, { id: id }] });
     if (!deleted && id.match(/^[0-9a-fA-F]{24}$/)) {
       deleted = await Property.findByIdAndDelete(id);
+    }
+
+    // Safely delete associated Cloudinary images in background
+    if (existing.images && Array.isArray(existing.images)) {
+      Promise.allSettled(
+        existing.images.map(async (imgUrl: string) => {
+          const publicId = extractPublicIdFromUrl(imgUrl);
+          if (publicId) {
+            await deleteCloudinaryImage(publicId);
+          }
+        })
+      ).catch(err => console.warn('[Cloudinary Cleanup Error]:', err));
     }
 
     const memIndex = memoryStore.findIndex(p => p.id === id || p.pid === id || p.pid === normalizedPid || (p._id && p._id.toString() === id));

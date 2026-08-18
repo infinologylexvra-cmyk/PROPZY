@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ShieldCheck, PlusCircle, Building2, MapPin, DollarSign, Check, CheckCircle2, Upload, X, Image as ImageIcon, Plus, Trash2, Camera, Clock, AlertTriangle } from 'lucide-react';
+import { ShieldCheck, PlusCircle, Building2, MapPin, DollarSign, Check, CheckCircle2, Upload, X, Image as ImageIcon, Plus, Trash2, Camera, Clock, AlertTriangle, Loader2, RotateCw } from 'lucide-react';
 
 import { useApp } from '@/context/AppContext';
 import { LazyImage } from '@/components/LazyImage';
@@ -36,9 +36,22 @@ export default function PostPropertyPage() {
     'Power Backup', 'Air Conditioner', 'Car Parking', 'Modular Kitchen'
   ]);
   // Images State & Upload Handlers
+  interface UploadQueueItem {
+    id: string;
+    name: string;
+    previewUrl: string;
+    status: 'uploading' | 'success' | 'error';
+    progress: number;
+    errorMessage?: string;
+    file?: File;
+  }
+
   const [images, setImages] = useState<string[]>([]);
+  const [uploadQueue, setUploadQueue] = useState<UploadQueueItem[]>([]);
   const [urlInput, setUrlInput] = useState('');
   const [uploadTab, setUploadTab] = useState<'file' | 'url'>('file');
+
+  const isUploadingImages = uploadQueue.some(item => item.status === 'uploading');
 
   const [ownerName, setOwnerName] = useState(user ? user.name : '');
   const [ownerPhone, setOwnerPhone] = useState(user ? user.phone : '');
@@ -208,69 +221,138 @@ export default function PostPropertyPage() {
     }
   }, [images.length]);
 
-  const readFileAsDataUrl = (file: File) => {
-    return new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        if (typeof event.target?.result === 'string') {
-          resolve(event.target.result);
-        } else {
-          reject(new Error('Unable to read file'));
-        }
-      };
-      reader.onerror = () => reject(new Error('Unable to read file'));
-      reader.readAsDataURL(file);
-    });
+  const uploadSingleFileToCloudinary = async (uploadId: string, file: File) => {
+    try {
+      // 1. Request short-lived upload signature from server API
+      const signRes = await fetch('/api/cloudinary/sign', { method: 'POST' });
+      const signData = await signRes.json();
+      
+      if (!signData.success) {
+        throw new Error(signData.message || 'Failed to authenticate upload request');
+      }
+
+      // 2. Prepare multipart upload payload for Cloudinary API
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('api_key', signData.apiKey);
+      formData.append('timestamp', String(signData.timestamp));
+      formData.append('signature', signData.signature);
+      formData.append('folder', signData.folder);
+
+      // 3. Upload directly from browser to Cloudinary CDN with live progress
+      const result = await new Promise<{ secure_url: string }>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', `https://api.cloudinary.com/v1_1/${signData.cloudName}/image/upload`);
+
+        xhr.upload.onprogress = (event) => {
+          if (event.lengthComputable) {
+            const percent = Math.min(99, Math.round((event.loaded / event.total) * 100));
+            setUploadQueue(prev => prev.map(item => item.id === uploadId ? { ...item, progress: percent } : item));
+          }
+        };
+
+        xhr.onload = () => {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            try {
+              const resJson = JSON.parse(xhr.responseText);
+              resolve(resJson);
+            } catch {
+              reject(new Error('Invalid response received from Cloudinary'));
+            }
+          } else {
+            try {
+              const resJson = JSON.parse(xhr.responseText);
+              reject(new Error(resJson.error?.message || `Upload failed (${xhr.status})`));
+            } catch {
+              reject(new Error(`Upload failed (${xhr.status})`));
+            }
+          }
+        };
+
+        xhr.onerror = () => reject(new Error('Network error during photo upload. Please check your internet connection.'));
+        xhr.send(formData);
+      });
+
+      // 4. Remove from active upload queue & append secure URL to images
+      setUploadQueue(prev => prev.filter(item => item.id !== uploadId));
+      appendImage(result.secure_url);
+      showToast(`Photo "${file.name}" uploaded to Cloudinary!`);
+    } catch (err: any) {
+      console.error('Cloudinary upload error:', err);
+      setUploadQueue(prev => prev.map(item => 
+        item.id === uploadId ? { ...item, status: 'error', errorMessage: err.message || 'Upload failed' } : item
+      ));
+      showToast(`Upload failed for ${file.name}: ${err.message || 'Error'}`);
+    }
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    if (images.length >= maxSellImages) {
+    const currentTotal = images.length + uploadQueue.filter(q => q.status === 'uploading').length;
+    if (currentTotal >= maxSellImages) {
       showToast(`Listings can have at most ${maxSellImages} photos`);
       e.target.value = '';
       return;
     }
 
-    const remainingSlots = Math.max(maxSellImages - images.length, 0);
+    const remainingSlots = Math.max(maxSellImages - currentTotal, 0);
     const filesToUpload = Array.from(files).slice(0, remainingSlots);
 
     if (files.length > remainingSlots) {
       showToast(`Only ${remainingSlots} more photo${remainingSlots === 1 ? '' : 's'} can be added`);
     }
 
-    let addedCount = 0;
-    let skippedCount = 0;
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+    const VALID_IMAGE_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/heic', 'image/avif'];
 
     for (const file of filesToUpload) {
-      if (!file.type.startsWith('image/')) {
-        skippedCount += 1;
+      // Validate file type
+      if (!VALID_IMAGE_TYPES.includes(file.type.toLowerCase()) && !file.type.startsWith('image/')) {
+        showToast(`Skipped "${file.name}": Unsupported format. Use JPG, PNG, or WEBP.`);
         continue;
       }
-      try {
-        const imageData = await readFileAsDataUrl(file);
-        const isValid = await validateImageSource(imageData);
-        if (isValid) {
-          appendImage(imageData);
-          addedCount += 1;
-        } else {
-          skippedCount += 1;
-        }
-      } catch {
-        skippedCount += 1;
+
+      // Validate file size
+      if (file.size > MAX_FILE_SIZE) {
+        showToast(`Skipped "${file.name}": File size exceeds 10 MB limit.`);
+        continue;
       }
-    }
 
-    if (addedCount > 0) {
-      showToast(`${addedCount} image${addedCount === 1 ? '' : 's'} added successfully!`);
-    }
+      // Prevent duplicate selection by checking existing queue
+      const alreadyQueued = uploadQueue.some(q => q.name === file.name && q.status === 'uploading');
+      if (alreadyQueued) {
+        continue;
+      }
 
-    if (skippedCount > 0) {
-      showToast(`${skippedCount} invalid image${skippedCount === 1 ? '' : 's'} were skipped`);
+      const uploadId = 'upload_' + Math.random().toString(36).substring(2, 9) + '_' + Date.now();
+      const previewUrl = URL.createObjectURL(file);
+
+      const queueItem: UploadQueueItem = {
+        id: uploadId,
+        name: file.name,
+        previewUrl,
+        status: 'uploading',
+        progress: 0,
+        file
+      };
+
+      setUploadQueue(prev => [...prev, queueItem]);
+      uploadSingleFileToCloudinary(uploadId, file);
     }
 
     e.target.value = '';
+  };
+
+  const handleRemoveQueueItem = (id: string) => {
+    setUploadQueue(prev => prev.filter(item => item.id !== id));
+  };
+
+  const handleRetryUpload = (item: UploadQueueItem) => {
+    if (!item.file) return;
+    setUploadQueue(prev => prev.map(q => q.id === item.id ? { ...q, status: 'uploading', progress: 0, errorMessage: undefined } : q));
+    uploadSingleFileToCloudinary(item.id, item.file);
   };
 
   const handleRemoveImage = (index: number) => {
@@ -851,29 +933,46 @@ export default function PostPropertyPage() {
                   </div>
                 )}
 
-                {/* Uploaded Photos Thumbnails Grid */}
-                {images.length === 0 ? (
+                {/* Uploaded & In-Progress Photos Thumbnails Grid */}
+                {images.length === 0 && uploadQueue.length === 0 ? (
                   <p className="text-[11px] text-emerald-400/90 italic bg-[#091a12] px-3 py-2 rounded-xl border border-emerald-900/60">
-                    ★ No photos uploaded yet. Your uploaded photos will be used exclusively. If you do not upload any photos, a default Unsplash property photo will be assigned automatically upon submission.
+                    ★ No photos uploaded yet. Your uploaded photos will be stored securely on Cloudinary. If you do not upload any photos, a default property photo will be assigned automatically.
                   </p>
                 ) : (
-                  <div>
-                    <span className="text-[11px] font-semibold text-gray-400 block mb-2">
-                      Your Uploaded Photos ({images.length} / {maxSellImages}):
-                    </span>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-semibold text-gray-400">
+                        Your Photos ({images.length} / {maxSellImages} uploaded):
+                      </span>
+                      {isUploadingImages && (
+                        <span className="inline-flex items-center space-x-1.5 text-xs text-emerald-400 font-bold bg-emerald-950/80 border border-emerald-800 px-2.5 py-0.5 rounded-full animate-pulse">
+                          <Loader2 size={12} className="animate-spin" />
+                          <span>Uploading to Cloudinary...</span>
+                        </span>
+                      )}
+                    </div>
+
                     <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                      {/* 1. Already Uploaded Photos (Cloudinary URLs) */}
                       {images.map((img, idx) => (
-                        <div key={idx} className="relative group rounded-xl overflow-hidden border border-emerald-900/80 aspect-video bg-black/40">
+                        <div key={`img-${idx}`} className="relative group rounded-xl overflow-hidden border border-emerald-900/80 aspect-video bg-black/40 shadow-md">
                           <LazyImage src={img} alt={`Upload ${idx + 1}`} className="w-full h-full object-cover" />
+                          
                           {idx === 0 && (
                             <span className="absolute top-1 left-1 bg-emerald-500 text-black text-[9px] font-extrabold px-1.5 py-0.5 rounded shadow">
                               Cover
                             </span>
                           )}
+
+                          <span className="absolute bottom-1 left-1 bg-black/75 backdrop-blur-xs text-emerald-400 text-[8px] font-bold px-1.5 py-0.5 rounded border border-emerald-800/60 flex items-center space-x-0.5">
+                            <Check size={9} />
+                            <span>Cloudinary</span>
+                          </span>
+
                           <button
                             type="button"
                             onClick={() => handleRemoveImage(idx)}
-                            className="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-600/90 hover:bg-red-500 text-white flex items-center justify-center transition-all opacity-90 sm:opacity-0 sm:group-hover:opacity-100 shadow-md"
+                            className="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-600/90 hover:bg-red-500 text-white flex items-center justify-center transition-all opacity-90 sm:opacity-0 sm:group-hover:opacity-100 shadow-md cursor-pointer"
                             title="Remove photo"
                           >
                             <X size={12} />
@@ -881,18 +980,69 @@ export default function PostPropertyPage() {
                         </div>
                       ))}
 
-                      {/* Add More button inside grid */}
-                      <label className={`relative flex flex-col items-center justify-center border-2 border-dashed rounded-xl aspect-video bg-[#080d0a] transition-colors text-emerald-400 hover:text-emerald-300 ${maxImagesReached ? 'border-gray-800 opacity-50 cursor-not-allowed pointer-events-none' : 'border-emerald-900/60 hover:border-emerald-500 cursor-pointer'}`}>
+                      {/* 2. In-Progress & Failed Upload Queue Items */}
+                      {uploadQueue.map((item) => (
+                        <div 
+                          key={item.id} 
+                          className={`relative rounded-xl overflow-hidden aspect-video bg-black/70 flex flex-col items-center justify-center border p-1 ${
+                            item.status === 'error' ? 'border-red-600 bg-red-950/40' : 'border-emerald-500/80'
+                          }`}
+                        >
+                          <img src={item.previewUrl} alt={item.name} className="absolute inset-0 w-full h-full object-cover opacity-30" />
+                          
+                          {item.status === 'uploading' && (
+                            <div className="relative z-10 flex flex-col items-center space-y-1 text-center px-1">
+                              <Loader2 size={18} className="text-emerald-400 animate-spin" />
+                              <span className="text-[10px] font-bold text-white font-mono">{item.progress}%</span>
+                              <span className="text-[8px] text-emerald-300 font-semibold truncate max-w-[80px]">Uploading...</span>
+                            </div>
+                          )}
+
+                          {item.status === 'error' && (
+                            <div className="relative z-10 flex flex-col items-center space-y-1 text-center px-1">
+                              <span className="text-[9px] font-extrabold text-red-400">Failed</span>
+                              <div className="flex items-center space-x-1">
+                                <button
+                                  type="button"
+                                  onClick={() => handleRetryUpload(item)}
+                                  className="p-1 rounded bg-emerald-600 hover:bg-emerald-500 text-white text-[9px] font-bold flex items-center space-x-0.5"
+                                  title="Retry Upload"
+                                >
+                                  <RotateCw size={10} />
+                                  <span>Retry</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveQueueItem(item.id)}
+                                  className="p-1 rounded bg-gray-800 hover:bg-gray-700 text-gray-300"
+                                  title="Dismiss"
+                                >
+                                  <X size={10} />
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+
+                      {/* 3. Add More button inside grid */}
+                      <label className={`relative flex flex-col items-center justify-center border-2 border-dashed rounded-xl aspect-video bg-[#080d0a] transition-colors text-emerald-400 hover:text-emerald-300 ${
+                        maxImagesReached || isUploadingImages
+                          ? 'border-gray-800 opacity-50 cursor-not-allowed pointer-events-none' 
+                          : 'border-emerald-900/60 hover:border-emerald-500 cursor-pointer'
+                      }`}>
                         <input
                           type="file"
                           accept="image/*"
                           multiple
                           onChange={handleFileUpload}
-                          disabled={maxImagesReached}
+                          disabled={maxImagesReached || isUploadingImages}
                           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
                         />
                         <Plus size={20} />
-                        <span className="text-[10px] font-bold mt-1">{maxImagesReached ? 'Limit Reached' : 'Add More'}</span>
+                        <span className="text-[10px] font-bold mt-1">
+                          {maxImagesReached ? 'Limit Reached' : 'Add More'}
+                        </span>
                       </label>
                     </div>
                   </div>
@@ -948,10 +1098,22 @@ export default function PostPropertyPage() {
                 </button>
                 <button
                   type="submit"
-                  disabled={submitting}
-                  className="w-2/3 py-3.5 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs rounded-full shadow-lg shadow-emerald-500/20 uppercase tracking-wider transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={submitting || isUploadingImages}
+                  className="w-2/3 py-3.5 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs rounded-full shadow-lg shadow-emerald-500/20 uppercase tracking-wider transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
                 >
-                  {submitting ? 'Publishing Listing...' : 'Publish Property Listing FREE'}
+                  {submitting ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" />
+                      <span>Publishing Listing...</span>
+                    </>
+                  ) : isUploadingImages ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" />
+                      <span>Uploading Photos to Cloudinary...</span>
+                    </>
+                  ) : (
+                    <span>Publish Property Listing FREE</span>
+                  )}
                 </button>
               </div>
             </form>
