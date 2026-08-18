@@ -37,6 +37,7 @@ interface LazyImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   alt: string;
   className?: string;
   fallbackSrc?: string;
+  objectFit?: 'cover' | 'contain' | 'fill' | 'none';
 }
 
 export const LazyImage: React.FC<LazyImageProps> = ({
@@ -44,6 +45,7 @@ export const LazyImage: React.FC<LazyImageProps> = ({
   alt,
   className = '',
   fallbackSrc = 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=600&q=70',
+  objectFit = 'cover',
   ...props
 }) => {
   const optimizedSrc = optimizeImageUrl(src || fallbackSrc, 600, 70);
@@ -130,7 +132,7 @@ export const LazyImage: React.FC<LazyImageProps> = ({
             setError(true);
             setLoaded(true);
           }}
-          className={`w-full h-full object-cover transition-opacity duration-300 ease-out ${
+          className={`w-full h-full ${objectFit === 'contain' ? 'object-contain' : objectFit === 'fill' ? 'object-fill' : 'object-cover'} transition-opacity duration-300 ease-out ${
             loaded ? 'opacity-100' : 'opacity-0'
           }`}
           {...props}

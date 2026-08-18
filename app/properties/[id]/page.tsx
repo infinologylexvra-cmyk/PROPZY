@@ -157,25 +157,30 @@ export default function PropertyDetailPage() {
 
       {/* Seamless Airbnb/Zillow-Style Photo Gallery Hero Grid */}
       <div className="relative rounded-3xl overflow-hidden bg-[#070d0a] border border-emerald-950/80 shadow-2xl">
-        <div className="h-[400px] sm:h-[540px] lg:h-[600px] grid grid-cols-1 lg:grid-cols-5 gap-2 p-2 bg-[#050806]">
-          {/* Main Large Featured Tile */}
-          <div className={`relative h-full rounded-2xl overflow-hidden group bg-black cursor-pointer ${images.length === 1 ? 'lg:col-span-5' : 'lg:col-span-3'}`}>
+        <div className="h-[360px] sm:h-[440px] lg:h-[460px] grid grid-cols-1 lg:grid-cols-2 gap-2.5 p-2.5 bg-[#050806]">
+          {/* Main Left Featured Frame (Balanced 50% width on Desktop) */}
+          <div 
+            onClick={() => setIsLightboxOpen(true)}
+            className={`relative h-full rounded-2xl overflow-hidden group bg-[#07110a] cursor-pointer ${
+              images.length === 1 ? 'lg:col-span-2' : 'lg:col-span-1'
+            }`}
+          >
             <LazyImage
               src={images[currentImgIndex]}
               alt={property.title}
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             />
 
-            {/* Main Tile Navigation Arrows */}
+            {/* Main Tile Navigation Arrows - Vertically Centered */}
             {images.length > 1 && (
-              <>
+              <div className="absolute inset-0 z-20 pointer-events-none flex items-center justify-between px-3">
                 <button
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
                     setCurrentImgIndex((prev) => (prev - 1 + images.length) % images.length);
                   }}
-                  className="absolute left-3 top-1/2 -translate-y-1/2 p-2.5 rounded-full bg-black/60 hover:bg-black text-white border border-white/20 backdrop-blur-md shadow-lg transition-transform active:scale-95"
+                  className="pointer-events-auto p-2.5 sm:p-3 rounded-full bg-black/75 hover:bg-black text-white border border-white/20 backdrop-blur-md shadow-xl transition-all hover:scale-110 active:scale-95 cursor-pointer flex items-center justify-center"
                   aria-label="Previous image"
                 >
                   <ChevronLeft size={20} />
@@ -186,28 +191,31 @@ export default function PropertyDetailPage() {
                     e.stopPropagation();
                     setCurrentImgIndex((prev) => (prev + 1) % images.length);
                   }}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-2.5 rounded-full bg-black/60 hover:bg-black text-white border border-white/20 backdrop-blur-md shadow-lg transition-transform active:scale-95"
+                  className="pointer-events-auto p-2.5 sm:p-3 rounded-full bg-black/75 hover:bg-black text-white border border-white/20 backdrop-blur-md shadow-xl transition-all hover:scale-110 active:scale-95 cursor-pointer flex items-center justify-center"
                   aria-label="Next image"
                 >
                   <ChevronRight size={20} />
                 </button>
-              </>
+              </div>
             )}
 
             {/* Photo Counter Badge */}
-            <div className="absolute bottom-3 left-3 bg-black/70 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1 rounded-full border border-white/10 flex items-center space-x-1.5">
+            <div className="absolute bottom-3 left-3 z-20 bg-black/75 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1 rounded-full border border-white/10 flex items-center space-x-1.5 shadow-lg">
               <Camera size={13} className="text-emerald-400" />
               <span>Photo {currentImgIndex + 1} of {images.length}</span>
             </div>
           </div>
 
-          {/* Right Thumbnails Dynamic Grid Layout */}
+          {/* Right Thumbnails Dynamic Grid Layout for 2 Images */}
           {images.length === 2 && (
-            <div className="hidden lg:block lg:col-span-2 h-full">
+            <div className="hidden lg:block lg:col-span-1 h-full min-h-0">
               <button
                 type="button"
-                onClick={() => setCurrentImgIndex(1)}
-                className={`relative w-full h-full rounded-2xl overflow-hidden border-2 transition-all cursor-pointer group bg-black ${
+                onClick={() => {
+                  setCurrentImgIndex(1);
+                  setIsLightboxOpen(true);
+                }}
+                className={`relative w-full h-full rounded-2xl overflow-hidden border-2 transition-all cursor-pointer group bg-[#07110a] ${
                   currentImgIndex === 1 ? 'border-emerald-500 ring-2 ring-emerald-500/40' : 'border-transparent opacity-90 hover:opacity-100'
                 }`}
               >
@@ -216,89 +224,103 @@ export default function PropertyDetailPage() {
             </div>
           )}
 
+          {/* Right Thumbnails Dynamic Grid Layout for 3 Images */}
           {images.length === 3 && (
-            <div className="hidden lg:grid lg:col-span-2 grid-rows-2 gap-2 h-full">
+            <div className="hidden lg:grid lg:col-span-1 grid-cols-1 grid-rows-2 gap-2.5 h-full min-h-0">
               {[1, 2].map((actualIndex) => (
                 <button
                   key={actualIndex}
                   type="button"
-                  onClick={() => setCurrentImgIndex(actualIndex)}
-                  className={`relative w-full h-full rounded-2xl overflow-hidden border-2 transition-all cursor-pointer group bg-black ${
+                  onClick={() => {
+                    setCurrentImgIndex(actualIndex);
+                    setIsLightboxOpen(true);
+                  }}
+                  className={`relative w-full h-full rounded-2xl overflow-hidden border-2 transition-all cursor-pointer group bg-[#07110a] ${
                     currentImgIndex === actualIndex ? 'border-emerald-500 ring-2 ring-emerald-500/40' : 'border-transparent opacity-90 hover:opacity-100'
                   }`}
                 >
-                  <LazyImage src={images[actualIndex]} alt={`Photo ${actualIndex + 1}`} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                  <LazyImage 
+                    src={images[actualIndex]} 
+                    alt={`Photo ${actualIndex + 1}`} 
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                  />
                 </button>
               ))}
             </div>
           )}
 
+          {/* Right Thumbnails Dynamic Grid Layout for 4 Images */}
           {images.length === 4 && (
-            <div className="hidden lg:grid lg:col-span-2 grid-rows-2 gap-2 h-full">
-              {/* Top Row: Photo #2 spanning full width of right column */}
+            <div className="hidden lg:grid lg:col-span-1 grid-cols-2 grid-rows-2 gap-2.5 h-full min-h-0 overflow-hidden">
+              {/* Top Row: Photo #2 spanning full right column width */}
               <button
                 type="button"
-                onClick={() => setCurrentImgIndex(1)}
-                className={`relative w-full h-full rounded-2xl overflow-hidden border-2 transition-all cursor-pointer group bg-black ${
+                onClick={() => {
+                  setCurrentImgIndex(1);
+                  setIsLightboxOpen(true);
+                }}
+                className={`col-span-2 row-span-1 relative w-full h-full rounded-2xl overflow-hidden border-2 transition-all cursor-pointer group bg-[#07110a] ${
                   currentImgIndex === 1 ? 'border-emerald-500 ring-2 ring-emerald-500/40' : 'border-transparent opacity-90 hover:opacity-100'
                 }`}
               >
                 <LazyImage src={images[1]} alt="Photo 2" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
               </button>
 
-              {/* Bottom Row: Photo #3 & Photo #4 side-by-side */}
-              <div className="grid grid-cols-2 gap-2 h-full">
-                {[2, 3].map((actualIndex) => (
-                  <button
-                    key={actualIndex}
-                    type="button"
-                    onClick={() => setCurrentImgIndex(actualIndex)}
-                    className={`relative w-full h-full rounded-2xl overflow-hidden border-2 transition-all cursor-pointer group bg-black ${
-                      currentImgIndex === actualIndex ? 'border-emerald-500 ring-2 ring-emerald-500/40' : 'border-transparent opacity-90 hover:opacity-100'
-                    }`}
-                  >
-                    <LazyImage src={images[actualIndex]} alt={`Photo ${actualIndex + 1}`} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                  </button>
-                ))}
-              </div>
+              {/* Bottom Row: Photo #3 and Photo #4 */}
+              <button
+                type="button"
+                onClick={() => {
+                  setCurrentImgIndex(2);
+                  setIsLightboxOpen(true);
+                }}
+                className={`col-span-1 row-span-1 relative w-full h-full rounded-2xl overflow-hidden border-2 transition-all cursor-pointer group bg-[#07110a] ${
+                  currentImgIndex === 2 ? 'border-emerald-500 ring-2 ring-emerald-500/40' : 'border-transparent opacity-90 hover:opacity-100'
+                }`}
+              >
+                <LazyImage src={images[2]} alt="Photo 3" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setCurrentImgIndex(3);
+                  setIsLightboxOpen(true);
+                }}
+                className={`col-span-1 row-span-1 relative w-full h-full rounded-2xl overflow-hidden border-2 transition-all cursor-pointer group bg-[#07110a] ${
+                  currentImgIndex === 3 ? 'border-emerald-500 ring-2 ring-emerald-500/40' : 'border-transparent opacity-90 hover:opacity-100'
+                }`}
+              >
+                <LazyImage src={images[3]} alt="Photo 4" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+              </button>
             </div>
           )}
 
+          {/* Right Thumbnails Dynamic Grid Layout for 5+ Images */}
           {images.length >= 5 && (
-            <div className="hidden lg:grid lg:col-span-2 grid-cols-2 grid-rows-2 gap-2 h-full">
-              {images.slice(1, 5).map((imgUrl, idx) => {
-                const actualIndex = idx + 1;
-                const isFourthThumbnail = idx === 3;
+            <div className="hidden lg:grid lg:col-span-1 grid-cols-2 grid-rows-2 gap-2.5 h-full min-h-0 overflow-hidden">
+              {[1, 2, 3, 4].map((actualIndex) => {
+                const isLastTile = actualIndex === 4;
                 const remainingCount = images.length - 5;
-                const isSelected = currentImgIndex === actualIndex;
-
                 return (
                   <button
                     key={actualIndex}
                     type="button"
                     onClick={() => {
-                      if (isFourthThumbnail && remainingCount > 0) {
-                        setIsLightboxOpen(true);
-                      } else {
-                        setCurrentImgIndex(actualIndex);
-                      }
+                      setCurrentImgIndex(actualIndex);
+                      setIsLightboxOpen(true);
                     }}
-                    className={`relative w-full h-full rounded-2xl overflow-hidden border-2 transition-all cursor-pointer group bg-black ${
-                      isSelected ? 'border-emerald-500 ring-2 ring-emerald-500/40' : 'border-transparent opacity-90 hover:opacity-100'
+                    className={`relative w-full h-full rounded-2xl overflow-hidden border-2 transition-all cursor-pointer group bg-[#07110a] ${
+                      currentImgIndex === actualIndex ? 'border-emerald-500 ring-2 ring-emerald-500/40' : 'border-transparent opacity-90 hover:opacity-100'
                     }`}
                   >
-                    <LazyImage
-                      src={imgUrl}
-                      alt={`Property Photo ${actualIndex + 1}`}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-
+                    <LazyImage src={images[actualIndex]} alt={`Photo ${actualIndex + 1}`} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                    
                     {/* "+X More Photos" Overlay on 5th tile if images > 5 */}
-                    {isFourthThumbnail && remainingCount > 0 && (
+                    {isLastTile && remainingCount > 0 && (
                       <div className="absolute inset-0 bg-black/70 backdrop-blur-[2px] flex flex-col items-center justify-center text-white transition-all hover:bg-black/60">
-                        <Grid size={22} className="text-emerald-400 mb-1" />
-                        <span className="text-sm font-extrabold">+{remainingCount + 1} Photos</span>
-                        <span className="text-[10px] text-emerald-300 font-semibold mt-0.5 uppercase tracking-wider">Click to view all</span>
+                        <Grid size={20} className="text-emerald-400 mb-0.5" />
+                        <span className="text-xs font-extrabold">+{remainingCount} Photos</span>
+                        <span className="text-[9px] text-emerald-300 font-semibold uppercase tracking-wider">View all</span>
                       </div>
                     )}
                   </button>
@@ -309,14 +331,16 @@ export default function PropertyDetailPage() {
         </div>
 
         {/* View All Photos Button */}
-        <button
-          type="button"
-          onClick={() => setIsLightboxOpen(true)}
-          className="absolute bottom-4 right-4 z-20 px-4 py-2.5 rounded-2xl bg-black/85 hover:bg-black text-white border border-emerald-500/50 backdrop-blur-md text-xs font-extrabold flex items-center space-x-2 shadow-2xl transition-all cursor-pointer hover:scale-105 active:scale-95"
-        >
-          <Grid size={15} className="text-emerald-400" />
-          <span>View All {images.length} Photos</span>
-        </button>
+        {images.length > 1 && (
+          <button
+            type="button"
+            onClick={() => setIsLightboxOpen(true)}
+            className="absolute bottom-4 right-4 z-20 px-4 py-2.5 rounded-2xl bg-black/85 hover:bg-black text-white border border-emerald-500/50 backdrop-blur-md text-xs font-extrabold flex items-center space-x-2 shadow-2xl transition-all cursor-pointer hover:scale-105 active:scale-95"
+          >
+            <Grid size={15} className="text-emerald-400" />
+            <span>View All {images.length} Photos</span>
+          </button>
+        )}
       </div>
 
       {/* Full-Screen Photo Lightbox Modal */}
