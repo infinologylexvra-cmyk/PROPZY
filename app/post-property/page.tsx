@@ -221,82 +221,149 @@ export default function PostPropertyPage() {
     }
   }, [images.length]);
 
-  const uploadSingleFileToCloudinary = async (uploadId: string, file: File) => {
-    try {
-      // 1. Request short-lived upload signature from server API
-      const signRes = await fetch('/api/cloudinary/sign', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: user?.email,
-          userId: user?.id,
-          role: user?.role
-        })
-      });
+  const compressImageToDataUrl = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new window.Image();
+        img.onload = () => {
+          const MAX_WIDTH = 1280;
+          const MAX_HEIGHT = 960;
+          let width = img.width;
+          let height = img.height;
 
-      let signData: any = null;
-      try {
-        signData = await signRes.json();
-      } catch (parseErr) {
-        throw new Error(`Upload server error (${signRes.status}). Please try again.`);
-      }
-
-      if (!signRes.ok || !signData?.success) {
-        throw new Error(signData?.message || 'Failed to authenticate upload request');
-      }
-
-      // 2. Prepare multipart upload payload for Cloudinary API
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('api_key', signData.apiKey);
-      formData.append('timestamp', String(signData.timestamp));
-      formData.append('signature', signData.signature);
-      formData.append('folder', signData.folder);
-
-      // 3. Upload directly from browser to Cloudinary CDN with live progress
-      const result = await new Promise<{ secure_url: string }>((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        xhr.open('POST', `https://api.cloudinary.com/v1_1/${signData.cloudName}/image/upload`);
-
-        xhr.upload.onprogress = (event) => {
-          if (event.lengthComputable) {
-            const percent = Math.min(99, Math.round((event.loaded / event.total) * 100));
-            setUploadQueue(prev => prev.map(item => item.id === uploadId ? { ...item, progress: percent } : item));
-          }
-        };
-
-        xhr.onload = () => {
-          if (xhr.status >= 200 && xhr.status < 300) {
-            try {
-              const resJson = JSON.parse(xhr.responseText);
-              resolve(resJson);
-            } catch {
-              reject(new Error('Invalid response received from Cloudinary'));
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height = Math.round((height * MAX_WIDTH) / width);
+              width = MAX_WIDTH;
             }
           } else {
-            try {
-              const resJson = JSON.parse(xhr.responseText);
-              reject(new Error(resJson.error?.message || `Upload failed (${xhr.status})`));
-            } catch {
-              reject(new Error(`Upload failed (${xhr.status})`));
+            if (height > MAX_HEIGHT) {
+              width = Math.round((width * MAX_HEIGHT) / height);
+              height = MAX_HEIGHT;
             }
           }
+
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            resolve(e.target?.result as string);
+            return;
+          }
+
+          ctx.drawImage(img, 0, 0, width, height);
+          const dataUrl = canvas.toDataURL('image/webp', 0.85);
+          resolve(dataUrl);
         };
+        img.onerror = () => {
+          resolve(e.target?.result as string);
+        };
+        img.src = e.target?.result as string;
+      };
+      reader.onerror = (err) => reject(err);
+      reader.readAsDataURL(file);
+    });
+  };
 
-        xhr.onerror = () => reject(new Error('Network error during photo upload. Please check your internet connection.'));
-        xhr.send(formData);
-      });
+  const uploadSingleFileToCloudinary = async (uploadId: string, file: File) => {
+    try {
+      // 1. Check if Cloudinary upload signature is available from server API
+      let isCloudinaryConfigured = false;
+      let signData: any = null;
 
-      // 4. Remove from active upload queue & append secure URL to images
-      setUploadQueue(prev => prev.filter(item => item.id !== uploadId));
-      appendImage(result.secure_url);
-      showToast(`Photo "${file.name}" uploaded to Cloudinary!`, 'success');
+      try {
+        const signRes = await fetch('/api/cloudinary/sign', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: user?.email,
+            userId: user?.id,
+            role: user?.role
+          })
+        });
+
+        signData = await signRes.json();
+        if (signRes.ok && signData?.success && signData?.cloudName) {
+          isCloudinaryConfigured = true;
+        }
+      } catch (err) {
+        console.warn('Cloudinary signature check skipped, falling back to local optimization');
+      }
+
+      if (isCloudinaryConfigured && signData) {
+        // 2. Prepare multipart upload payload for Cloudinary API
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('api_key', signData.apiKey);
+        formData.append('timestamp', String(signData.timestamp));
+        formData.append('signature', signData.signature);
+        formData.append('folder', signData.folder);
+
+        // 3. Upload directly from browser to Cloudinary CDN with live progress
+        const result = await new Promise<{ secure_url: string }>((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          xhr.open('POST', `https://api.cloudinary.com/v1_1/${signData.cloudName}/image/upload`);
+
+          xhr.upload.onprogress = (event) => {
+            if (event.lengthComputable) {
+              const percent = Math.min(99, Math.round((event.loaded / event.total) * 100));
+              setUploadQueue(prev => prev.map(item => item.id === uploadId ? { ...item, progress: percent } : item));
+            }
+          };
+
+          xhr.onload = () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              try {
+                const resJson = JSON.parse(xhr.responseText);
+                resolve(resJson);
+              } catch {
+                reject(new Error('Invalid response received from Cloudinary'));
+              }
+            } else {
+              try {
+                const resJson = JSON.parse(xhr.responseText);
+                reject(new Error(resJson.error?.message || `Upload failed (${xhr.status})`));
+              } catch {
+                reject(new Error(`Upload failed (${xhr.status})`));
+              }
+            }
+          };
+
+          xhr.onerror = () => reject(new Error('Network error during photo upload.'));
+          xhr.send(formData);
+        });
+
+        // 4. Remove from active upload queue & append secure URL to images
+        setUploadQueue(prev => prev.filter(item => item.id !== uploadId));
+        appendImage(result.secure_url);
+        showToast(`Photo "${file.name}" uploaded successfully!`, 'success');
+      } else {
+        // 4. Fallback: Fast client-side image optimization and storage
+        setUploadQueue(prev => prev.map(item => item.id === uploadId ? { ...item, progress: 65 } : item));
+        const optimizedDataUrl = await compressImageToDataUrl(file);
+        setUploadQueue(prev => prev.map(item => item.id === uploadId ? { ...item, progress: 100 } : item));
+
+        setTimeout(() => {
+          setUploadQueue(prev => prev.filter(item => item.id !== uploadId));
+          appendImage(optimizedDataUrl);
+          showToast(`Photo "${file.name}" attached successfully!`, 'success');
+        }, 200);
+      }
     } catch (err: any) {
-      console.error('Cloudinary upload error:', err);
-      setUploadQueue(prev => prev.map(item =>
-        item.id === uploadId ? { ...item, status: 'error', errorMessage: err.message || 'Upload failed' } : item
-      ));
-      showToast(`Upload failed for ${file.name}: ${err.message || 'Error'}`, 'error');
+      console.warn('Falling back to local image compression due to error:', err);
+      try {
+        const optimizedDataUrl = await compressImageToDataUrl(file);
+        setUploadQueue(prev => prev.filter(item => item.id !== uploadId));
+        appendImage(optimizedDataUrl);
+        showToast(`Photo "${file.name}" attached successfully!`, 'success');
+      } catch (fallbackErr: any) {
+        setUploadQueue(prev => prev.map(item =>
+          item.id === uploadId ? { ...item, status: 'error', errorMessage: fallbackErr.message || 'Upload failed' } : item
+        ));
+        showToast(`Upload failed for ${file.name}: ${fallbackErr.message || 'Error'}`, 'error');
+      }
     }
   };
 
@@ -971,13 +1038,13 @@ export default function PostPropertyPage() {
                     {isUploadingImages && (
                       <span className="inline-flex items-center space-x-1.5 text-xs text-emerald-400 font-bold bg-emerald-950/80 border border-emerald-800 px-2.5 py-0.5 rounded-full animate-pulse">
                         <Loader2 size={12} className="animate-spin" />
-                        <span>Uploading to Cloudinary...</span>
+                        <span>Uploading photos...</span>
                       </span>
                     )}
                   </div>
 
                   <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-                    {/* 1. Already Uploaded Photos (Cloudinary URLs) */}
+                    {/* 1. Already Uploaded Photos */}
                     {images.map((img, idx) => (
                       <div key={`img-${idx}`} className="relative group rounded-xl overflow-hidden border border-emerald-900/80 aspect-video bg-black/40 shadow-md">
                         <LazyImage src={img} alt={`Upload ${idx + 1}`} className="w-full h-full object-cover" />
@@ -990,7 +1057,7 @@ export default function PostPropertyPage() {
 
                         <span className="absolute bottom-1 left-1 bg-black/75 backdrop-blur-xs text-emerald-400 text-[8px] font-bold px-1.5 py-0.5 rounded border border-emerald-800/60 flex items-center space-x-0.5">
                           <Check size={9} />
-                          <span>Cloudinary</span>
+                          <span>{img.startsWith('data:') ? 'Ready' : 'Uploaded'}</span>
                         </span>
 
                         <button
