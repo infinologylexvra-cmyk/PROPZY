@@ -181,7 +181,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 </button>
 
                 {isAdminMenuOpen && (
-                  <div role="menu" className="absolute right-0 mt-3 w-64 rounded-2xl bg-[#0a110d] border border-emerald-900/80 shadow-2xl p-2 z-50">
+                  <div
+                    role="menu"
+                    className="absolute left-0 lg:left-auto lg:right-0 mt-2.5 w-64 max-w-[calc(100vw-2rem)] rounded-2xl bg-[#0a110d] border border-emerald-900/80 shadow-2xl p-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150"
+                  >
                     <div className="px-3 py-2.5 border-b border-emerald-950 text-[10px] font-extrabold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
                       <ShieldCheck size={13} /> Admin Portal
                     </div>

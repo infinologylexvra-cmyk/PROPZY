@@ -217,7 +217,7 @@ function AdminPropertiesContent() {
             Property Listings Manager
           </h1>
           <p className="text-xs text-gray-400 mt-1">
-            Search, moderate, verify, feature, or edit all registered PID listings.
+            Search, moderate, verify, feature, or edit all registered property listings.
           </p>
         </div>
 
@@ -240,13 +240,13 @@ function AdminPropertiesContent() {
 
       {/* Filter Controls Bar */}
       <div className="bg-[#0a110d] p-4 sm:p-5 rounded-3xl border border-emerald-950/90 shadow-xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-        {/* Search PID or Keyword */}
+        {/* Search ID or Keyword */}
         <div className="relative">
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search PID, Title, Locality..."
+            placeholder="Search ID, Title, Locality..."
             className="w-full pl-9 pr-4 py-2.5 bg-[#050806] border border-emerald-900/80 rounded-xl text-xs text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500"
           />
           <Search className="absolute left-3 top-3 text-emerald-400" size={14} />
@@ -310,7 +310,7 @@ function AdminPropertiesContent() {
           <table className="w-full text-left text-xs text-gray-300">
             <thead className="bg-[#050806] text-gray-400 font-extrabold uppercase tracking-wider text-[10px] border-b border-emerald-950">
               <tr>
-                <th className="p-3.5">PID</th>
+                <th className="p-3.5">ID</th>
                 <th className="p-3.5">Property Details</th>
                 <th className="p-3.5">Category</th>
                 <th className="p-3.5">Price</th>

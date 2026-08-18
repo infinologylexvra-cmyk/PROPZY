@@ -30,7 +30,7 @@ export interface PropertyItem {
 export const INITIAL_PROPERTIES: PropertyItem[] = [
   {
     id: 'prop-101',
-    pid: 'LR-101',
+    pid: 'PZ-101',
     title: 'Luxury 2 BHK Fully Furnished Flat in Sector 71',
     category: 'rent',
     type: 'flat',
@@ -59,7 +59,7 @@ export const INITIAL_PROPERTIES: PropertyItem[] = [
   },
   {
     id: 'prop-102',
-    pid: 'LR-102',
+    pid: 'PZ-102',
     title: 'Independent 3 BHK Kothi Floor near IT Park',
     category: 'rent',
     type: 'house',
@@ -89,7 +89,7 @@ export const INITIAL_PROPERTIES: PropertyItem[] = [
   },
   {
     id: 'prop-103',
-    pid: 'LR-103',
+    pid: 'PZ-103',
     title: 'Premium Boys & Girls PG with 3 Times Meals',
     category: 'pg',
     type: 'pg',
@@ -118,7 +118,7 @@ export const INITIAL_PROPERTIES: PropertyItem[] = [
   },
   {
     id: 'prop-104',
-    pid: 'LR-104',
+    pid: 'PZ-104',
     title: 'Modern 1 BHK Apartment in VIP Road',
     category: 'rent',
     type: 'flat',
@@ -147,7 +147,7 @@ export const INITIAL_PROPERTIES: PropertyItem[] = [
   },
   {
     id: 'prop-105',
-    pid: 'LR-105',
+    pid: 'PZ-105',
     title: 'Commercial Office Space in Sector 67',
     category: 'commercial',
     type: 'commercial',
@@ -176,7 +176,7 @@ export const INITIAL_PROPERTIES: PropertyItem[] = [
   },
   {
     id: 'prop-106',
-    pid: 'LR-106',
+    pid: 'PZ-106',
     title: '3 BHK Luxury Villa for Sale in Sector 20',
     category: 'buy',
     type: 'house',
@@ -205,7 +205,7 @@ export const INITIAL_PROPERTIES: PropertyItem[] = [
   },
   {
     id: 'prop-107',
-    pid: 'LR-107',
+    pid: 'PZ-107',
     title: 'Furnished Room in 3 BHK Apartment',
     category: 'pg',
     type: 'flat',
@@ -234,7 +234,7 @@ export const INITIAL_PROPERTIES: PropertyItem[] = [
   },
   {
     id: 'prop-108',
-    pid: 'LR-108',
+    pid: 'PZ-108',
     title: '2 BHK Builder Floor for Rent in Sector 62',
     category: 'rent',
     type: 'flat',
@@ -263,7 +263,7 @@ export const INITIAL_PROPERTIES: PropertyItem[] = [
   },
   {
     id: 'prop-109',
-    pid: 'LR-109',
+    pid: 'PZ-109',
     title: 'Luxury 3 BHK High-Rise Flat for Sale',
     category: 'buy',
     type: 'flat',
@@ -292,7 +292,7 @@ export const INITIAL_PROPERTIES: PropertyItem[] = [
   },
   {
     id: 'prop-110',
-    pid: 'LR-110',
+    pid: 'PZ-110',
     title: '2 BHK Gated Society Flat for Sale on PR7 Airport Road',
     category: 'buy',
     type: 'flat',
@@ -321,7 +321,7 @@ export const INITIAL_PROPERTIES: PropertyItem[] = [
   },
   {
     id: 'prop-732',
-    pid: 'LR-732',
+    pid: 'PZ-732',
     title: '2 BHK Flat for Rent in Sector 75',
     category: 'rent',
     type: 'flat',
@@ -351,8 +351,8 @@ export const INITIAL_PROPERTIES: PropertyItem[] = [
 ];
 
 export const INITIAL_INQUIRIES = [
-  { _id: 'inq-101', propertyId: 'prop-101', propertyTitle: '3 BHK Fully Furnished Kothi for Rent in Sector 70', propertyPid: 'LR-101', tenantName: 'Rahul Sharma', tenantPhone: '+91 98765 12345', tenantMessage: 'Hi, interested in family renting. Is power backup available?', status: 'pending', createdAt: new Date().toISOString() },
-  { _id: 'inq-102', propertyId: 'prop-102', propertyTitle: 'Modern 2 BHK Flat in Homeland Heights', propertyPid: 'LR-102', tenantName: 'Priya Singh', tenantPhone: '+91 98140 99887', tenantMessage: 'Looking for urgent possession next week. Please call.', status: 'contacted', createdAt: new Date().toISOString() },
-  { _id: 'inq-103', propertyId: 'prop-103', propertyTitle: 'Independent 1 BHK Builder Floor', propertyPid: 'LR-103', tenantName: 'Vikas Verma', tenantPhone: '+91 98722 33445', tenantMessage: 'Please call back with final security deposit terms.', status: 'pending', createdAt: new Date().toISOString() },
-  { _id: 'inq-104', propertyId: 'prop-104', propertyTitle: 'Commercial Shop / Office Space', propertyPid: 'LR-104', tenantName: 'Gurpreet Singh', tenantPhone: '+91 98888 77665', tenantMessage: 'Need office space for IT startup.', status: 'pending', createdAt: new Date().toISOString() }
+  { _id: 'inq-101', propertyId: 'prop-101', propertyTitle: '3 BHK Fully Furnished Kothi for Rent in Sector 70', propertyPid: 'PZ-101', tenantName: 'Rahul Sharma', tenantPhone: '+91 98765 12345', tenantMessage: 'Hi, interested in family renting. Is power backup available?', status: 'pending', createdAt: new Date().toISOString() },
+  { _id: 'inq-102', propertyId: 'prop-102', propertyTitle: 'Modern 2 BHK Flat in Homeland Heights', propertyPid: 'PZ-102', tenantName: 'Priya Singh', tenantPhone: '+91 98140 99887', tenantMessage: 'Looking for urgent possession next week. Please call.', status: 'contacted', createdAt: new Date().toISOString() },
+  { _id: 'inq-103', propertyId: 'prop-103', propertyTitle: 'Independent 1 BHK Builder Floor', propertyPid: 'PZ-103', tenantName: 'Vikas Verma', tenantPhone: '+91 98722 33445', tenantMessage: 'Please call back with final security deposit terms.', status: 'pending', createdAt: new Date().toISOString() },
+  { _id: 'inq-104', propertyId: 'prop-104', propertyTitle: 'Commercial Shop / Office Space', propertyPid: 'PZ-104', tenantName: 'Gurpreet Singh', tenantPhone: '+91 98888 77665', tenantMessage: 'Need office space for IT startup.', status: 'pending', createdAt: new Date().toISOString() }
 ];

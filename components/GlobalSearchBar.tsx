@@ -25,7 +25,7 @@ interface GlobalSearchBarProps {
 }
 
 export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
-  placeholder = 'Search by Title, City, Locality, PID (e.g. 2 BHK, Mohali, LR-101)...',
+  placeholder = 'Search by Title, City, Locality, ID (e.g. 2 BHK, Mohali, PZ-101)...',
   mode = 'public',
   className = '',
 }) => {
@@ -264,7 +264,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
           ) : (
             <div className="p-4 text-center text-xs text-gray-400 space-y-1">
               <p className="font-semibold text-gray-300">No properties found matching &quot;{query}&quot;</p>
-              <p className="text-[11px] text-gray-500">Try searching by PID (e.g. LR-101), locality, city, or property type.</p>
+              <p className="text-[11px] text-gray-500">Try searching by ID (e.g. PZ-101), locality, city, or property type.</p>
             </div>
           )}
         </div>

@@ -35,7 +35,7 @@ export default function NotFound() {
         <div className="max-w-lg mx-auto p-2 rounded-2xl bg-[#07130b] border border-emerald-900/60 shadow-xl">
           <GlobalSearchBar
             mode="public"
-            placeholder="Search by PID (e.g. LR-101), title, city, or locality..."
+            placeholder="Search by ID (e.g. PZ-101), title, city, or locality..."
           />
         </div>
 

@@ -189,7 +189,7 @@ export default function AdminOverviewPage() {
             className="px-4 py-2 rounded-xl bg-[#0a1810] border border-emerald-900/80 text-emerald-400 hover:bg-emerald-950 text-xs font-semibold flex items-center justify-center space-x-1.5 transition-colors w-full sm:w-auto"
           >
             <Building size={14} />
-            <span>Manage All PID ({totalListings})</span>
+            <span>Manage All Listings ({totalListings})</span>
           </Link>
         </div>
       </div>
@@ -308,7 +308,7 @@ export default function AdminOverviewPage() {
               >
                 <div className="flex items-center space-x-3">
                   <ShieldCheck size={18} className="text-emerald-400" />
-                  <span>Moderate & Verify PID</span>
+                  <span>Moderate & Verify Listings</span>
                 </div>
                 <ArrowUpRight size={16} className="text-gray-500 group-hover:text-emerald-400" />
               </Link>
@@ -356,7 +356,7 @@ export default function AdminOverviewPage() {
           <table className="w-full text-left text-xs text-gray-300">
             <thead className="bg-[#050806] text-gray-400 font-extrabold uppercase tracking-wider text-[10px] border-b border-emerald-950">
               <tr>
-                <th className="p-3">PID</th>
+                <th className="p-3">ID</th>
                 <th className="p-3">Property Title</th>
                 <th className="p-3">City & Locality</th>
                 <th className="p-3">Price</th>

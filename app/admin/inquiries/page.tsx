@@ -127,7 +127,7 @@ export default function AdminInquiriesPage() {
           <table className="w-full text-left text-xs text-gray-300">
             <thead className="bg-[#050806] text-gray-400 font-extrabold uppercase tracking-wider text-[10px] border-b border-emerald-950">
               <tr>
-                <th className="p-3.5">Target PID</th>
+                <th className="p-3.5">Property ID</th>
                 <th className="p-3.5">Tenant Details</th>
                 <th className="p-3.5">Message / Request</th>
                 <th className="p-3.5">Lead Status</th>
@@ -146,7 +146,7 @@ export default function AdminInquiriesPage() {
               ) : (
                 filteredInquiries.map((item) => (
                   <tr key={item.id || item._id} className="hover:bg-[#07120a] transition-colors">
-                    <td className="p-3.5 font-mono font-bold text-emerald-400">{item.propertyPid || 'LR-101'}</td>
+                    <td className="p-3.5 font-mono font-bold text-emerald-400">{item.propertyPid || 'PZ-101'}</td>
                     <td className="p-3.5">
                       <div className="font-bold text-white">{item.tenantName}</div>
                       <div className="text-[10px] font-mono text-gray-400">{item.tenantPhone}</div>

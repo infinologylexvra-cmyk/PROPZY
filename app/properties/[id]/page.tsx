@@ -132,7 +132,7 @@ export default function PropertyDetailPage() {
       <div className="space-y-2">
         <div className="flex flex-wrap items-center gap-2">
           <span className="bg-gray-900 text-white font-mono text-xs font-semibold px-2.5 py-1 rounded-md">
-            PID: {property.pid}
+            ID: {property.pid}
           </span>
           {property.verified && (
             <span className="bg-emerald-100 text-emerald-800 text-xs font-semibold px-2.5 py-1 rounded-md flex items-center space-x-1">

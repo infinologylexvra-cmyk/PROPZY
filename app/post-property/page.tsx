@@ -542,7 +542,7 @@ export default function PostPropertyPage() {
       console.warn('POST fallback:', err);
       const mockProp = {
         ...payload,
-        pid: `LR-${Math.floor(100 + Math.random() * 900)}`,
+        pid: `PZ-${Math.floor(100 + Math.random() * 900)}`,
         id: `prop-${Date.now()}`,
         verified: true,
         featured: false,

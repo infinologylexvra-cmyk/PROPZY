@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import {
   Heart, User, Building, PhoneCall, ShieldCheck, CheckCircle2,
-  XCircle, RefreshCw, CreditCard, Sparkles, FileText, Download, Check, Edit3, Save, AlertTriangle, Upload
+  XCircle, RefreshCw, CreditCard, Sparkles, FileText, Download, Check, Edit3, Save, AlertTriangle, Upload,
+  Phone, Mail, X
 } from 'lucide-react';
 
 import { useApp, UserProfile, BillingRecord } from '@/context/AppContext';
@@ -263,8 +264,8 @@ function DashboardContent() {
           if (wishlist.includes(p.pid)) return true;
           if (p.id && wishlist.includes(p.id)) return true;
           if (p._id && wishlist.includes(p._id.toString())) return true;
-          if (p.id && p.id.startsWith('prop-') && wishlist.includes(`LR-${p.id.replace('prop-', '')}`)) return true;
-          if (p.pid && p.pid.startsWith('LR-') && wishlist.includes(`prop-${p.pid.replace('LR-', '')}`)) return true;
+          if (p.id && p.id.startsWith('prop-') && (wishlist.includes(`PZ-${p.id.replace('prop-', '')}`) || wishlist.includes(`LR-${p.id.replace('prop-', '')}`))) return true;
+          if (p.pid && (p.pid.startsWith('PZ-') || p.pid.startsWith('LR-')) && wishlist.includes(`prop-${p.pid.replace(/^(PZ|LR)-/, '')}`)) return true;
           return false;
         });
         setSavedProperties(filteredWishlist);
@@ -592,99 +593,141 @@ function DashboardContent() {
 
         {/* TAB 1: ACCOUNT PROFILE */}
         {activeTab === 'account' && (
-          <div className="bg-[#0a110d] rounded-3xl border border-emerald-950/90 p-6 sm:p-8 shadow-xl space-y-6">
-            <div className="flex items-center justify-between border-b border-emerald-950 pb-4">
-              <div>
-                <h3 className="text-lg font-bold text-white">Personal Information</h3>
-                <p className="text-xs text-gray-400">Manage your contact details, city, and account role</p>
+          <div className="bg-[#0a110d] rounded-3xl border border-emerald-950/90 p-5 sm:p-8 shadow-xl space-y-6">
+            {/* Header with Avatar and Action */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-emerald-950 pb-5">
+              <div className="flex items-center space-x-3.5">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-emerald-600 to-emerald-400 text-black font-extrabold text-lg flex items-center justify-center shadow-lg shadow-emerald-500/20 shrink-0 uppercase">
+                  {user.name ? user.name[0] : 'U'}
+                </div>
+                <div>
+                  <div className="flex items-center space-x-2">
+                    <h3 className="text-lg font-extrabold text-white tracking-tight">{user.name}</h3>
+                    <span className="text-[10px] bg-emerald-950/80 border border-emerald-800/80 text-emerald-400 font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                      {user.role === 'owner' ? 'Owner' : 'Tenant'}
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-400 mt-0.5">Manage your contact details, city, and account role</p>
+                </div>
               </div>
 
               {!isEditingAccount ? (
                 <button
+                  type="button"
                   onClick={() => setIsEditingAccount(true)}
-                  className="flex items-center space-x-1.5 px-4 py-2 bg-[#06180f] hover:bg-[#0e2c1d] text-emerald-400 border border-emerald-800/60 rounded-full text-xs font-bold transition-all"
+                  className="self-start sm:self-auto inline-flex items-center justify-center space-x-2 px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-black rounded-full text-xs font-extrabold shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-all cursor-pointer whitespace-nowrap active:scale-95 shrink-0"
                 >
-                  <Edit3 size={14} />
+                  <Edit3 size={14} className="stroke-[2.5]" />
                   <span>Edit Profile</span>
                 </button>
               ) : (
                 <button
+                  type="button"
                   onClick={() => setIsEditingAccount(false)}
-                  className="text-xs text-gray-400 hover:text-white"
+                  className="self-start sm:self-auto inline-flex items-center justify-center space-x-1.5 px-4 py-2 bg-[#0b1610] hover:bg-[#12241a] text-gray-300 hover:text-white border border-emerald-900/60 rounded-full text-xs font-semibold transition-all cursor-pointer whitespace-nowrap shrink-0"
                 >
-                  Cancel
+                  <X size={14} />
+                  <span>Cancel</span>
                 </button>
               )}
             </div>
 
             {!isEditingAccount ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-xs">
-                <div className="p-4 bg-[#050806] rounded-2xl border border-emerald-950">
-                  <span className="text-gray-500 font-medium block mb-1">Full Name</span>
-                  <span className="text-sm font-bold text-white">{user.name}</span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                <div className="p-4 bg-[#050806] rounded-2xl border border-emerald-950/90 flex items-start space-x-3 group hover:border-emerald-900 transition-colors">
+                  <div className="w-8 h-8 rounded-xl bg-[#091f14] text-emerald-400 border border-emerald-800/50 flex items-center justify-center shrink-0">
+                    <User size={15} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <span className="text-gray-500 font-medium block text-[11px] mb-0.5">Full Name</span>
+                    <span className="text-sm font-bold text-white truncate block">{user.name}</span>
+                  </div>
                 </div>
-                <div className="p-4 bg-[#050806] rounded-2xl border border-emerald-950">
-                  <span className="text-gray-500 font-medium block mb-1">Phone Number</span>
-                  <span className="text-sm font-mono font-bold text-white">{user.phone}</span>
+
+                <div className="p-4 bg-[#050806] rounded-2xl border border-emerald-950/90 flex items-start space-x-3 group hover:border-emerald-900 transition-colors">
+                  <div className="w-8 h-8 rounded-xl bg-[#091f14] text-emerald-400 border border-emerald-800/50 flex items-center justify-center shrink-0">
+                    <Phone size={15} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <span className="text-gray-500 font-medium block text-[11px] mb-0.5">Phone Number</span>
+                    <span className="text-sm font-mono font-bold text-white truncate block">{user.phone}</span>
+                  </div>
                 </div>
-                <div className="p-4 bg-[#050806] rounded-2xl border border-emerald-950">
-                  <span className="text-gray-500 font-medium block mb-1">Email Address</span>
-                  <span className="text-sm font-bold text-white">{user.email || 'Not provided'}</span>
+
+                <div className="p-4 bg-[#050806] rounded-2xl border border-emerald-950/90 flex items-start space-x-3 group hover:border-emerald-900 transition-colors">
+                  <div className="w-8 h-8 rounded-xl bg-[#091f14] text-emerald-400 border border-emerald-800/50 flex items-center justify-center shrink-0">
+                    <Mail size={15} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <span className="text-gray-500 font-medium block text-[11px] mb-0.5">Email Address</span>
+                    <span className="text-sm font-bold text-white truncate block">{user.email || 'Not provided'}</span>
+                  </div>
                 </div>
-                <div className="p-4 bg-[#050806] rounded-2xl border border-emerald-950">
-                  <span className="text-gray-500 font-medium block mb-1">Account Role</span>
-                  <span className="text-sm font-bold text-emerald-400 capitalize">{user.role === 'owner' ? 'Property Owner / Landlord' : 'Tenant'}</span>
+
+                <div className="p-4 bg-[#050806] rounded-2xl border border-emerald-950/90 flex items-start space-x-3 group hover:border-emerald-900 transition-colors">
+                  <div className="w-8 h-8 rounded-xl bg-[#091f14] text-emerald-400 border border-emerald-800/50 flex items-center justify-center shrink-0">
+                    <Building size={15} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <span className="text-gray-500 font-medium block text-[11px] mb-0.5">Account Role</span>
+                    <span className="text-sm font-bold text-emerald-400 truncate block">
+                      {user.role === 'owner' ? 'Property Owner / Landlord' : 'Tenant Account'}
+                    </span>
+                  </div>
                 </div>
               </div>
             ) : (
               <form onSubmit={handleAccountFormSave} className="space-y-4 max-w-xl text-xs">
-                <div>
-                  <label className="block text-gray-300 font-semibold mb-1">Full Name</label>
+                <div className="space-y-1">
+                  <label className="block text-gray-300 font-semibold">Full Name</label>
                   <input
                     type="text"
                     required
                     maxLength={50}
                     value={accountForm.name}
                     onChange={(e) => setAccountForm({ ...accountForm, name: sanitizeName(e.target.value) })}
-                    className="w-full px-4 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white focus:border-emerald-500 focus:outline-none"
+                    className="w-full px-4 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white text-xs focus:border-emerald-500 focus:outline-none transition-colors"
+                    placeholder="Your full name"
                   />
                 </div>
 
-                <div>
-                  <label className="block text-gray-300 font-semibold mb-1">Phone Number (10 Digits)</label>
+                <div className="space-y-1">
+                  <label className="block text-gray-300 font-semibold">Phone Number (10 Digits)</label>
                   <input
                     type="tel"
                     required
                     maxLength={10}
                     value={accountForm.phone}
                     onChange={(e) => setAccountForm({ ...accountForm, phone: sanitizePhone(e.target.value) })}
-                    className="w-full px-4 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white font-mono focus:border-emerald-500 focus:outline-none"
+                    className="w-full px-4 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white font-mono text-xs focus:border-emerald-500 focus:outline-none transition-colors"
+                    placeholder="10-digit mobile number"
                   />
                 </div>
 
-
-                <div>
-                  <label className="block text-gray-300 font-semibold mb-1">Email Address</label>
+                <div className="space-y-1">
+                  <label className="block text-gray-300 font-semibold">Email Address</label>
                   <input
                     type="email"
                     value={accountForm.email}
                     onChange={(e) => setAccountForm({ ...accountForm, email: e.target.value })}
-                    className="w-full px-4 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white focus:border-emerald-500 focus:outline-none"
+                    className="w-full px-4 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white text-xs focus:border-emerald-500 focus:outline-none transition-colors"
+                    placeholder="name@example.com"
                   />
                 </div>
 
-                <div>
-                  <label className="block text-gray-300 font-semibold mb-1">City</label>
+                <div className="space-y-1">
+                  <label className="block text-gray-300 font-semibold">City</label>
                   <input
                     type="text"
                     value={accountForm.city}
                     onChange={(e) => setAccountForm({ ...accountForm, city: e.target.value })}
-                    className="w-full px-4 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white focus:border-emerald-500 focus:outline-none"
+                    className="w-full px-4 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white text-xs focus:border-emerald-500 focus:outline-none transition-colors"
+                    placeholder="e.g. Mohali, Chandigarh, Zirakpur"
                   />
                 </div>
 
-                <div>
-                  <label className="block text-gray-300 font-semibold mb-1">Account Type / Role</label>
+                <div className="space-y-1">
+                  <label className="block text-gray-300 font-semibold">Account Type / Role</label>
                   <div className="w-full px-4 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white font-bold capitalize flex items-center justify-between">
                     <span className="text-emerald-400 font-extrabold">{user.role === 'owner' ? 'Property Owner / Landlord' : 'Tenant Account'}</span>
                     <span className="text-[10px] bg-emerald-950 border border-emerald-800 text-emerald-300 px-2.5 py-0.5 rounded-full font-mono uppercase">
@@ -693,12 +736,19 @@ function DashboardContent() {
                   </div>
                 </div>
 
-                <div className="pt-2">
+                <div className="flex items-center space-x-3 pt-2">
                   <button
                     type="submit"
                     className="px-6 py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs rounded-full shadow-lg shadow-emerald-500/20 transition-all uppercase tracking-wider cursor-pointer"
                   >
-                    Save Account Changes
+                    Save Changes
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingAccount(false)}
+                    className="px-5 py-3 bg-[#050806] hover:bg-[#09150e] text-gray-400 hover:text-white border border-emerald-950 rounded-full font-bold text-xs transition-colors cursor-pointer"
+                  >
+                    Cancel
                   </button>
                 </div>
               </form>

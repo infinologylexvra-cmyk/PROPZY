@@ -8,7 +8,7 @@ const SEED_INQUIRIES = [
   {
     propertyId: 'prop-101',
     propertyTitle: '3 BHK Flat for Rent in Sector 75, Mohali',
-    propertyPid: 'LR-924',
+    propertyPid: 'PZ-924',
     tenantName: 'Rahul Verma',
     tenantPhone: '+91 98765 43210',
     tenantMessage: 'Hi, I am interested in scheduling a site visit for this 3 BHK flat in Sector 75.',
@@ -17,7 +17,7 @@ const SEED_INQUIRIES = [
   {
     propertyId: 'prop-102',
     propertyTitle: '2 BHK Independent Flat in Zirakpur',
-    propertyPid: 'LR-685',
+    propertyPid: 'PZ-685',
     tenantName: 'Priya Sharma',
     tenantPhone: '+91 98123 45678',
     tenantMessage: 'Looking for direct owner contact details and possession availability.',
@@ -26,7 +26,7 @@ const SEED_INQUIRIES = [
   {
     propertyId: 'prop-103',
     propertyTitle: 'Fully Furnished Girls PG near Paragon School',
-    propertyPid: 'LR-237',
+    propertyPid: 'PZ-237',
     tenantName: 'Ananya Gupta',
     tenantPhone: '+91 97890 12345',
     tenantMessage: 'Interested in room sharing options with food included.',

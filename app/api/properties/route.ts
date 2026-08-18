@@ -344,7 +344,7 @@ export async function POST(req: NextRequest) {
       }, { status: 400 });
     }
 
-    const pidGenerated = body.pid || `LR-${Math.floor(100 + Math.random() * 900)}`;
+    const pidGenerated = body.pid || `PZ-${Math.floor(100 + Math.random() * 900)}`;
     const resolvedOwnerName = existingUser?.name || authUser.name || body.ownerName || 'Property Owner';
     const resolvedOwnerPhone = existingUser?.phone || body.ownerPhone || '+91 98765 43210';
     const resolvedOwnerEmail = authUser.email.toLowerCase().trim();

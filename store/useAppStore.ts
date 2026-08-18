@@ -57,7 +57,10 @@ const isSuccessToast = (message: string) => /\b(success|welcome|redirecting|logg
 
 const normalizeWishlistKey = (key: string) => {
   if (key && key.startsWith('prop-')) {
-    return `LR-${key.replace('prop-', '')}`;
+    return `PZ-${key.replace('prop-', '')}`;
+  }
+  if (key && key.startsWith('LR-')) {
+    return `PZ-${key.replace('LR-', '')}`;
   }
   return key;
 };

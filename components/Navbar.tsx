@@ -316,79 +316,27 @@ function NavbarContent() {
           </div>
         </div>
 
-        {/* Mobile Navigation Drawer */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden border-t border-emerald-950 bg-[#070c09] px-4 pt-3 pb-6 space-y-3 animate-in fade-in slide-in-from-top-4 duration-200">
-            <div className="space-y-1">
-              <Link
-                href="/properties?category=rent"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="block py-2 text-sm font-semibold text-gray-200 hover:text-emerald-400"
-              >
-                Rent Homes
-              </Link>
-              <Link
-                href="/properties?category=buy"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="block py-2 text-sm font-semibold text-gray-200 hover:text-emerald-400"
-              >
-                Buy / Sale
-              </Link>
-              <Link
-                href="/properties?category=pg"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="block py-2 text-sm font-semibold text-gray-200 hover:text-emerald-400"
-              >
-                PG / Co-Living
-              </Link>
-              <Link
-                href="/properties?category=commercial"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="block py-2 text-sm font-semibold text-gray-200 hover:text-emerald-400"
-              >
-                Commercial
-              </Link>
+        {/* Action Bar for Mobile View Only (< sm) - Full Width Stack */}
+        <div className="flex flex-col sm:hidden gap-2 pb-3.5 pt-1.5 px-1 border-t border-emerald-950/40 w-full">
+          <GlobalSearchBar mode="public" placeholder="Search ID, City, Locality, Title..." className="w-full" />
 
-              <Link
-                href="/localities"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="block py-2 text-sm font-semibold text-gray-200 hover:text-emerald-400"
-              >
-                Top Localities
-              </Link>
-            </div>
-
-            {user?.role === 'owner' && <div className="pt-3 border-t border-emerald-950 space-y-2">
-              <Link
-                href="/post-property"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="w-full py-3 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-extrabold text-center block shadow-lg transition-all"
-              >
-                Post Property →
-              </Link>
-            </div>}
-          </div>
-        )}
-
-        {/* Second Line Action Bar for Mobile View Only (< sm) */}
-        <div className="flex sm:hidden items-center justify-between gap-2.5 pb-3.5 pt-1 px-1 border-t border-emerald-950/40">
-          <GlobalSearchBar mode="public" placeholder="Search PID, City, Title..." className="flex-1" />
-
-          {user?.role === 'owner' && <Link
-            href="/post-property"
-            onClick={() => setActiveItem('sell')}
-            className="flex-1 flex items-center justify-center space-x-1 py-2 px-3 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs shadow-lg shadow-emerald-500/20 transition-all"
-          >
-            <span>Post Property</span>
-            <span className="text-sm font-bold ml-0.5">→</span>
-          </Link>}
+          {user?.role === 'owner' && (
+            <Link
+              href="/post-property"
+              onClick={() => setActiveItem('sell')}
+              className="w-full h-10 flex items-center justify-center space-x-1.5 py-2.5 px-4 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs shadow-lg shadow-emerald-500/20 transition-all active:scale-[0.98] cursor-pointer"
+            >
+              <Plus size={15} className="stroke-[2.5]" />
+              <span>Post Property Free</span>
+            </Link>
+          )}
         </div>
       </div>
 
       {/* Mobile/Tablet Navigation Drawer */}
       {isMobileMenuOpen && (
-        <div className="xl:hidden bg-[#070d09] border-b border-emerald-950/80 px-4 pt-3 pb-5 space-y-2 animate-in fade-in slide-in-from-top-4 duration-200">
-          <div className="grid grid-cols-2 gap-2 pb-3 border-b border-emerald-950">
+        <div className="xl:hidden bg-[#070d09] border-b border-emerald-950/80 px-4 pt-3 pb-4 animate-in fade-in slide-in-from-top-4 duration-200">
+          <div className="grid grid-cols-2 gap-2">
             {navItems.map((item) => (
               <Link
                 key={item.key}
@@ -397,7 +345,7 @@ function NavbarContent() {
                   setActiveItem(item.key);
                   setIsMobileMenuOpen(false);
                 }}
-                className={`px-3 py-2 rounded-xl text-xs font-bold transition-all ${activeItem === item.key
+                className={`px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${activeItem === item.key
                     ? 'bg-emerald-950/90 text-emerald-400 border border-emerald-800/60'
                     : 'bg-[#0b140f] text-gray-300 hover:text-emerald-400 hover:bg-emerald-950/40'
                   }`}
@@ -405,32 +353,6 @@ function NavbarContent() {
                 {item.label}
               </Link>
             ))}
-          </div>
-
-          <div className="pt-2 flex flex-col space-y-2">
-            <div className="flex items-center justify-between gap-2">
-              <button
-                onClick={() => {
-                  setIsMobileMenuOpen(false);
-                  openPidModal();
-                }}
-                className="flex-1 py-2 px-3 rounded-xl bg-[#0a1e14] text-emerald-400 border border-emerald-800/80 text-xs font-semibold flex items-center justify-center space-x-1.5"
-              >
-                <Search size={14} />
-                <span>Search PID</span>
-              </button>
-
-              {user?.role === 'owner' && <Link
-                href="/post-property"
-                onClick={() => {
-                  setIsMobileMenuOpen(false);
-                  setActiveItem('sell');
-                }}
-                className="flex-1 py-2 px-3 rounded-xl bg-emerald-500 text-black text-xs font-extrabold text-center"
-              >
-                Post Property →
-              </Link>}
-            </div>
           </div>
         </div>
       )}

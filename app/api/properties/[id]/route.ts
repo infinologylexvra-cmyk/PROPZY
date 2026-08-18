@@ -22,9 +22,11 @@ export async function GET(
   try {
     await connectToDatabase();
     
-    const normalizedPid = id.startsWith('prop-') ? `LR-${id.replace('prop-', '')}` : id;
+    const normalizedPz = id.startsWith('prop-') ? `PZ-${id.replace('prop-', '')}` : id.startsWith('LR-') ? `PZ-${id.replace('LR-', '')}` : id;
+    const normalizedLr = id.startsWith('prop-') ? `LR-${id.replace('prop-', '')}` : id.startsWith('PZ-') ? `LR-${id.replace('PZ-', '')}` : id;
+
     let property = await Property.findOne({
-      $or: [{ pid: id }, { pid: normalizedPid }, { id: id }]
+      $or: [{ pid: id }, { pid: normalizedPz }, { pid: normalizedLr }, { id: id }]
     });
 
     if (!property && id.match(/^[0-9a-fA-F]{24}$/)) {
@@ -48,7 +50,7 @@ export async function GET(
   }
 
   // Memory fallback
-  const found = memoryStore.find(p => p.id === id || p.pid === id) || INITIAL_PROPERTIES.find(p => p.id === id || p.pid === id);
+  const found = memoryStore.find(p => p.id === id || p.pid === id || p.pid === `PZ-${id.replace('prop-', '')}` || p.pid === `LR-${id.replace('prop-', '')}`) || INITIAL_PROPERTIES.find(p => p.id === id || p.pid === id || p.pid === `PZ-${id.replace('prop-', '')}` || p.pid === `LR-${id.replace('prop-', '')}`);
   if (found) {
     const canAccess = found.verified || isAdminUser(authUser) || isOwnedByUser(found.ownerEmail, authUser);
 
@@ -80,9 +82,10 @@ export async function PATCH(
   try {
     await connectToDatabase();
     
-    const normalizedPid = id.startsWith('prop-') ? `LR-${id.replace('prop-', '')}` : id;
+    const normalizedPz = id.startsWith('prop-') ? `PZ-${id.replace('prop-', '')}` : id.startsWith('LR-') ? `PZ-${id.replace('LR-', '')}` : id;
+    const normalizedLr = id.startsWith('prop-') ? `LR-${id.replace('prop-', '')}` : id.startsWith('PZ-') ? `LR-${id.replace('PZ-', '')}` : id;
 
-    let existing: any = await Property.findOne({ $or: [{ pid: id }, { pid: normalizedPid }, { id: id }] }).lean();
+    let existing: any = await Property.findOne({ $or: [{ pid: id }, { pid: normalizedPz }, { pid: normalizedLr }, { id: id }] }).lean();
     if (!existing && id.match(/^[0-9a-fA-F]{24}$/)) {
       existing = await Property.findById(id).lean().catch(() => null);
     }
@@ -97,7 +100,7 @@ export async function PATCH(
 
     // Try finding & updating by pid or id
     let updated = await Property.findOneAndUpdate(
-      { $or: [{ pid: id }, { pid: normalizedPid }, { id: id }] },
+      { $or: [{ pid: id }, { pid: normalizedPz }, { pid: normalizedLr }, { id: id }] },
       body,
       { new: true }
     );
@@ -108,7 +111,7 @@ export async function PATCH(
     }
 
     // Sync memoryStore fallback if active
-    const memIndex = memoryStore.findIndex(p => p.id === id || p.pid === id || p.pid === normalizedPid || (p._id && p._id.toString() === id));
+    const memIndex = memoryStore.findIndex(p => p.id === id || p.pid === id || p.pid === normalizedPz || p.pid === normalizedLr || (p._id && p._id.toString() === id));
     if (memIndex !== -1) {
       memoryStore[memIndex] = { ...memoryStore[memIndex], ...body };
     }
@@ -141,8 +144,10 @@ export async function DELETE(
   try {
     await connectToDatabase();
 
-    const normalizedPid = id.startsWith('prop-') ? `LR-${id.replace('prop-', '')}` : id;
-    let existing: any = await Property.findOne({ $or: [{ pid: id }, { pid: normalizedPid }, { id: id }] }).lean();
+    const normalizedPz = id.startsWith('prop-') ? `PZ-${id.replace('prop-', '')}` : id.startsWith('LR-') ? `PZ-${id.replace('LR-', '')}` : id;
+    const normalizedLr = id.startsWith('prop-') ? `LR-${id.replace('prop-', '')}` : id.startsWith('PZ-') ? `LR-${id.replace('PZ-', '')}` : id;
+
+    let existing: any = await Property.findOne({ $or: [{ pid: id }, { pid: normalizedPz }, { pid: normalizedLr }, { id: id }] }).lean();
     if (!existing && id.match(/^[0-9a-fA-F]{24}$/)) {
       existing = await Property.findById(id).lean().catch(() => null);
     }
@@ -155,7 +160,7 @@ export async function DELETE(
       return NextResponse.json({ success: false, message: 'Forbidden. You can only delete your own property listing.' }, { status: 403 });
     }
 
-    let deleted = await Property.findOneAndDelete({ $or: [{ pid: id }, { pid: normalizedPid }, { id: id }] });
+    let deleted = await Property.findOneAndDelete({ $or: [{ pid: id }, { pid: normalizedPz }, { pid: normalizedLr }, { id: id }] });
     if (!deleted && id.match(/^[0-9a-fA-F]{24}$/)) {
       deleted = await Property.findByIdAndDelete(id);
     }
@@ -172,7 +177,7 @@ export async function DELETE(
       ).catch(err => console.warn('[Cloudinary Cleanup Error]:', err));
     }
 
-    const memIndex = memoryStore.findIndex(p => p.id === id || p.pid === id || p.pid === normalizedPid || (p._id && p._id.toString() === id));
+    const memIndex = memoryStore.findIndex(p => p.id === id || p.pid === id || p.pid === normalizedPz || p.pid === normalizedLr || (p._id && p._id.toString() === id));
     if (memIndex !== -1) {
       memoryStore.splice(memIndex, 1);
     }
