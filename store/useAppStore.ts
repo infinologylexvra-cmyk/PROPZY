@@ -53,7 +53,7 @@ export interface AppState {
 
 const STORAGE_KEY = 'propzy_app_v1';
 
-const isSuccessToast = (message: string) => /\b(success|welcome|redirecting|logged out|saved|removed|listed|posted|added|sent|received|copied|updated|refreshed|verified|featured|marked|submitted|download|payment|uploaded|upload|cloudinary|photo|image added)\b/i.test(message);
+const isSuccessToast = (message: string) => /\b(success\w*|welcome|redirecting|logged out|saved|removed|listed|posted|added|sent|received|copied|updated|refreshed|verif\w*|approv\w*|featured|marked|submitted|download|payment|upload\w*|cloudinary|photo|image added|unlocked|confirmed|activated|complete\w*)\b/i.test(message);
 
 const normalizeWishlistKey = (key: string) => {
   if (key && key.startsWith('prop-')) {

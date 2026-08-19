@@ -73,7 +73,7 @@ export default function AdminVerificationsPage() {
       const data = await res.json();
 
       if (data.success) {
-        showToast(data.message);
+        showToast(data.message, 'success');
         setVerifications(prev => {
           const updated = prev.map(u => {
             if ((u._id && u._id === userId) || u.email === email) {

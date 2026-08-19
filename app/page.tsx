@@ -72,18 +72,18 @@ export default function HomePage() {
   };
 
   const locationsList = [
-    { name: 'Chandigarh', count: '7,110 Properties', img: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80', featured: false },
-    { name: 'Mohali', count: '2,777 Properties', img: 'https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=600&q=80', featured: false },
-    { name: 'Zirakpur', count: '4,937 Properties', img: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=600&q=80', featured: true, badge: '★ 6.2K+ Properties' },
-    { name: 'Kharar', count: '7,92 Properties', img: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=600&q=80', featured: false },
-    { name: 'Panchkula', count: '12,145 Properties', img: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=600&q=80', featured: false }
+    { name: 'Chandigarh', count: '7,110 Properties', img: '/Image (Chandigarh).png', featured: false },
+    { name: 'Mohali', count: '2,777 Properties', img: '/Image (Mohali).png', featured: false },
+    { name: 'Zirakpur', count: '4,937 Properties', img: '/Image (Zirakpur).png', featured: true, badge: '★ 6.2K+ Properties' },
+    { name: 'Kharar', count: '7,92 Properties', img: '/Image (Kharar).png', featured: false },
+    { name: 'Panchkula', count: '12,145 Properties', img: '/Image (Panchkula).png', featured: false }
   ];
 
   const spaceCategories = [
-    { title: 'Apartment', count: '4,270 Listings', img: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80', type: 'flat' },
-    { title: 'House', count: '1,344 Listings', img: 'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=600&q=80', type: 'house' },
-    { title: 'PG', count: '884 Listings', img: 'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=600&q=80', type: 'pg' },
-    { title: 'Commercial', count: '63 Listings', img: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=600&q=80', type: 'commercial' },
+    { title: 'Apartment', count: '4,270 Listings', img: '/Apprtment.png', type: 'flat' },
+    { title: 'House', count: '1,344 Listings', img: '/Image (House).png', type: 'house' },
+    { title: 'PG', count: '884 Listings', img: '/Image (PG).png', type: 'pg' },
+    { title: 'Commercial', count: '63 Listings', img: '/Image (Commercial).png', type: 'commercial' },
   ];
 
   return (
@@ -301,9 +301,7 @@ export default function HomePage() {
                   {loc.name}
                   
                 </h3>
-                <p className="text-[10px] text-gray-300 font-medium">
-                  {loc.count}
-                </p>
+                
                 <div className="pt-1">
                   <span className="inline-flex items-center space-x-1 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-[10px] font-bold text-emerald-400 border border-emerald-900/60 group-hover:bg-emerald-500 group-hover:text-black transition-colors">
                     <span>Explore</span>
@@ -587,9 +585,7 @@ export default function HomePage() {
                   <h3 className="text-base font-bold group-hover:text-emerald-400 transition-colors">
                     {cat.title}
                   </h3>
-                  <p className="text-xs text-emerald-400 font-semibold">
-                    {cat.count}
-                  </p>
+            
                 </div>
 
                 <div className="w-9 h-9 rounded-full bg-emerald-500/30 text-black flex items-center justify-center border border-emerald-800 shadow-lg group-hover:scale-110 transition-transform">
