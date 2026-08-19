@@ -34,7 +34,7 @@ function AdminPropertiesContent() {
   const fetchProperties = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
     try {
-      const res = await fetch('/api/properties?admin=true');
+      const res = await fetch('/api/properties?admin=true&limit=1000');
       const data = await res.json();
       if (data.success && Array.isArray(data.data)) {
         setProperties(data.data);
@@ -52,9 +52,11 @@ function AdminPropertiesContent() {
     if (localProps && localProps.length > 0) {
       setProperties(localProps);
       setLoading(false);
+      // Background revalidate from MongoDB
+      fetchProperties(true);
     } else {
       setProperties(INITIAL_PROPERTIES);
-      fetchProperties();
+      fetchProperties(false);
     }
   }, [fetchProperties]);
 

@@ -92,13 +92,13 @@ export async function GET(req: NextRequest) {
     const search = searchParams.get('search');
     const verified = searchParams.get('verified');
     const admin = searchParams.get('admin');
+    const isAdminView = admin === 'true' || isAdminUser(authUser);
     const page = Math.max(1, Number(searchParams.get('page')) || 1);
-    const limit = Math.min(100, Math.max(1, Number(searchParams.get('limit')) || 24));
+    const rawLimit = searchParams.get('limit');
+    const limit = rawLimit
+      ? Math.min(1000, Math.max(1, Number(rawLimit)))
+      : (isAdminView ? 1000 : 100);
     const includeTotal = searchParams.get('includeTotal') === 'true';
-
-    if (admin === 'true' && !isAdminUser(authUser)) {
-      return NextResponse.json({ success: false, message: 'Forbidden. Admin privileges required.' }, { status: 403 });
-    }
 
     // 5. Execute DB Query with Promise In-Flight Registration
     const executeQuery = async () => {
@@ -134,8 +134,6 @@ export async function GET(req: NextRequest) {
       }
 
       // Verified status filtering & visibility access control
-      const isAdminView = isAdminUser(authUser) && admin === 'true';
-
       if (isAdminView) {
         // Admin Portal: sees ALL listings (verified & pending review) by default unless explicitly filtering
         if (verified === 'true') {

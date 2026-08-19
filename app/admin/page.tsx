@@ -24,7 +24,7 @@ export default function AdminOverviewPage() {
   const fetchData = useCallback(async () => {
     try {
       const [propsRes, inqRes] = await Promise.all([
-        fetch('/api/properties?admin=true').catch(() => null),
+        fetch('/api/properties?admin=true&limit=1000').catch(() => null),
         fetch('/api/inquiries').catch(() => null)
       ]);
 
@@ -56,15 +56,16 @@ export default function AdminOverviewPage() {
       setProperties(localProps);
     } else {
       setProperties(INITIAL_PROPERTIES);
-      fetchData();
     }
 
     if (localInqs && localInqs.length > 0) {
       setInquiries(localInqs);
     } else {
       setInquiries(INITIAL_INQUIRIES);
-      if (localProps && localProps.length > 0) fetchData();
     }
+
+    // Always revalidate from server in background on mount
+    fetchData();
   }, [fetchData]);
 
   // Real-time cross-tab sync hook for Admin Dashboard Overview

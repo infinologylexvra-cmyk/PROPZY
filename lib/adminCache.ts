@@ -1,6 +1,6 @@
 import { PropertyItem } from './seedData';
 
-const CACHE_KEY = 'propzy_admin_data_v1';
+const CACHE_KEY = 'propzy_admin_data_v2';
 const CHANNEL_NAME = 'propzy_admin_sync_channel';
 
 export type AdminDataType = 'properties' | 'inquiries' | 'users' | 'verifications';

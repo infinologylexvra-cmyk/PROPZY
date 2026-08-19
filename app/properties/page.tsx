@@ -124,7 +124,8 @@ function PropertySearchContent() {
     const currentRequestId = ++latestRequestIdRef.current;
 
     try {
-      const res = await fetch(`/api/properties?${clientCacheKey}`, {
+      const fetchUrl = `/api/properties?${clientCacheKey}${clientCacheKey ? '&' : ''}limit=1000`;
+      const res = await fetch(fetchUrl, {
         signal: controller.signal
       });
 
@@ -590,16 +591,31 @@ function PropertySearchContent() {
                   ))}
                 </div>
 
-                {/* Progressive Infinite Scroll Sentinel */}
-                {displayedCount < properties.length && (
-                  <div
-                    ref={loadMoreRef}
-                    className="py-10 text-center text-xs text-emerald-400 font-bold flex items-center justify-center space-x-2"
-                  >
-                    <RefreshCw size={18} className="animate-spin text-emerald-400" />
-                    <span>Loading more verified properties ({visibleProperties.length} of {properties.length})...</span>
+                {/* Progressive Infinite Scroll Sentinel & Pagination Controls */}
+                {displayedCount < properties.length ? (
+                  <div className="py-12 flex flex-col items-center justify-center space-y-4">
+                    <button
+                      onClick={() => setDisplayedCount(prev => Math.min(prev + 12, properties.length))}
+                      className="px-8 py-3.5 bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-black font-extrabold text-xs rounded-full shadow-lg shadow-emerald-500/20 transition-all cursor-pointer flex items-center space-x-2"
+                    >
+                      <span>Load More Properties</span>
+                      <span className="px-2 py-0.5 rounded-full bg-black/20 text-black text-[10px] font-mono">
+                        +{properties.length - visibleProperties.length}
+                      </span>
+                    </button>
+
+                    <div
+                      ref={loadMoreRef}
+                      className="text-xs text-gray-400 font-medium"
+                    >
+                      Showing <span className="text-emerald-400 font-bold">{visibleProperties.length}</span> of <span className="text-white font-bold">{properties.length}</span> verified properties
+                    </div>
                   </div>
-                )}
+                ) : properties.length > 0 ? (
+                  <div className="py-10 text-center text-xs text-gray-500 font-semibold border-t border-emerald-950/60 mt-8">
+                    ✨ Showing all <span className="text-emerald-400 font-bold">{properties.length}</span> verified properties in Tricity
+                  </div>
+                ) : null}
               </>
             )}
           </main>
