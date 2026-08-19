@@ -23,7 +23,7 @@ export default function AdminVerificationsPage() {
       const data = await res.json();
       if (data.success && data.data) {
         setVerifications(data.data);
-        setCachedVerifications(data.data);
+        setCachedVerifications(data.data, false);
       }
     } catch (err) {
       console.warn('Failed to load verifications:', err);
@@ -45,12 +45,9 @@ export default function AdminVerificationsPage() {
       const latest = getCachedVerifications();
       if (latest) {
         setVerifications(latest);
-      } else {
-        fetchVerifications(true);
       }
     },
-    enablePolling: true,
-    pollIntervalMs: 10000,
+    enablePolling: false,
   });
 
   const handleAction = async (userId: string, email: string, action: 'approve' | 'reject') => {

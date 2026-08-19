@@ -42,25 +42,28 @@ export async function GET(req: NextRequest) {
       .map(([k, v]) => `${k}=${v}`)
       .join(', ') || 'none';
 
-    // 3. Fast Cache Lookup
-    const tCacheStart = performance.now();
-    const cached = getPropertiesCache(cacheKey);
-    if (cached) {
-      const durCache = (performance.now() - tCacheStart).toFixed(2);
-      const tTotal = (performance.now() - tStart).toFixed(2);
-      const returnedCount = cached.payload?.data?.length || 0;
+    // 3. Fast Cache Lookup (Bypassed for Admin queries to ensure real-time moderation status)
+    const isAdminQuery = searchParams.get('admin') === 'true';
+    if (!isAdminQuery) {
+      const tCacheStart = performance.now();
+      const cached = getPropertiesCache(cacheKey);
+      if (cached) {
+        const durCache = (performance.now() - tCacheStart).toFixed(2);
+        const tTotal = (performance.now() - tStart).toFixed(2);
+        const returnedCount = cached.payload?.data?.length || 0;
 
-      if (process.env.NODE_ENV !== 'production') {
-        console.log(`\n[API Properties]\n  Cache: HIT\n  DB Query: skipped\n  Filters: ${filterSummary}\n  Returned: ${returnedCount} properties\n  Total: ${tTotal}ms\n`);
-      }
-
-      return NextResponse.json(cached.payload, {
-        headers: {
-          'Cache-Control': 'public, s-maxage=45, stale-while-revalidate=60',
-          'X-Cache-Status': 'HIT',
-          'Server-Timing': `auth;dur=${durAuth}, cache;dur=${durCache}, total;dur=${tTotal}`
+        if (process.env.NODE_ENV !== 'production') {
+          console.log(`\n[API Properties]\n  Cache: HIT\n  DB Query: skipped\n  Filters: ${filterSummary}\n  Returned: ${returnedCount} properties\n  Total: ${tTotal}ms\n`);
         }
-      });
+
+        return NextResponse.json(cached.payload, {
+          headers: {
+            'Cache-Control': 'public, s-maxage=45, stale-while-revalidate=60',
+            'X-Cache-Status': 'HIT',
+            'Server-Timing': `auth;dur=${durAuth}, cache;dur=${durCache}, total;dur=${tTotal}`
+          }
+        });
+      }
     }
 
     // 4. In-Flight Request Deduplication (reuse concurrent query promise)
@@ -238,8 +241,10 @@ export async function GET(req: NextRequest) {
         source: 'mongodb'
       };
 
-      // Cache sanitized response in server cache
-      setPropertiesCache(cacheKey, payload);
+      // Cache sanitized response in server cache for public visitors
+      if (!isAdminQuery) {
+        setPropertiesCache(cacheKey, payload);
+      }
 
       return {
         payload,

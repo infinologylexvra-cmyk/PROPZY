@@ -38,7 +38,7 @@ function AdminPropertiesContent() {
       const data = await res.json();
       if (data.success && Array.isArray(data.data)) {
         setProperties(data.data);
-        setCachedProperties(data.data);
+        setCachedProperties(data.data, false);
       }
     } catch (e) {
       console.warn('Using seeded properties fallback:', e);
@@ -60,19 +60,16 @@ function AdminPropertiesContent() {
     }
   }, [fetchProperties]);
 
-  // Sync across open admin tabs and revalidate on focus/poll
+  // Sync across open admin tabs
   useAdminSync({
     dataType: 'properties',
     onSync: () => {
       const latest = getCachedProperties();
       if (latest) {
         setProperties(latest);
-      } else {
-        fetchProperties(true);
       }
     },
-    enablePolling: true,
-    pollIntervalMs: 12000,
+    enablePolling: false,
   });
 
   // Filtered List
@@ -113,23 +110,37 @@ function AdminPropertiesContent() {
           ? { ...p, verified: newVerifiedStatus } 
           : p
       );
-      setCachedProperties(updated);
+      setCachedProperties(updated, true);
       return updated;
     });
 
     try {
-      await fetch(`/api/properties/${id}`, {
+      const res = await fetch(`/api/properties/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ verified: newVerifiedStatus })
       });
-    } catch (e) {
-      console.warn('PATCH Error:', e);
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || 'Failed to update status');
+      }
+      showToast(newVerifiedStatus ? `Listing ${id} verified successfully!` : `Listing ${id} marked as Unverified (Pending Review)`);
+    } catch (e: any) {
+      console.error('Verify toggle error:', e);
+      // Revert optimistic update
+      setProperties(prev => {
+        const reverted = prev.map(p => 
+          (p._id === id || p.pid === id || p.id === id) 
+            ? { ...p, verified: currentVerified } 
+            : p
+        );
+        setCachedProperties(reverted, true);
+        return reverted;
+      });
+      showToast(`Failed to update status: ${e.message || 'Server error'}`);
     } finally {
       setActionPendingId(null);
     }
-
-    showToast(newVerifiedStatus ? `Listing ${id} verified successfully!` : `Listing ${id} marked as Unverified (Pending Review)`);
   };
 
   const handleFeatureToggle = async (id: string, currentFeatured: boolean) => {
@@ -143,23 +154,37 @@ function AdminPropertiesContent() {
           ? { ...p, featured: newFeaturedStatus } 
           : p
       );
-      setCachedProperties(updated);
+      setCachedProperties(updated, true);
       return updated;
     });
 
     try {
-      await fetch(`/api/properties/${id}`, {
+      const res = await fetch(`/api/properties/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ featured: newFeaturedStatus })
       });
-    } catch (e) {
-      console.warn('PATCH Error:', e);
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || 'Failed to update feature status');
+      }
+      showToast(newFeaturedStatus ? `Listing featured on homepage!` : `Listing removed from featured`);
+    } catch (e: any) {
+      console.error('Feature toggle error:', e);
+      // Revert optimistic update
+      setProperties(prev => {
+        const reverted = prev.map(p => 
+          (p._id === id || p.pid === id || p.id === id) 
+            ? { ...p, featured: currentFeatured } 
+            : p
+        );
+        setCachedProperties(reverted, true);
+        return reverted;
+      });
+      showToast(`Failed to update feature status: ${e.message || 'Server error'}`);
     } finally {
       setActionPendingId(null);
     }
-
-    showToast(newFeaturedStatus ? `Listing featured on homepage!` : `Listing removed from featured`);
   };
 
   const handleDelete = async () => {

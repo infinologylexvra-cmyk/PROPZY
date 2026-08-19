@@ -26,7 +26,7 @@ export default function AdminInquiriesPage() {
       const data = await res.json();
       if (data.success && Array.isArray(data.data) && data.data.length > 0) {
         setInquiries(data.data);
-        setCachedInquiries(data.data);
+        setCachedInquiries(data.data, false);
       }
     } catch (e) {
       console.warn('Using seeded inquiries fallback:', e);
@@ -48,12 +48,9 @@ export default function AdminInquiriesPage() {
       const latest = getCachedInquiries();
       if (latest) {
         setInquiries(latest);
-      } else {
-        fetchInquiries(true);
       }
     },
-    enablePolling: true,
-    pollIntervalMs: 12000,
+    enablePolling: false,
   });
 
   const handleStatusChange = (id: string, newStatus: string) => {

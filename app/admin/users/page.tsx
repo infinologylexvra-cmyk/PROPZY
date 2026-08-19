@@ -22,7 +22,7 @@ export default function AdminUsersPage() {
       const data = await res.json();
       if (data.success && Array.isArray(data.data)) {
         setUsers(data.data);
-        setCachedUsers(data.data);
+        setCachedUsers(data.data, false);
       }
     } catch (err) {
       console.error('Failed to fetch users:', err);
@@ -44,12 +44,9 @@ export default function AdminUsersPage() {
       const latest = getCachedUsers();
       if (latest && latest.length > 0) {
         setUsers(latest);
-      } else {
-        fetchUsers(true);
       }
     },
-    enablePolling: true,
-    pollIntervalMs: 12000,
+    enablePolling: false,
   });
 
   const filteredUsers = users.filter((u) => {

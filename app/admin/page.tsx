@@ -32,7 +32,7 @@ export default function AdminOverviewPage() {
         const propsData = await propsRes.json();
         if (propsData.success && Array.isArray(propsData.data)) {
           setProperties(propsData.data);
-          setCachedProperties(propsData.data);
+          setCachedProperties(propsData.data, false);
         }
       }
 
@@ -40,7 +40,7 @@ export default function AdminOverviewPage() {
         const inqData = await inqRes.json();
         if (inqData.success && Array.isArray(inqData.data)) {
           setInquiries(inqData.data);
-          setCachedInquiries(inqData.data);
+          setCachedInquiries(inqData.data, false);
         }
       }
     } catch (e) {
@@ -76,10 +76,8 @@ export default function AdminOverviewPage() {
       const localInqs = getCachedInquiries();
       if (localProps) setProperties(localProps);
       if (localInqs) setInquiries(localInqs);
-      if (!localProps || !localInqs) fetchData();
     },
-    enablePolling: true,
-    pollIntervalMs: 12000,
+    enablePolling: false,
   });
 
   const handleRefresh = async () => {
@@ -104,28 +102,44 @@ export default function AdminOverviewPage() {
     if (actionPendingId) return;
     setActionPendingId(propertyId);
     const newStatus = !currentVerified;
+
     setProperties(prev => {
       const updated = prev.map(p => 
         (p._id === propertyId || p.pid === propertyId || p.id === propertyId) 
           ? { ...p, verified: newStatus } 
           : p
       );
-      setCachedProperties(updated);
+      setCachedProperties(updated, true);
       return updated;
     });
 
     try {
-      await fetch(`/api/properties/${propertyId}`, {
+      const res = await fetch(`/api/properties/${propertyId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ verified: newStatus })
       });
-    } catch (e) {
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.message || 'Failed to update status');
+      }
+      showToast(newStatus ? 'Property verified successfully!' : 'Property marked as unverified');
+    } catch (e: any) {
+      console.error('Verify toggle error:', e);
+      // Revert optimistic update
+      setProperties(prev => {
+        const reverted = prev.map(p => 
+          (p._id === propertyId || p.pid === propertyId || p.id === propertyId) 
+            ? { ...p, verified: currentVerified } 
+            : p
+        );
+        setCachedProperties(reverted, true);
+        return reverted;
+      });
+      showToast(`Failed to update status: ${e.message || 'Server error'}`);
     } finally {
       setActionPendingId(null);
     }
-
-    showToast(newStatus ? 'Property verified successfully!' : 'Property marked as unverified');
   };
 
   const handleDelete = async () => {

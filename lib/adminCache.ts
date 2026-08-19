@@ -44,17 +44,12 @@ const saveStore = (data: Partial<AdminCacheStore>) => {
 export const notifyAdminSync = (type: AdminDataType): void => {
   if (typeof window === 'undefined') return;
 
-  // 1. Post to BroadcastChannel for instant cross-tab sync
+  // Post to BroadcastChannel for instant cross-tab sync only
   if (syncChannel) {
     try {
       syncChannel.postMessage({ type, timestamp: Date.now() });
     } catch (e) {}
   }
-
-  // 2. Dispatch custom event for current tab components
-  try {
-    window.dispatchEvent(new CustomEvent('admin_cache_updated', { detail: { type } }));
-  } catch (e) {}
 };
 
 export const subscribeAdminSync = (callback: (type: AdminDataType) => void): (() => void) => {
