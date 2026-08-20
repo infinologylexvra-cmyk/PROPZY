@@ -45,7 +45,7 @@ function PropertySearchContent() {
 
   const [properties, setProperties] = useState<PropertyItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [displayedCount, setDisplayedCount] = useState(6);
+  const [displayedCount, setDisplayedCount] = useState(21);
   const [selectedPropertyForInquiry, setSelectedPropertyForInquiry] = useState<PropertyItem | null>(null);
 
   const loadMoreRef = useRef<HTMLDivElement>(null);
@@ -217,28 +217,8 @@ function PropertySearchContent() {
 
   // Reset lazy load batch size whenever filter options change
   useEffect(() => {
-    setDisplayedCount(6);
+    setDisplayedCount(21);
   }, [category, city, locality, pidSearch, debouncedMaxPrice, type, bedrooms, verifiedOnly]);
-
-  // Lazy Progressive Scroll Observer: loads items dynamically on scroll
-  useEffect(() => {
-    if (loading || displayedCount >= properties.length) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          setDisplayedCount((prev) => Math.min(prev + 6, properties.length));
-        }
-      },
-      { rootMargin: '300px' }
-    );
-
-    if (loadMoreRef.current) {
-      observer.observe(loadMoreRef.current);
-    }
-
-    return () => observer.disconnect();
-  }, [loading, displayedCount, properties.length]);
 
   const handleResetFilters = () => {
     setCategory('all');
@@ -249,7 +229,7 @@ function PropertySearchContent() {
     setType('all');
     setBedrooms('all');
     setVerifiedOnly(false);
-    setDisplayedCount(6);
+    setDisplayedCount(21);
     router.push('/properties');
   };
 
@@ -617,31 +597,21 @@ function PropertySearchContent() {
                   ))}
                 </div>
 
-                {/* Progressive Infinite Scroll Sentinel & Pagination Controls */}
+                {/* Manual "Show More Properties" (+21) Pagination Controls */}
                 {displayedCount < properties.length ? (
                   <div className="py-12 flex flex-col items-center justify-center space-y-4">
                     <button
                       type="button"
                       suppressHydrationWarning
-                      onClick={() => setDisplayedCount(prev => Math.min(prev + 12, properties.length))}
-                      className="px-8 py-3.5 bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-black font-extrabold text-xs rounded-full shadow-lg shadow-emerald-500/20 transition-all cursor-pointer flex items-center space-x-2"
+                      onClick={() => setDisplayedCount(prev => prev + 21)}
+                      className="px-8 py-3.5 bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-black font-extrabold text-xs rounded-full shadow-xl shadow-emerald-500/25 transition-all cursor-pointer flex items-center space-x-2.5"
                     >
-                      <span>Load More Properties</span>
-                      <span className="px-2 py-0.5 rounded-full bg-black/20 text-black text-[10px] font-mono">
-                        +{properties.length - visibleProperties.length}
-                      </span>
+                      <span>Show More Properties</span>
                     </button>
-
-                    <div
-                      ref={loadMoreRef}
-                      className="text-xs text-gray-400 font-medium"
-                    >
-                      Showing <span className="text-emerald-400 font-bold">{visibleProperties.length}</span> of <span className="text-white font-bold">{properties.length}</span> verified properties
-                    </div>
                   </div>
                 ) : properties.length > 0 ? (
-                  <div className="py-10 text-center text-xs text-gray-500 font-semibold border-t border-emerald-950/60 mt-8">
-                    ✨ Showing all <span className="text-emerald-400 font-bold">{properties.length}</span> verified properties in Tricity
+                  <div className="py-10 text-center text-xs text-gray-400 font-semibold border-t border-emerald-950/60 mt-8">
+                    ✨ Showing all verified properties in Tricity
                   </div>
                 ) : null}
               </>
