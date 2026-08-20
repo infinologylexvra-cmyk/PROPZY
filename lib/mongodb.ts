@@ -48,14 +48,14 @@ export async function connectToDatabase(): Promise<typeof mongoose> {
   // 3. Establish singleton connection promise
   if (!cached.promise) {
     const opts: mongoose.ConnectOptions = {
-      bufferCommands: true,
+      bufferCommands: false,
       autoIndex: false,
       minPoolSize: 0,
-      maxPoolSize: 10,
-      maxIdleTimeMS: 45000,
-      serverSelectionTimeoutMS: 15000,
-      connectTimeoutMS: 15000,
-      socketTimeoutMS: 45000,
+      maxPoolSize: isServerless ? 1 : 10,
+      maxIdleTimeMS: isServerless ? 10000 : 45000,
+      serverSelectionTimeoutMS: isServerless ? 5000 : 15000,
+      connectTimeoutMS: isServerless ? 5000 : 15000,
+      socketTimeoutMS: isServerless ? 10000 : 45000,
       heartbeatFrequencyMS: 10000,
       family: 4,
     };
