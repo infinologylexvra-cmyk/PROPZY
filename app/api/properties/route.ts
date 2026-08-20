@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
   const tStart = performance.now();
 
   try {
-    if (isBrowserDocumentNavigation(req)) {
+    if (process.env.NODE_ENV === 'production' && isBrowserDocumentNavigation(req)) {
       return NextResponse.json({ success: false, message: 'Not found' }, { status: 404 });
     }
 
@@ -106,8 +106,9 @@ export async function GET(req: NextRequest) {
     // 5. Execute DB Query with Promise In-Flight Registration
     const executeQuery = async () => {
       const tConnStart = performance.now();
-      await connectToDatabase();
+      const conn = await connectToDatabase();
       const durConn = (performance.now() - tConnStart).toFixed(2);
+      const PropertyModel = conn.models.Property || Property;
 
       // Build MongoDB filter
       const filter: any = {};
@@ -189,26 +190,24 @@ export async function GET(req: NextRequest) {
       const projection = 'pid title category type city locality address price deposit bedrooms bathrooms areaSqFt furnishing verified featured images ownerEmail ownerRole available createdAt';
 
       const tQueryStart = performance.now();
-      const dataQuery = Property.find(filter)
-        .select(projection)
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(fetchLimit)
-        .lean();
-
+      console.log('[API Properties] Filter:', JSON.stringify(filter), 'Limit:', fetchLimit);
+      console.log('[API Properties] Querying MongoDB...');
+      
       let properties: any[] = [];
       let totalCount: number | undefined;
 
       if (includeTotal) {
         const [fetchedProps, count] = await Promise.all([
-          dataQuery.exec(),
-          Property.countDocuments(filter).exec()
+          PropertyModel.find(filter).select(projection).sort({ createdAt: -1 }).skip(skip).limit(fetchLimit).lean().exec(),
+          PropertyModel.countDocuments(filter).exec()
         ]);
         properties = fetchedProps;
         totalCount = count;
       } else {
-        properties = await dataQuery.exec();
+        properties = await PropertyModel.find(filter).select(projection).sort({ createdAt: -1 }).skip(skip).limit(fetchLimit).lean().exec();
       }
+
+      console.log('[API Properties] MongoDB returned:', properties.length, 'properties in', (performance.now() - tQueryStart).toFixed(2), 'ms');
 
       const durQuery = (performance.now() - tQueryStart).toFixed(2);
 
@@ -275,7 +274,7 @@ export async function GET(req: NextRequest) {
     } catch (error: any) {
       console.error('[API Properties Error]:', error.message);
 
-      // If a stale cache entry exists, return it with a stale indicator
+      // 1. If a stale cache entry exists, return it with a stale indicator
       const staleCache = getStalePropertiesCache(cacheKey);
       if (staleCache) {
         return NextResponse.json({
@@ -287,7 +286,45 @@ export async function GET(req: NextRequest) {
         });
       }
 
-      // Fail quickly with clear 503 instead of fabricating data
+      // 2. For public visitors, fallback gracefully to INITIAL_PROPERTIES/memoryStore so the UI remains active
+      if (!isAdminQuery) {
+        let fallbackList = [...INITIAL_PROPERTIES];
+        if (category && category !== 'all') {
+          if (category === 'buy' || category === 'sell') {
+            fallbackList = fallbackList.filter(p => p.category === 'buy' || p.category === 'sell');
+          } else {
+            fallbackList = fallbackList.filter(p => p.category === category);
+          }
+        }
+        if (city && city !== 'all') fallbackList = fallbackList.filter(p => p.city.toLowerCase().includes(city.toLowerCase()));
+        if (locality) fallbackList = fallbackList.filter(p => p.locality.toLowerCase().includes(locality.toLowerCase()));
+        if (type && type !== 'all') fallbackList = fallbackList.filter(p => p.type === type);
+        if (pid) fallbackList = fallbackList.filter(p => p.pid.toUpperCase().includes(pid.toUpperCase()));
+        if (bedrooms && bedrooms !== 'all') fallbackList = fallbackList.filter(p => p.bedrooms === Number(bedrooms));
+        if (maxPrice) fallbackList = fallbackList.filter(p => p.price <= Number(maxPrice));
+        if (verified !== 'false') fallbackList = fallbackList.filter(p => p.verified);
+
+        const skip = (page - 1) * limit;
+        const pagedData = fallbackList.slice(skip, skip + limit);
+
+        return NextResponse.json({
+          success: true,
+          data: pagedData,
+          pagination: {
+            page,
+            limit,
+            hasMore: skip + limit < fallbackList.length,
+            total: fallbackList.length,
+            totalPages: Math.ceil(fallbackList.length / limit)
+          },
+          source: 'fallback',
+          warning: 'Serving fallback data due to database unavailability'
+        }, {
+          headers: { 'X-Cache-Status': 'FALLBACK' }
+        });
+      }
+
+      // 3. For admin queries, fail with 503 so admins know moderation state is unavailable
       return NextResponse.json({
         success: false,
         message: 'Database temporarily unavailable. Please try again.',

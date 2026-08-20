@@ -9,6 +9,7 @@ import { useApp } from '@/context/AppContext';
 
 function NavbarContent() {
   const { user, logoutUser, openAuthModal, openPidModal, wishlist } = useApp();
+  const [mounted, setMounted] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
@@ -26,6 +27,10 @@ function NavbarContent() {
     width: 0,
     opacity: 0,
   });
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (pathname === '/post-property') {
@@ -88,6 +93,9 @@ function NavbarContent() {
     return null;
   }
 
+  const currentUser = mounted ? user : null;
+  const currentWishlist = mounted ? wishlist : [];
+
   return (
     <header className="sticky top-0 z-50 bg-[#060907]/95 backdrop-blur-xl border-b border-emerald-950/60">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -148,7 +156,7 @@ function NavbarContent() {
             <GlobalSearchBar mode="public" className="hidden lg:block w-64 md:w-72" />
 
             {/* Post Property Button */}
-            {user?.role === 'owner' && (
+            {currentUser?.role === 'owner' && (
               <Link
                 href="/post-property"
                 onClick={() => setActiveItem('sell')}
@@ -166,32 +174,34 @@ function NavbarContent() {
               title="Saved Properties"
             >
               <Heart size={20} />
-              {wishlist.length > 0 && (
+              {currentWishlist.length > 0 && (
                 <span className="absolute top-0 right-0 w-4 h-4 bg-emerald-500 text-black text-[10px] font-extrabold rounded-full flex items-center justify-center">
-                  {wishlist.length}
+                  {currentWishlist.length}
                 </span>
               )}
             </Link>
 
             {/* Profile Dropdown or Login Link */}
-            {user ? (
+            {currentUser ? (
               <div className="relative" ref={profileMenuRef}>
                 <button
+                  type="button"
+                  suppressHydrationWarning
                   onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
-                  className="flex items-center space-x-2 px-3 py-1.5 rounded-full bg-[#0d1612] border border-emerald-900/80 hover:border-emerald-500/60 transition-all text-xs font-medium text-gray-200"
+                  className="flex items-center space-x-2 px-3 py-1.5 rounded-full bg-[#0d1612] border border-emerald-900/80 hover:border-emerald-500/60 transition-all text-xs font-medium text-gray-200 cursor-pointer"
                 >
                   <div className="w-6 h-6 rounded-full bg-emerald-500 text-black font-extrabold flex items-center justify-center text-xs">
-                    {user.name.charAt(0)}
+                    {currentUser.name?.charAt(0) || 'U'}
                   </div>
                   <span className="hidden sm:inline font-semibold">
-                    {user.name.split(' ')[0]}
+                    {currentUser.name?.split(' ')[0] || 'User'}
                   </span>
                   <ChevronDown size={14} className={`text-emerald-400 transition-transform ${isProfileMenuOpen ? 'rotate-180' : ''}`} />
                 </button>
                 {/* Profile Dropdown */}
                 {isProfileMenuOpen && (
                   <div className="absolute right-0 mt-3 w-56 bg-[#0a110d] rounded-2xl shadow-2xl border border-emerald-900/70 p-2 space-y-1 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
-                    {user.role === 'admin' ? (
+                    {currentUser.role === 'admin' ? (
                       <>
                         <div className="px-4 py-2 border-b border-emerald-950 text-[10px] font-extrabold text-emerald-400 uppercase tracking-wider">
                           🛡️ Admin Portal
@@ -218,7 +228,7 @@ function NavbarContent() {
                           Tenant Leads
                         </Link>
                       </>
-                    ) : user.role === 'owner' ? (
+                    ) : currentUser.role === 'owner' ? (
                       <>
                         <div className="px-4 py-2 border-b border-emerald-950 text-[10px] font-extrabold text-emerald-400 uppercase tracking-wider">
                           🔑 Owner Dashboard
@@ -282,6 +292,8 @@ function NavbarContent() {
                     )}
                     <div className="pt-1 border-t border-emerald-950">
                       <button
+                        type="button"
+                        suppressHydrationWarning
                         onClick={() => {
                           setIsProfileMenuOpen(false);
                           logoutUser();
@@ -298,6 +310,8 @@ function NavbarContent() {
             ) : (
               <div className="flex items-center space-x-2">
                 <button
+                  type="button"
+                  suppressHydrationWarning
                   onClick={openAuthModal}
                   className="px-4 py-2 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs transition-all cursor-pointer shadow-md"
                 >
@@ -308,6 +322,8 @@ function NavbarContent() {
 
             {/* Mobile/Tablet Hamburger Menu Toggle */}
             <button
+              type="button"
+              suppressHydrationWarning
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="md:hidden p-2 rounded-xl text-gray-300 hover:text-white hover:bg-emerald-950 focus:outline-none transition-colors"
             >
@@ -320,7 +336,7 @@ function NavbarContent() {
         <div className="flex flex-col sm:hidden gap-2 pb-3.5 pt-1.5 px-1 border-t border-emerald-950/40 w-full">
           <GlobalSearchBar mode="public" placeholder="Search ID, City, Locality, Title..." className="w-full" />
 
-          {user?.role === 'owner' && (
+          {currentUser?.role === 'owner' && (
             <Link
               href="/post-property"
               onClick={() => setActiveItem('sell')}

@@ -135,6 +135,7 @@ export const Footer: React.FC = () => {
                 />
                 <button
                   type="submit"
+                  suppressHydrationWarning
                   className="w-9 h-9 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black flex items-center justify-center font-extrabold shrink-0 shadow-md transition-transform active:scale-95 cursor-pointer"
                 >
                   →

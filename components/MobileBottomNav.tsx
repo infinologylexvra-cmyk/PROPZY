@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { Home, Search, Heart, PlusCircle, User } from 'lucide-react';
@@ -10,14 +10,22 @@ export const MobileBottomNav: React.FC = () => {
   const pathname = usePathname();
   const router = useRouter();
   const { wishlist, openAuthModal, openPidModal, user } = useApp();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   if (pathname && pathname.startsWith('/admin')) {
     return null;
   }
 
+  const currentUser = mounted ? user : null;
+  const currentWishlist = mounted ? wishlist : [];
+
   return (
     <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-[#060a08]/95 backdrop-blur-xl border-t border-emerald-900/60 px-2 py-1.5 shadow-2xl shadow-emerald-950/80">
-      <div className={`grid ${user?.role === 'owner' ? 'grid-cols-5' : 'grid-cols-4'} items-center text-center`}>
+      <div className={`grid ${currentUser?.role === 'owner' ? 'grid-cols-5' : 'grid-cols-4'} items-center text-center`}>
         {/* Home */}
         <Link
           href="/"
@@ -49,9 +57,9 @@ export const MobileBottomNav: React.FC = () => {
         >
           <div className="relative">
             <Heart size={20} />
-            {wishlist.length > 0 && (
+            {currentWishlist.length > 0 && (
               <span className="absolute -top-1 -right-2 bg-emerald-500 text-black text-[9px] font-extrabold px-1 rounded-full">
-                {wishlist.length}
+                {currentWishlist.length}
               </span>
             )}
           </div>
@@ -59,31 +67,35 @@ export const MobileBottomNav: React.FC = () => {
         </Link>
 
         {/* Post Property - owners only */}
-        {user?.role === 'owner' && <Link
-          href="/post-property"
-          className={`flex flex-col items-center justify-center py-1 text-[10px] font-semibold transition-colors ${
-            pathname === '/post-property' ? 'text-emerald-400 font-extrabold' : 'text-gray-400 hover:text-emerald-300'
-          }`}
-        >
-          <PlusCircle size={20} className="text-emerald-400" />
-          <span className="mt-0.5">Post</span>
-        </Link>}
+        {currentUser?.role === 'owner' && (
+          <Link
+            href="/post-property"
+            className={`flex flex-col items-center justify-center py-1 text-[10px] font-semibold transition-colors ${
+              pathname === '/post-property' ? 'text-emerald-400 font-extrabold' : 'text-gray-400 hover:text-emerald-300'
+            }`}
+          >
+            <PlusCircle size={20} className="text-emerald-400" />
+            <span className="mt-0.5">Post</span>
+          </Link>
+        )}
 
         {/* Account / Login */}
         <button
+          type="button"
+          suppressHydrationWarning
           onClick={() => {
-            if (user) {
+            if (currentUser) {
               router.push('/dashboard?tab=account');
             } else {
               openAuthModal();
             }
           }}
-          className={`flex flex-col items-center justify-center py-1 text-[10px] font-semibold transition-colors ${
+          className={`flex flex-col items-center justify-center py-1 text-[10px] font-semibold transition-colors cursor-pointer ${
             pathname.includes('account') ? 'text-emerald-400 font-extrabold' : 'text-gray-400 hover:text-emerald-300'
           }`}
         >
           <User size={20} />
-          <span className="mt-0.5">{user ? 'Account' : 'Login'}</span>
+          <span className="mt-0.5">{currentUser ? 'Account' : 'Login'}</span>
         </button>
       </div>
     </div>

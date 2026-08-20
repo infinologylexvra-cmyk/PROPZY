@@ -39,7 +39,7 @@ const UserSchema: Schema = new Schema({
   electricityBillUrl: { type: String, default: '' },
   consumerNumber: { type: String, default: '' },
   createdAt: { type: Date, default: Date.now }
-});
+}, { autoIndex: false });
 
 UserSchema.pre<IUser>('save', async function (next) {
   if (!this.isModified('password') || !this.password) {

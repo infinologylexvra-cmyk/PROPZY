@@ -64,7 +64,7 @@ const PropertySchema: Schema = new Schema({
   ownerRole: { type: String, enum: ['owner', 'agent'], default: 'owner' },
   available: { type: Boolean, default: true },
   createdAt: { type: Date, default: Date.now }
-});
+}, { autoIndex: false });
 
 // Compound indexes for query + sort optimizations
 PropertySchema.index({ price: 1, createdAt: -1 });

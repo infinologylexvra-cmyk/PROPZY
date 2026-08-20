@@ -135,6 +135,7 @@ export default function HomePage() {
                 <button
                   key={tab}
                   type="button"
+                  suppressHydrationWarning
                   onClick={() => setActiveTab(tab)}
                   className={`flex-1 py-1.5 sm:py-2 px-2.5 cursor-pointer sm:px-4 rounded-xl text-[10px] sm:text-xs font-extrabold uppercase transition-all tracking-wider whitespace-nowrap ${activeTab === tab
                       ? 'bg-[#153b28] text-emerald-400 border border-emerald-700/80 shadow-md'
@@ -154,6 +155,7 @@ export default function HomePage() {
                   Location
                 </label>
                 <select
+                  suppressHydrationWarning
                   value={selectedCity}
                   onChange={(e) => setSelectedCity(e.target.value)}
                   className="bg-transparent cursor-pointer text-xs font-bold text-white focus:outline-none"
@@ -172,6 +174,7 @@ export default function HomePage() {
                   Property Type
                 </label>
                 <select
+                  suppressHydrationWarning
                   value={propertyType}
                   onChange={(e) => setPropertyType(e.target.value)}
                   className="bg-transparent text-xs font-bold text-white focus:outline-none cursor-pointer"
@@ -190,6 +193,7 @@ export default function HomePage() {
                   Budget
                 </label>
                 <select
+                  suppressHydrationWarning
                   value={budgetFilter}
                   onChange={(e) => setBudgetFilter(e.target.value)}
                   className="bg-transparent text-xs font-bold text-white focus:outline-none cursor-pointer"
@@ -207,6 +211,7 @@ export default function HomePage() {
               {/* Submit Button */}
               <button
                 type="submit"
+                suppressHydrationWarning
                 className="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs rounded-xl py-3 px-4 flex items-center justify-center space-x-2 shadow-lg shadow-emerald-500/20 transition-all cursor-pointer"
               >
                 <Search size={16} className="stroke-[2.5]" />
@@ -349,6 +354,8 @@ export default function HomePage() {
           {/* Slider Left & Right Control Buttons */}
           <div className="flex items-center space-x-3 self-end sm:self-auto shrink-0">
             <button
+              type="button"
+              suppressHydrationWarning
               onClick={() => scrollPropertySlider('left')}
               className="w-11 h-11 rounded-2xl bg-[#08120b] border border-emerald-900/80 hover:border-emerald-500 hover:bg-emerald-500 hover:text-black text-emerald-400 flex items-center justify-center transition-all shadow-md active:scale-95 cursor-pointer"
               aria-label="Previous Slide"
@@ -357,6 +364,8 @@ export default function HomePage() {
             </button>
 
             <button
+              type="button"
+              suppressHydrationWarning
               onClick={() => scrollPropertySlider('right')}
               className="w-11 h-11 rounded-2xl bg-[#08120b]  border border-emerald-900/80 hover:border-emerald-500 hover:bg-emerald-500 hover:text-black text-emerald-400 flex items-center justify-center transition-all shadow-md active:scale-95 cursor-pointer"
               aria-label="Next Slide"
@@ -553,6 +562,8 @@ export default function HomePage() {
           {['Mohali', 'Chandigarh', 'Zirakpur', 'Kharar', 'Panchkula'].map((city) => (
             <button
               key={city}
+              type="button"
+              suppressHydrationWarning
               onClick={() => setActiveCategoryCity(city)}
               className={`cursor-pointer px-5 py-2 rounded-full text-xs font-bold transition-all ${activeCategoryCity === city
                   ? 'bg-emerald-500 text-black shadow-lg shadow-emerald-500/20'

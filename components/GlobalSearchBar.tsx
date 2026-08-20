@@ -176,6 +176,7 @@ export const GlobalSearchBar: React.FC<GlobalSearchBarProps> = ({
         ) : query ? (
           <button
             type="button"
+            suppressHydrationWarning
             onClick={handleClear}
             className="absolute right-2.5 p-0.5 text-gray-400 hover:text-white rounded-full"
           >

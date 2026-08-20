@@ -38,7 +38,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://images.unsplash.com" />
       </head>
-      <body className="bg-[#050806] text-gray-100 antialiased min-h-screen flex flex-col font-sans selection:bg-emerald-500 selection:text-black">
+      <body className="bg-[#050806] text-gray-100 antialiased min-h-screen flex flex-col font-sans selection:bg-emerald-500 selection:text-black" suppressHydrationWarning>
         <AppProvider>
           <GlobalProgressBar />
           <AdminRouteGuard />
