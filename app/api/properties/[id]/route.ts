@@ -7,6 +7,7 @@ import { getAuthUser } from '@/lib/auth';
 import { canViewPropertyContactDetails, isAdminUser, isBrowserDocumentNavigation, isOwnedByUser, serializeProperty } from '@/lib/accessControl';
 import { clearPropertiesCache } from '@/lib/propertiesCache';
 import { extractPublicIdFromUrl, deleteCloudinaryImage } from '@/lib/cloudinary';
+import { redisGet, redisSet } from '@/lib/redis';
 
 export async function GET(
   req: NextRequest,
@@ -18,6 +19,20 @@ export async function GET(
 
   const { id } = await params;
   const authUser = await getAuthUser(req);
+  const isGuest = !authUser;
+  const singleCacheKey = `prop:single:${id.toLowerCase()}`;
+
+  // Check Redis for unauthenticated public guests
+  if (isGuest) {
+    try {
+      const cached = await redisGet<any>(singleCacheKey);
+      if (cached) {
+        return NextResponse.json(cached, {
+          headers: { 'X-Cache-Status': 'REDIS-HIT' }
+        });
+      }
+    } catch {}
+  }
 
   try {
     await connectToDatabase();
@@ -40,10 +55,17 @@ export async function GET(
         return NextResponse.json({ success: false, message: 'Property not found' }, { status: 404 });
       }
 
-      return NextResponse.json({
+      const responsePayload = {
         success: true,
         data: serializeProperty(property, canViewPropertyContactDetails(property, authUser))
-      });
+      };
+
+      // Cache verified property response in Redis for guests (5 min TTL)
+      if (isGuest && property.verified) {
+        await redisSet(singleCacheKey, responsePayload, 300);
+      }
+
+      return NextResponse.json(responsePayload);
     }
   } catch (err) {
     console.warn('Fallback single property fetch:', err);
@@ -113,8 +135,8 @@ export async function PATCH(
       memoryStore[memIndex] = { ...memoryStore[memIndex], ...body };
     }
 
-    // Invalidate server-side property listings cache
-    clearPropertiesCache();
+    // Invalidate server-side property listings and single property cache
+    await clearPropertiesCache();
 
     return NextResponse.json({ success: true, data: serializeProperty(updated || (memIndex !== -1 ? memoryStore[memIndex] : null), true) });
   } catch (err: any) {
@@ -179,8 +201,8 @@ export async function DELETE(
       memoryStore.splice(memIndex, 1);
     }
 
-    // Invalidate server-side property listings cache
-    clearPropertiesCache();
+    // Invalidate server-side property listings and single property cache
+    await clearPropertiesCache();
 
     return NextResponse.json({ success: true, data: serializeProperty(deleted || null, true) });
   } catch (err: any) {

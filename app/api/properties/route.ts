@@ -46,20 +46,21 @@ export async function GET(req: NextRequest) {
     const isAdminQuery = searchParams.get('admin') === 'true';
     if (!isAdminQuery) {
       const tCacheStart = performance.now();
-      const cached = getPropertiesCache(cacheKey);
+      const cached = await getPropertiesCache(cacheKey);
       if (cached) {
         const durCache = (performance.now() - tCacheStart).toFixed(2);
         const tTotal = (performance.now() - tStart).toFixed(2);
         const returnedCount = cached.payload?.data?.length || 0;
+        const cacheTag = cached.source === 'redis' ? 'REDIS-HIT' : 'MEMORY-HIT';
 
         if (process.env.NODE_ENV !== 'production') {
-          console.log(`\n[API Properties]\n  Cache: HIT\n  DB Query: skipped\n  Filters: ${filterSummary}\n  Returned: ${returnedCount} properties\n  Total: ${tTotal}ms\n`);
+          console.log(`\n[API Properties]\n  Cache: ${cacheTag}\n  DB Query: skipped\n  Filters: ${filterSummary}\n  Returned: ${returnedCount} properties\n  Total: ${tTotal}ms\n`);
         }
 
         return NextResponse.json(cached.payload, {
           headers: {
             'Cache-Control': 'public, s-maxage=45, stale-while-revalidate=60',
-            'X-Cache-Status': 'HIT',
+            'X-Cache-Status': cacheTag,
             'Server-Timing': `auth;dur=${durAuth}, cache;dur=${durCache}, total;dur=${tTotal}`
           }
         });
@@ -242,7 +243,7 @@ export async function GET(req: NextRequest) {
 
       // Cache sanitized response in server cache for public visitors
       if (!isAdminQuery) {
-        setPropertiesCache(cacheKey, payload);
+        await setPropertiesCache(cacheKey, payload);
       }
 
       return {
@@ -275,7 +276,7 @@ export async function GET(req: NextRequest) {
       console.error('[API Properties Error]:', error.message);
 
       // 1. If a stale cache entry exists, return it with a stale indicator
-      const staleCache = getStalePropertiesCache(cacheKey);
+      const staleCache = await getStalePropertiesCache(cacheKey);
       if (staleCache) {
         return NextResponse.json({
           ...staleCache.payload,
@@ -416,7 +417,7 @@ export async function POST(req: NextRequest) {
       createdAt: new Date()
     };
 
-    clearPropertiesCache();
+    await clearPropertiesCache();
 
     try {
       await connectToDatabase();

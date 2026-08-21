@@ -7,7 +7,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Helper to load env vars from .env.local if not already in process.env
+// Load env vars from .env.local
 function loadEnvLocal() {
   const envPath = path.resolve(__dirname, '../.env.local');
   if (fs.existsSync(envPath)) {
@@ -33,7 +33,6 @@ const mongodbUri = process.env.MONGODB_URI;
 
 if (!cloudName || !apiKey || !apiSecret) {
   console.error('❌ Cloudinary environment variables are missing.');
-  console.error('Please ensure NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET are set in .env.local');
   process.exit(1);
 }
 
@@ -49,31 +48,30 @@ cloudinary.config({
   secure: true
 });
 
-const PropertySchema = new mongoose.Schema({
-  pid: String,
-  title: String,
-  images: [String],
-}, { strict: false });
-
-const Property = mongoose.models.Property || mongoose.model('Property', PropertySchema);
-
 async function migrate() {
   console.log('🚀 Starting Base64 to Cloudinary Migration...');
   console.log('Connecting to MongoDB Atlas...');
   await mongoose.connect(mongodbUri);
   console.log('✅ Connected to MongoDB Atlas\n');
 
-  console.log('Scanning properties collection...');
-  const cursor = Property.find({}).cursor();
+  const col = mongoose.connection.collection('properties');
+  
+  // Get list of all property IDs only (super fast, minimal memory)
+  const propList = await col.find({}, { projection: { _id: 1, pid: 1, title: 1 } }).toArray();
+  console.log(`Total properties to inspect: ${propList.length}\n`);
 
-  let scannedCount = 0;
   let totalBase64Found = 0;
   let totalUploaded = 0;
   let totalPropertiesUpdated = 0;
 
-  for (let prop = await cursor.next(); prop != null; prop = await cursor.next()) {
-    scannedCount++;
-    const currentImages = Array.isArray(prop.images) ? prop.images : [];
+  for (let i = 0; i < propList.length; i++) {
+    const meta = propList[i];
+    
+    // Fetch only this single property's images
+    const doc = await col.findOne({ _id: meta._id }, { projection: { images: 1 } });
+    if (!doc) continue;
+
+    const currentImages = Array.isArray(doc.images) ? doc.images : [];
     const hasBase64 = currentImages.some(img => typeof img === 'string' && img.startsWith('data:image/'));
 
     if (!hasBase64) {
@@ -81,17 +79,16 @@ async function migrate() {
     }
 
     totalBase64Found++;
-    console.log(`\n--------------------------------------------------`);
-    console.log(`📸 Found Base64 images in Property [${prop.pid || prop._id}] - "${prop.title || 'Untitled'}"`);
+    console.log(`[${i + 1}/${propList.length}] 📸 Migrating Property: ${meta.pid || meta._id} ("${meta.title || 'Untitled'}")`);
 
     const newImages = [];
     let updated = false;
 
-    for (let i = 0; i < currentImages.length; i++) {
-      const img = currentImages[i];
+    for (let imgIdx = 0; imgIdx < currentImages.length; imgIdx++) {
+      const img = currentImages[imgIdx];
       if (typeof img === 'string' && img.startsWith('data:image/')) {
         try {
-          console.log(`  ⏳ Uploading image ${i + 1}/${currentImages.length} to Cloudinary...`);
+          process.stdout.write(`  ⏳ Uploading image ${imgIdx + 1}/${currentImages.length} to Cloudinary... `);
           const res = await cloudinary.uploader.upload(img, {
             folder: 'letsrentz/properties',
             resource_type: 'image',
@@ -99,10 +96,10 @@ async function migrate() {
           newImages.push(res.secure_url);
           totalUploaded++;
           updated = true;
-          console.log(`  ✓ Uploaded: ${res.secure_url}`);
+          console.log(`✓ Uploaded (${res.secure_url.substring(0, 55)}...)`);
         } catch (err) {
-          console.error(`  ❌ Failed to upload image ${i + 1}:`, err.message);
-          newImages.push(img); // keep original if upload failed
+          console.log(`❌ Failed (${err.message})`);
+          newImages.push(img); // keep original
         }
       } else {
         newImages.push(img);
@@ -110,18 +107,18 @@ async function migrate() {
     }
 
     if (updated) {
-      await Property.updateOne(
-        { _id: prop._id },
+      await col.updateOne(
+        { _id: meta._id },
         { $set: { images: newImages } }
       );
       totalPropertiesUpdated++;
-      console.log(`  ✅ Property ${prop.pid || prop._id} updated in MongoDB Atlas with Cloudinary URLs!`);
+      console.log(`  💾 Updated in MongoDB: ${meta.pid || meta._id}\n`);
     }
   }
 
-  console.log('\n=============================================');
+  console.log('=============================================');
   console.log(`🎉 Base64 Migration Complete!`);
-  console.log(`Total properties scanned: ${scannedCount}`);
+  console.log(`Total properties scanned: ${propList.length}`);
   console.log(`Properties containing Base64 images: ${totalBase64Found}`);
   console.log(`Total Base64 images migrated to Cloudinary: ${totalUploaded}`);
   console.log(`Properties updated in MongoDB: ${totalPropertiesUpdated}`);

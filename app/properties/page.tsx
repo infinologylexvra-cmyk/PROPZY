@@ -124,7 +124,7 @@ function PropertySearchContent() {
     const currentRequestId = ++latestRequestIdRef.current;
 
     try {
-      const fetchUrl = `/api/properties?${clientCacheKey}${clientCacheKey ? '&' : ''}limit=1000`;
+      const fetchUrl = `/api/properties?${clientCacheKey}${clientCacheKey ? '&' : ''}limit=100`;
       const res = await fetch(fetchUrl, {
         signal: controller.signal
       });
