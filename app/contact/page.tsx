@@ -209,7 +209,7 @@ export default function ContactPage() {
                 </span>
                 <span className="text-xs font-bold text-white">All systems operational</span>
               </div>
-              <span className="text-[11px] font-mono text-emerald-400 font-semibold">Avg response: 1.8 hrs</span>
+             
             </div>
 
             {/* Card 2: REACH US DIRECTLY */}
