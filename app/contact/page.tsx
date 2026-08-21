@@ -237,7 +237,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <div className="text-[10px] font-bold font-mono text-gray-400 uppercase tracking-wider">PHONE</div>
-                    <div className="text-xs font-semibold text-white mt-0.5">8392038400</div>
+                    <div className="text-xs font-semibold text-white mt-0.5">9317902609</div>
                   </div>
                 </div>
 
