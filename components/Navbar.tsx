@@ -79,6 +79,12 @@ function NavbarContent() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Close mobile and profile menus when route or query changes
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+    setIsProfileMenuOpen(false);
+  }, [pathname, searchParams]);
+
   const navItems = [
     { key: 'properties', label: 'All Properties', href: '/properties' },
     { key: 'buy', label: 'Buy', href: '/properties?category=buy' },
@@ -153,7 +159,7 @@ function NavbarContent() {
           {/* Right Action Buttons */}
           <div className="flex items-center space-x-2 sm:space-x-3.5">
             {/* Global Search Bar with Auto-Suggestions */}
-            <GlobalSearchBar mode="public" className="hidden lg:block w-64 md:w-72" />
+            <GlobalSearchBar mode="public" className="hidden sm:block w-44 md:w-56 lg:w-72" />
 
             {/* Post Property Button */}
             {currentUser?.role === 'owner' && (
@@ -320,12 +326,14 @@ function NavbarContent() {
               </div>
             )}
 
-            {/* Mobile/Tablet Hamburger Menu Toggle */}
+            {/* Mobile/Tablet/Laptop (under 1280px) Hamburger Menu Toggle */}
             <button
               type="button"
               suppressHydrationWarning
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden p-2 rounded-xl text-gray-300 hover:text-white hover:bg-emerald-950 focus:outline-none transition-colors"
+              className="xl:hidden p-2 rounded-xl text-gray-300 hover:text-white hover:bg-emerald-950 focus:outline-none transition-colors cursor-pointer border border-transparent hover:border-emerald-900/60"
+              aria-label={isMobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+              aria-expanded={isMobileMenuOpen}
             >
               {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
@@ -349,26 +357,28 @@ function NavbarContent() {
         </div>
       </div>
 
-      {/* Mobile/Tablet Navigation Drawer */}
+      {/* Mobile/Tablet/Laptop Navigation Drawer */}
       {isMobileMenuOpen && (
-        <div className="xl:hidden bg-[#070d09] border-b border-emerald-950/80 px-4 pt-3 pb-4 animate-in fade-in slide-in-from-top-4 duration-200">
-          <div className="grid grid-cols-2 gap-2">
-            {navItems.map((item) => (
-              <Link
-                key={item.key}
-                href={item.href}
-                onClick={() => {
-                  setActiveItem(item.key);
-                  setIsMobileMenuOpen(false);
-                }}
-                className={`px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${activeItem === item.key
-                    ? 'bg-emerald-950/90 text-emerald-400 border border-emerald-800/60'
-                    : 'bg-[#0b140f] text-gray-300 hover:text-emerald-400 hover:bg-emerald-950/40'
-                  }`}
-              >
-                {item.label}
-              </Link>
-            ))}
+        <div className="xl:hidden bg-[#070d09]/98 backdrop-blur-xl border-b border-emerald-950/80 px-4 sm:px-6 lg:px-8 pt-3 pb-4 animate-in fade-in slide-in-from-top-4 duration-200 shadow-2xl">
+          <div className="max-w-7xl mx-auto">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
+              {navItems.map((item) => (
+                <Link
+                  key={item.key}
+                  href={item.href}
+                  onClick={() => {
+                    setActiveItem(item.key);
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className={`px-3 py-2.5 rounded-xl text-xs font-bold transition-all text-center flex items-center justify-center ${activeItem === item.key
+                      ? 'bg-emerald-950/90 text-emerald-400 border border-emerald-800/60 shadow-sm'
+                      : 'bg-[#0b140f] text-gray-300 hover:text-emerald-400 hover:bg-emerald-950/40 border border-transparent hover:border-emerald-900/40'
+                    }`}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       )}
