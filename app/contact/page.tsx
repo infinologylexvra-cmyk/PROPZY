@@ -11,7 +11,7 @@ import {
   CheckCircle,
   Linkedin,
   Twitter,
-  Github,
+  Instagram,
   ArrowRight
 } from 'lucide-react';
 import { CallToActionBanner } from '@/components/CallToActionBanner';
@@ -226,7 +226,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <div className="text-[10px] font-bold font-mono text-gray-400 uppercase tracking-wider">EMAIL</div>
-                    <div className="text-xs font-semibold text-white mt-0.5">Lexverainfology.com</div>
+                    <div className="text-xs font-semibold text-white mt-0.5">Lexvrainfology.com</div>
                   </div>
                 </div>
 
@@ -280,7 +280,7 @@ export default function ContactPage() {
                 >
                   <Linkedin size={18} className="text-gray-400 group-hover:text-emerald-400 transition-colors mb-1" />
                   <span className="text-xs font-semibold text-white">LinkedIn</span>
-                  <span className="text-[9px] text-gray-500 font-mono mt-0.5">@lexvera</span>
+                  <span className="text-[9px] text-gray-500 font-mono mt-0.5">@lexvra</span>
                 </a>
 
                 <a
@@ -291,18 +291,18 @@ export default function ContactPage() {
                 >
                   <Twitter size={18} className="text-gray-400 group-hover:text-emerald-400 transition-colors mb-1" />
                   <span className="text-xs font-semibold text-white">Twitter</span>
-                  <span className="text-[9px] text-gray-500 font-mono mt-0.5">@lexvera</span>
+                  <span className="text-[9px] text-gray-500 font-mono mt-0.5">@lexvra</span>
                 </a>
 
                 <a
-                  href="https://github.com"
+                  href="https://instagram.com"
                   target="_blank"
                   rel="noreferrer"
                   className="p-3 rounded-2xl bg-[#0b1610] border border-emerald-950 hover:border-emerald-700/60 transition-all flex flex-col items-center justify-center text-center group"
                 >
-                  <Github size={18} className="text-gray-400 group-hover:text-emerald-400 transition-colors mb-1" />
-                  <span className="text-xs font-semibold text-white">GitHub</span>
-                  <span className="text-[9px] text-gray-500 font-mono mt-0.5">@lexvera</span>
+                  <Instagram size={18} className="text-gray-400 group-hover:text-emerald-400 transition-colors mb-1" />
+                  <span className="text-xs font-semibold text-white">Instagram</span>
+                  <span className="text-[9px] text-gray-500 font-mono mt-0.5">@lexvra</span>
                 </a>
               </div>
             </div>
