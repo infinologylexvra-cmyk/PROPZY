@@ -38,23 +38,6 @@ cd LetsRentz/letsrentz-app
 pnpm install
 ```
 
-### 3. Environment Configuration
-Copy the example environment file and fill in your credentials:
-```bash
-cp .env.example .env.local
-```
-
-Required `.env.local` variables:
-```env
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-MONGODB_URI=mongodb+srv://<user>:<password>@cluster.mongodb.net/propzy
-JWT_SECRET=your_super_secure_jwt_secret_key_2026
-ADMIN_ID=admin@propzy.com
-ADMIN_PASSWORD=admin
-NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
-CLOUDINARY_API_KEY=your_cloudinary_api_key
-CLOUDINARY_API_SECRET=your_cloudinary_api_secret
-```
 
 ### 4. Run Development Server
 ```bash

@@ -7,6 +7,10 @@ export interface MemoryUser {
   phone: string;
   password?: string;
   role: 'tenant' | 'owner' | 'admin';
+  ownerVerified?: boolean;
+  verificationStatus?: 'pending' | 'approved' | 'rejected' | 'none';
+  consumerNumber?: string;
+  electricityBillUrl?: string;
 }
 
 export const memoryStore: PropertyItem[] = [...INITIAL_PROPERTIES];
