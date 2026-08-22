@@ -7,6 +7,8 @@ import {
   Home, ArrowRight, Eye, EyeOff, Check, CheckCircle2, XCircle, AlertCircle, MapPin 
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
+import { GoogleAuthButton } from '@/components/GoogleAuthButton';
+import { UserProfile } from '@/store/useAppStore';
 import { 
   sanitizeName, 
   sanitizePhone, 
@@ -47,6 +49,18 @@ export const AuthModal: React.FC = () => {
   const [error, setError] = useState('');
 
   if (!isAuthModalOpen) return null;
+
+  // Google Auth Handlers
+  const handleGoogleSuccess = (googleUser: UserProfile) => {
+    setUser(googleUser);
+    showToast(`Welcome to Propzy, ${googleUser.name}!`);
+    resetForm();
+    navigateByRole(googleUser.role);
+  };
+
+  const handleGoogleError = (errMsg: string) => {
+    setError(errMsg);
+  };
 
   // Helper for role-based navigation
   const navigateByRole = (userRole: string, openDashboard = false) => {
@@ -272,6 +286,21 @@ export const AuthModal: React.FC = () => {
               </button>
             </div>
 
+            {/* Google Sign-In Action */}
+            <div className="mb-5 space-y-4">
+              <GoogleAuthButton
+                onSuccess={handleGoogleSuccess}
+                onError={handleGoogleError}
+                text={mode === 'login' ? 'Continue with Google' : 'Sign up with Google'}
+                disabled={submitting}
+              />
+              <div className="flex items-center space-x-3 text-[10px] text-gray-500 font-bold uppercase tracking-wider">
+                <div className="flex-1 h-px bg-emerald-950/80" />
+                <span>or continue with email</span>
+                <div className="flex-1 h-px bg-emerald-950/80" />
+              </div>
+            </div>
+
             {error && (
               <div className="mb-5 p-3 bg-[#1a0809] border border-rose-900/60 text-rose-300 text-xs rounded-xl text-center font-semibold">
                 {error}
@@ -443,25 +472,21 @@ export const AuthModal: React.FC = () => {
                   </div>
                 </div>
 
-                {/* City / Location Selection */}
+                {/* City / Location Input */}
                 <div>
-                  <label className="block text-xs font-semibold text-gray-300 mb-1">City / Region *</label>
-                  <div className="flex items-center border border-emerald-900/80 bg-[#050806] rounded-xl overflow-hidden focus-within:border-emerald-500 transition-all pr-3">
+                  <label className="block text-xs font-semibold text-gray-300 mb-1">City / Region</label>
+                  <div className="flex items-center border border-emerald-900/80 bg-[#050806] rounded-xl overflow-hidden focus-within:border-emerald-500 transition-all">
                     <span className="px-3 text-emerald-400">
                       <MapPin size={16} />
                     </span>
-                    <select
+                    <input
+                      type="text"
                       value={city}
                       onChange={(e) => setCity(e.target.value)}
-                      className="w-full py-3 text-xs text-white bg-transparent focus:outline-none cursor-pointer font-semibold"
+                      placeholder="e.g. Mohali, Agra, Delhi, Mumbai"
+                      className="w-full py-3 pr-3 text-xs text-white placeholder-gray-600 bg-transparent focus:outline-none font-medium"
                       required
-                    >
-                      <option value="Mohali" className="bg-[#0a110d] text-white">Mohali</option>
-                      <option value="Chandigarh" className="bg-[#0a110d] text-white">Chandigarh</option>
-                      <option value="Zirakpur" className="bg-[#0a110d] text-white">Zirakpur</option>
-                      <option value="Kharar" className="bg-[#0a110d] text-white">Kharar</option>
-                      <option value="Panchkula" className="bg-[#0a110d] text-white">Panchkula</option>
-                    </select>
+                    />
                   </div>
                 </div>
 

@@ -16,6 +16,8 @@ export interface UserProfile {
   name: string;
   phone: string;
   email?: string;
+  avatar?: string;
+  googleId?: string;
   role: 'tenant' | 'owner' | 'admin';
   city?: string;
   joinedDate?: string;

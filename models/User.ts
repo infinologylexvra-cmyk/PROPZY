@@ -4,8 +4,10 @@ import bcrypt from 'bcryptjs';
 export interface IUser extends Document {
   name: string;
   email: string;
-  phone: string;
+  phone?: string;
   password?: string;
+  googleId?: string;
+  avatar?: string;
   role: 'tenant' | 'owner' | 'admin';
   city?: string;
   wishlist?: string[];
@@ -20,8 +22,10 @@ export interface IUser extends Document {
 const UserSchema: Schema = new Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true, index: true },
-  phone: { type: String, required: true },
-  password: { type: String, required: true },
+  phone: { type: String, default: '' },
+  password: { type: String, default: '' },
+  googleId: { type: String, default: '' },
+  avatar: { type: String, default: '' },
   role: { 
     type: String, 
     enum: ['tenant', 'owner', 'admin'], 

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Playfair_Display, Plus_Jakarta_Sans } from 'next/font/google';
+import Script from 'next/script';
 import './globals.css';
 import { AppProvider } from '@/context/AppContext';
 import { Navbar } from '@/components/Navbar';
@@ -55,6 +56,7 @@ export default function RootLayout({
           <ClientModals />
           <Toast />
         </AppProvider>
+        <Script src="https://accounts.google.com/gsi/client" strategy="afterInteractive" />
       </body>
     </html>
   );
