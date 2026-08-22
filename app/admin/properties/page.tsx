@@ -55,7 +55,7 @@ function AdminPropertiesContent() {
       // Background revalidate from MongoDB
       fetchProperties(true);
     } else {
-      setProperties(INITIAL_PROPERTIES);
+      setProperties([]);
       fetchProperties(false);
     }
   }, [fetchProperties]);

@@ -50,12 +50,12 @@ export async function POST(req: NextRequest) {
     await connectToDatabase();
 
     // Check if email or phone is already registered
-    const existing = await User.findOne({
+    const existing: any = await User.findOne({
       $or: [
         { email: cleanEmail },
         { phone: cleanPhone }
       ]
-    });
+    }).lean();
 
     if (existing) {
       const msg = existing.email === cleanEmail 
@@ -67,15 +67,34 @@ export async function POST(req: NextRequest) {
     // Hash password with bcrypt
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser = await User.create({
-      name: name.trim(),
-      email: cleanEmail,
-      phone: cleanPhone,
-      password: hashedPassword,
-      role: selectedRole,
-      city: cleanCity,
-      wishlist: []
-    });
+    let newUser;
+    try {
+      newUser = await User.create({
+        name: name.trim(),
+        email: cleanEmail,
+        phone: cleanPhone,
+        password: hashedPassword,
+        role: selectedRole,
+        city: cleanCity,
+        wishlist: []
+      });
+    } catch (writeErr: any) {
+      if (writeErr?.message?.includes('not primary') || writeErr?.message?.includes('topology was closed')) {
+        console.warn('[MongoDB] Primary step-down detected, refreshing replica connection and retrying...');
+        await connectToDatabase(true);
+        newUser = await User.create({
+          name: name.trim(),
+          email: cleanEmail,
+          phone: cleanPhone,
+          password: hashedPassword,
+          role: selectedRole,
+          city: cleanCity,
+          wishlist: []
+        });
+      } else {
+        throw writeErr;
+      }
+    }
 
     const createdUserData = {
       id: newUser._id.toString(),
@@ -90,6 +109,27 @@ export async function POST(req: NextRequest) {
     return createAuthResponse(createdUserData, 'Registration successful! Welcome to Propzy.');
   } catch (error: any) {
     console.error('Registration Error:', error);
+
+    // Duplicate key error handler (MongoDB E11000)
+    if (error.code === 11000 || error.message?.includes('E11000')) {
+      const isEmail = error.message?.includes('email') || error.keyPattern?.email;
+      return NextResponse.json({
+        success: false,
+        message: isEmail 
+          ? 'An account with this email address already exists. Please login instead.'
+          : 'An account with this mobile phone number already exists. Please login instead.'
+      }, { status: 400 });
+    }
+
+    // Mongoose validation error handler
+    if (error.name === 'ValidationError') {
+      const firstError = Object.values(error.errors || {})[0] as any;
+      return NextResponse.json({
+        success: false,
+        message: firstError?.message || 'Invalid registration details provided.'
+      }, { status: 400 });
+    }
+
     return NextResponse.json({
       success: false,
       message: error.message || 'Registration failed. Please check your connection and try again.'

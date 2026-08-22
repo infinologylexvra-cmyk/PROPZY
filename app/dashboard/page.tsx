@@ -39,7 +39,7 @@ function DashboardContent() {
 
   const [savedProperties, setSavedProperties] = useState<PropertyItem[]>([]);
   const [inquiries, setInquiries] = useState<InquiryItem[]>([]);
-  const [allProperties, setAllProperties] = useState<PropertyItem[]>(INITIAL_PROPERTIES);
+  const [allProperties, setAllProperties] = useState<PropertyItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Account Edit Form State
@@ -379,8 +379,19 @@ function DashboardContent() {
   const handleVerifySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user || submittingVerify || user.verificationStatus === 'pending' || user.verificationStatus === 'approved') return;
-    if (!verifyForm.consumerNumber || !verifyForm.billUrl) {
-      showToast('Please provide both Consumer Number and Electricity Bill photo/link');
+    
+    const cleanCA = verifyForm.consumerNumber.replace(/[^a-zA-Z0-9]/g, '').trim();
+    if (!cleanCA || cleanCA.length < 3) {
+      showToast('Please enter a valid Electricity Bill Consumer / CA Number (min 3 digits)');
+      return;
+    }
+    if (cleanCA.length > 15) {
+      showToast('Consumer / CA Number cannot exceed 15 digits');
+      return;
+    }
+
+    if (!verifyForm.billUrl) {
+      showToast('Please provide an Electricity Bill photo or document link');
       return;
     }
     if (!isValidElectricityBillDocument(verifyForm.billUrl)) {
@@ -399,7 +410,7 @@ function DashboardContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: user.email,
-          consumerNumber: verifyForm.consumerNumber,
+          consumerNumber: cleanCA,
           electricityBillUrl: verifyForm.billUrl
         })
       });
@@ -410,7 +421,7 @@ function DashboardContent() {
           role: 'owner',
           ownerVerified: false,
           verificationStatus: 'pending',
-          consumerNumber: verifyForm.consumerNumber,
+          consumerNumber: cleanCA,
           electricityBillUrl: verifyForm.billUrl
         });
         showToast(data.message);
@@ -760,7 +771,7 @@ function DashboardContent() {
                 <div className="flex items-center justify-between">
                   <div>
                     <h4 className="text-base font-bold text-white flex items-center space-x-2">
-                      <span>⚡ Electricity Bill Owner Verification</span>
+                      <span>Electricity Bill Owner Verification</span>
                     </h4>
                     <p className="text-xs text-gray-400">
                       Upload your Electricity Bill & Consumer Number to verify your property ownership. Only verified owners can post property listings.
@@ -796,14 +807,14 @@ function DashboardContent() {
                       <CheckCircle2 size={20} className="text-emerald-400 shrink-0" />
                       <div>
                         <span className="font-bold block text-white text-sm">Account Fully Verified!</span>
-                        Your Electricity Bill and Consumer Number ({user.consumerNumber || 'Verified'}) have been approved by Admin. You can post unlimited property listings.
+                        Your Electricity Bill and Consumer Number (<span className="font-mono font-bold text-white break-all">{user.consumerNumber || 'Verified'}</span>) have been approved by Admin. You can post unlimited property listings.
                       </div>
                     </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 rounded-2xl border border-emerald-900/70 bg-[#07110b] p-3 sm:p-4 text-xs">
                       <div className="rounded-xl border border-emerald-950 bg-[#050806] p-3">
                         <span className="block text-gray-500 font-medium">Submitted Consumer / CA Number</span>
-                        <span className="mt-1 block font-mono font-bold text-emerald-400 text-sm">{user.consumerNumber || 'Not available'}</span>
+                        <span className="mt-1 block font-mono font-bold text-emerald-400 text-sm break-all">{user.consumerNumber || 'Not available'}</span>
                       </div>
                       <div className="rounded-xl border border-emerald-950 bg-[#050806] p-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                         <div>
@@ -829,21 +840,33 @@ function DashboardContent() {
                     <RefreshCw size={20} className="text-amber-400 shrink-0 animate-spin" />
                     <div>
                       <span className="font-bold block text-white text-sm">Under Review by Admin</span>
-                      Your Electricity Bill (CA/Consumer No: <strong className="font-mono text-amber-400">{user.consumerNumber}</strong>) is currently being reviewed by our Admin team. You will be able to post properties as soon as it is approved.
+                      Your Electricity Bill (CA/Consumer No: <strong className="font-mono text-amber-400 break-all">{user.consumerNumber}</strong>) is currently being reviewed by our Admin team. You will be able to post properties as soon as it is approved.
                     </div>
                   </div>
                 ) : (
                   <form onSubmit={handleVerifySubmit} className="space-y-4 max-w-xl text-xs pt-2">
                     <div>
-                      <label className="block text-gray-300 font-semibold mb-1">Electricity Bill Consumer / CA Number *</label>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="block text-gray-300 font-semibold">Electricity Bill Consumer / CA Number *</label>
+                        <span className="text-[10px] text-gray-500 font-mono">
+                          {verifyForm.consumerNumber.length}/15 digits max
+                        </span>
+                      </div>
                       <input
                         type="text"
                         required
-                        placeholder="e.g. CA-1004829103 or 100982341"
+                        maxLength={15}
+                        placeholder="e.g. 1004829103 or CA100982"
                         value={verifyForm.consumerNumber}
-                        onChange={(e) => setVerifyForm({ ...verifyForm, consumerNumber: e.target.value })}
-                        className="w-full px-4 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white font-mono focus:border-emerald-500 focus:outline-none placeholder-gray-600"
+                        onChange={(e) => {
+                          const val = e.target.value.replace(/[^a-zA-Z0-9]/g, '').slice(0, 15);
+                          setVerifyForm({ ...verifyForm, consumerNumber: val });
+                        }}
+                        className="w-full px-4 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white font-mono focus:border-emerald-500 focus:outline-none placeholder-gray-600 tracking-wider text-sm"
                       />
+                      <p className="text-[10px] text-gray-400 mt-1">
+                        Enter your 3 to 15 digit Consumer Account (CA) number as printed on your electricity bill.
+                      </p>
                     </div>
 
                     <div>

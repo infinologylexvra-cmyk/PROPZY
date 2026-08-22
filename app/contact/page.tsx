@@ -281,7 +281,7 @@ export default function ContactPage() {
                   <Linkedin size={18} className="text-gray-400 group-hover:text-emerald-400 transition-colors mb-1" />
                   <span className="text-xs font-semibold text-white">LinkedIn</span>
                   <span className="text-[9px] text-gray-500 font-mono mt-0.5">@lexvra</span>
-                </a>
+                </a>  
 
                 <a
                   href="https://twitter.com"

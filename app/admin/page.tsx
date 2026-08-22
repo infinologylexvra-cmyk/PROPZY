@@ -55,13 +55,13 @@ export default function AdminOverviewPage() {
     if (localProps && localProps.length > 0) {
       setProperties(localProps);
     } else {
-      setProperties(INITIAL_PROPERTIES);
+      setProperties([]);
     }
 
     if (localInqs && localInqs.length > 0) {
       setInquiries(localInqs);
     } else {
-      setInquiries(INITIAL_INQUIRIES);
+      setInquiries([]);
     }
 
     // Always revalidate from server in background on mount

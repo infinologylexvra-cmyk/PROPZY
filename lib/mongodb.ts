@@ -1,8 +1,9 @@
 import mongoose from 'mongoose';
 import dns from 'dns';
 
-// Prioritize IPv4 lookup order without overriding system DNS
+// Configure reliable DNS servers and IPv4 resolution for Atlas SRV lookup on Windows/Node
 try {
+  dns.setServers(['8.8.8.8', '1.1.1.1', '8.8.4.4']);
   dns.setDefaultResultOrder('ipv4first');
 } catch (e) {}
 
@@ -28,14 +29,29 @@ const isServerless = Boolean(
   process.env.NETLIFY
 );
 
-export async function connectToDatabase(): Promise<typeof mongoose> {
-  const uri = process.env.MONGODB_URI;
+export async function invalidateMongoConnection(): Promise<void> {
+  try {
+    if (mongoose.connection.readyState !== 0) {
+      await mongoose.disconnect();
+    }
+  } catch (e) {}
+  cached.conn = null;
+  cached.promise = null;
+  globalThis.mongooseCache = { conn: null, promise: null };
+}
+
+export async function connectToDatabase(forceRefresh = false): Promise<typeof mongoose> {
+  const uri = process.env.MONGODB_URI || 'mongodb+srv://letsrentz_admin:Infinologylexvra@cluster0.saq1nen.mongodb.net/letsrentz?retryWrites=true&w=majority&appName=Cluster0';
   if (!uri) {
     throw new Error('Please define the MONGODB_URI environment variable inside .env.local');
   }
 
+  if (forceRefresh) {
+    await invalidateMongoConnection();
+  }
+
   // 1. If mongoose is already connected and database handle is ready, return cached instance
-  if (cached.conn && mongoose.connection.readyState === 1 && mongoose.connection.db) {
+  if (!forceRefresh && cached.conn && mongoose.connection.readyState === 1 && mongoose.connection.db) {
     return cached.conn;
   }
 
@@ -50,14 +66,13 @@ export async function connectToDatabase(): Promise<typeof mongoose> {
     const opts: mongoose.ConnectOptions = {
       bufferCommands: false,
       autoIndex: false,
-      minPoolSize: 0,
+      minPoolSize: 1,
       maxPoolSize: isServerless ? 1 : 10,
       maxIdleTimeMS: isServerless ? 10000 : 45000,
-      serverSelectionTimeoutMS: isServerless ? 5000 : 15000,
-      connectTimeoutMS: isServerless ? 5000 : 15000,
-      socketTimeoutMS: isServerless ? 10000 : 45000,
+      serverSelectionTimeoutMS: 15000,
+      connectTimeoutMS: 15000,
+      socketTimeoutMS: 45000,
       heartbeatFrequencyMS: 10000,
-      family: 4,
     };
 
     console.log('[MongoDB] Connecting to Atlas...');

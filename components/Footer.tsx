@@ -148,37 +148,37 @@ export const Footer: React.FC = () => {
         {/* ─────────────────────────────────────────────────────────────
             MIDDLE HIGHLIGHT BAR (Dotted Border)
         ───────────────────────────────────────────────────────────── */}
-        <div className="border-y border-dashed border-emerald-900/60 py-6 grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
+        <div className="border-y border-dashed border-emerald-900/60 py-6 grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
           {/* Highlight 1 */}
-          <div className="flex items-center justify-center space-x-3">
-            <div className="w-9 h-9 rounded-full bg-[#0a1e14] border border-emerald-800/60 flex items-center justify-center text-emerald-400">
-              <Percent size={16} />
+          <div className="w-full max-w-72 sm:max-w-none mx-auto flex items-center justify-start sm:justify-center space-x-3.5 px-2 sm:px-0">
+            <div className="w-10 h-10 rounded-full bg-[#0a1e14] border border-emerald-800/60 flex items-center justify-center text-emerald-400 shrink-0">
+              <Percent size={18} />
             </div>
             <div className="text-left">
-              <div className="text-xs font-bold text-white">0% Brokerage</div>
-              <div className="text-[10px] text-gray-400">Direct zero brokerage platform</div>
+              <div className="text-xs sm:text-sm font-bold text-white">0% Brokerage</div>
+              <div className="text-[11px] text-gray-400">Direct zero brokerage platform</div>
             </div>
           </div>
 
           {/* Highlight 2 */}
-          <div className="flex items-center justify-center space-x-3">
-            <div className="w-9 h-9 rounded-full bg-[#0a1e14] border border-emerald-800/60 flex items-center justify-center text-emerald-400">
-              <ShieldCheck size={16} />
+          <div className="w-full max-w-72 sm:max-w-none mx-auto flex items-center justify-start sm:justify-center space-x-3.5 px-2 sm:px-0">
+            <div className="w-10 h-10 rounded-full bg-[#0a1e14] border border-emerald-800/60 flex items-center justify-center text-emerald-400 shrink-0">
+              <ShieldCheck size={18} />
             </div>
             <div className="text-left">
-              <div className="text-xs font-bold text-white">100% Verified</div>
-              <div className="text-[10px] text-gray-400">Every property, manually verified</div>
+              <div className="text-xs sm:text-sm font-bold text-white">100% Verified</div>
+              <div className="text-[11px] text-gray-400">Every property, manually verified</div>
             </div>
           </div>
 
           {/* Highlight 3 */}
-          <div className="flex items-center justify-center space-x-3">
-            <div className="w-9 h-9 rounded-full bg-[#0a1e14] border border-emerald-800/60 flex items-center justify-center text-emerald-400">
-              <UserCheck size={16} />
+          <div className="w-full max-w-72 sm:max-w-none mx-auto flex items-center justify-start sm:justify-center space-x-3.5 px-2 sm:px-0">
+            <div className="w-10 h-10 rounded-full bg-[#0a1e14] border border-emerald-800/60 flex items-center justify-center text-emerald-400 shrink-0">
+              <UserCheck size={18} />
             </div>
             <div className="text-left">
-              <div className="text-xs font-bold text-white">Direct Owner</div>
-              <div className="text-[10px] text-gray-400">Connect directly with owners</div>
+              <div className="text-xs sm:text-sm font-bold text-white">Direct Owner</div>
+              <div className="text-[11px] text-gray-400">Connect directly with owners</div>
             </div>
           </div>
         </div>
@@ -240,21 +240,29 @@ export const Footer: React.FC = () => {
         {/* ─────────────────────────────────────────────────────────────
             BOTTOM COPYRIGHT ROW 
         ───────────────────────────────────────────────────────────── */}
-        <div className="flex flex-col sm:flex-row items-center justify-between text-xs text-gray-500 gap-4 pt-2">
-          <p>© 2026 PROPZY. All rights reserved.</p>
-          <div className="flex flex-wrap items-center space-x-4">
-            <Link href="/terms" className="hover:text-emerald-400 transition-colors">Terms of Use</Link>
-            <span>•</span>
-            <Link href="/privacy" className="hover:text-emerald-400 transition-colors">Privacy Policy</Link>
+        <div className="flex flex-col md:flex-row items-center justify-between text-xs text-gray-500 gap-3 pt-3 text-center md:text-left">
+          {/* Copyright text */}
+          <p className="order-2 md:order-1 text-[11px] sm:text-xs">
+            © 2026 PROPZY. All rights reserved.
+          </p>
 
-            <span>•</span>
-            <Link href="/localities" className="hover:text-emerald-400 transition-colors">Sitemap</Link>
-            <span>•</span>
-            <span className="text-gray-400 flex items-center space-x-1">
+          {/* Legal Links & Attribution */}
+          <div className="order-1 md:order-2 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 text-[11px] sm:text-xs">
+            <div className="flex items-center justify-center space-x-3 text-gray-400">
+              <Link href="/terms" className="hover:text-emerald-400 transition-colors">Terms of Use</Link>
+              <span className="text-gray-700">•</span>
+              <Link href="/privacy" className="hover:text-emerald-400 transition-colors">Privacy Policy</Link>
+              <span className="text-gray-700">•</span>
+              <Link href="/localities" className="hover:text-emerald-400 transition-colors">Sitemap</Link>
+            </div>
+
+            <span className="hidden sm:inline text-gray-700">•</span>
+
+            <div className="flex items-center justify-center space-x-1.5 text-gray-400">
               <span>Made with</span>
-              <Heart size={12} className="text-emerald-400 fill-emerald-400" />
+              <Heart size={12} className="text-emerald-400 fill-emerald-400 inline shrink-0" />
               <span>for finding your home</span>
-            </span>
+            </div>
           </div>
         </div>
       </div>

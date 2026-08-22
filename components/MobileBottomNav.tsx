@@ -29,6 +29,15 @@ export const MobileBottomNav: React.FC = () => {
         {/* Home */}
         <Link
           href="/"
+          onClick={(e) => {
+            if (typeof window !== 'undefined') {
+              sessionStorage.removeItem('home_scroll_target');
+              if (pathname === '/') {
+                e.preventDefault();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }
+            }
+          }}
           className={`flex flex-col items-center justify-center py-1 text-[10px] font-semibold transition-colors ${
             pathname === '/' ? 'text-emerald-400 font-extrabold' : 'text-gray-400 hover:text-emerald-300'
           }`}

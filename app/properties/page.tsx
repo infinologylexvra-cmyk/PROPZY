@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState, useEffect, useRef, useCallback, Suspense } from 'react';
+import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Filter, SlidersHorizontal, ShieldCheck, Search, RefreshCw, X } from 'lucide-react';
+import { Filter, SlidersHorizontal, ShieldCheck, Search, RefreshCw, X, ChevronLeft, ArrowLeft, Home as HomeIcon } from 'lucide-react';
 import { PropertyItem, INITIAL_PROPERTIES } from '@/lib/seedData';
 import { PropertyCard } from '@/components/PropertyCard';
 import { InquiryModal } from '@/components/InquiryModal';
@@ -140,25 +141,6 @@ function PropertySearchContent() {
           : data.data;
         setProperties(filteredData);
         setClientPropertiesCache(clientCacheKey, filteredData, data.pagination);
-      } else if (!res.ok) {
-        // Fallback to local verified properties when API is temporarily 503 or offline
-        let list = [...INITIAL_PROPERTIES];
-        if (category !== 'all') {
-          if (category === 'buy' || category === 'sell') {
-            list = list.filter(p => p.category === 'buy' || p.category === 'sell');
-          } else {
-            list = list.filter(p => p.category === category);
-          }
-        }
-        if (city !== 'all') list = list.filter(p => p.city.toLowerCase().includes(city.toLowerCase()));
-        if (locality) list = list.filter(p => p.locality.toLowerCase().includes(locality.toLowerCase()));
-        if (pidSearch) list = list.filter(p => p.pid.toUpperCase().includes(pidSearch.toUpperCase()));
-        if (type !== 'all') list = list.filter(p => p.type === type);
-        if (bedrooms !== 'all') list = list.filter(p => p.bedrooms === Number(bedrooms));
-        if (verifiedOnly) list = list.filter(p => p.verified);
-        list = list.filter(p => p.price <= maxPrice);
-
-        setProperties(list);
       } else {
         setProperties([]);
       }
@@ -170,24 +152,8 @@ function PropertySearchContent() {
 
       if (currentRequestId !== latestRequestIdRef.current) return;
 
-      console.warn('API error, filtering locally:', e);
-      let list = [...INITIAL_PROPERTIES];
-      if (category !== 'all') {
-        if (category === 'buy' || category === 'sell') {
-          list = list.filter(p => p.category === 'buy' || p.category === 'sell');
-        } else {
-          list = list.filter(p => p.category === category);
-        }
-      }
-      if (city !== 'all') list = list.filter(p => p.city.toLowerCase().includes(city.toLowerCase()));
-      if (locality) list = list.filter(p => p.locality.toLowerCase().includes(locality.toLowerCase()));
-      if (pidSearch) list = list.filter(p => p.pid.toUpperCase().includes(pidSearch.toUpperCase()));
-      if (type !== 'all') list = list.filter(p => p.type === type);
-      if (bedrooms !== 'all') list = list.filter(p => p.bedrooms === Number(bedrooms));
-      if (verifiedOnly) list = list.filter(p => p.verified);
-      list = list.filter(p => p.price <= maxPrice);
-
-      setProperties(list);
+      console.warn('Properties fetch API error:', e);
+      setProperties([]);
     } finally {
       if (currentRequestId === latestRequestIdRef.current) {
         setLoading(false);
@@ -233,19 +199,85 @@ function PropertySearchContent() {
     router.push('/properties');
   };
 
+  const getDynamicPageHeading = () => {
+    const typeNames: Record<string, string> = {
+      flat: 'Apartments & Flats',
+      house: 'Houses & Villas',
+      pg: 'PG & Hostels',
+      commercial: 'Commercial Properties'
+    };
+
+    const typeLabel = type !== 'all' ? typeNames[type] || type : 'Properties';
+    const cityLabel = city !== 'all' ? `in ${city}` : 'in Chandigarh Tricity';
+    const purposeLabel = category === 'buy' ? 'for Sale' : category === 'pg' || type === 'pg' ? '' : 'for Rent';
+
+    return `${typeLabel} ${purposeLabel} ${cityLabel}`.replace(/\s+/g, ' ').trim();
+  };
+
+  const getBreadcrumbTypeLabel = () => {
+    if (type === 'flat') return 'Apartments';
+    if (type === 'house') return 'Houses';
+    if (type === 'pg') return 'PG & Hostels';
+    if (type === 'commercial') return 'Commercial';
+    if (category === 'pg') return 'PG';
+    if (category === 'buy') return 'Buy';
+    return 'Properties';
+  };
+
   const visibleProperties = properties.slice(0, displayedCount);
 
   return (
     <div className="bg-[#050806] text-gray-100 min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+        {/* Top Back Navigation Bar & Breadcrumbs */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <button
+            type="button"
+            suppressHydrationWarning
+            onClick={() => {
+              if (typeof window !== 'undefined' && window.history.length > 1) {
+                router.back();
+              } else {
+                router.push('/');
+              }
+            }}
+            className="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-[#0a140f] border border-emerald-900/80 hover:border-emerald-500 hover:bg-[#0f2219] text-gray-200 hover:text-white text-xs font-bold transition-all shadow-md active:scale-95 group cursor-pointer"
+          >
+            <ArrowLeft size={15} className="text-emerald-400 group-hover:-translate-x-0.5 transition-transform" />
+            <span>Back to Home</span>
+          </button>
+
+          {/* Breadcrumb Links */}
+          <nav className="flex items-center space-x-1.5 text-xs text-gray-400 overflow-x-auto whitespace-nowrap py-1">
+            <Link href="/" className="hover:text-emerald-400 transition-colors flex items-center space-x-1">
+              <HomeIcon size={12} className="text-emerald-400" />
+              <span>Home</span>
+            </Link>
+            <span>/</span>
+            <span className="text-emerald-400 font-semibold">{getBreadcrumbTypeLabel()}</span>
+            {city !== 'all' && (
+              <>
+                <span>/</span>
+                <span className="text-gray-300 font-semibold">{city}</span>
+              </>
+            )}
+            {locality && (
+              <>
+                <span>/</span>
+                <span className="text-gray-300">{locality}</span>
+              </>
+            )}
+          </nav>
+        </div>
+
         {/* Header Title */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-emerald-950/80 pb-6">
           <div>
             <h1 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
-              Property Search Results
+              {getDynamicPageHeading()}
             </h1>
             <p className="text-xs text-gray-400 mt-1">
-              Showing verified 0% brokerage listings in Chandigarh Tricity
+              Showing verified 0% brokerage listings {city !== 'all' ? `in ${city}` : 'across Chandigarh Tricity'}
             </p>
           </div>
 
@@ -274,152 +306,221 @@ function PropertySearchContent() {
           <span className="text-xs text-gray-400 font-semibold">{properties.length} results</span>
         </div>
 
-        {/* Mobile Filter Slide-over Modal */}
+        {/* Mobile Slide-over Filters Drawer (Left-Aligned) */}
         {isMobileFilterOpen && (
-          <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm md:hidden flex justify-end">
-            <div className="w-full max-w-xs bg-[#0a110d] h-full overflow-y-auto p-6 space-y-6 border-l border-emerald-900/80 shadow-2xl">
-              <div className="flex items-center justify-between border-b border-emerald-950 pb-4">
-                <span className="text-base font-extrabold text-white flex items-center space-x-2">
-                  <SlidersHorizontal size={18} className="text-emerald-400" />
-                  <span>Filters</span>
-                </span>
+          <div className="fixed inset-0 z-100 bg-black/85 backdrop-blur-md md:hidden flex justify-start">
+            <div className="w-full max-w-[340px] sm:max-w-sm bg-[#08100c] h-full flex flex-col border-r border-emerald-900/80 shadow-2xl animate-in slide-in-from-left duration-200">
+              {/* Drawer Header */}
+              <div className="flex items-center justify-between p-4 sm:p-5 border-b border-emerald-950/80 bg-[#0a140f] shrink-0">
+                <div className="flex items-center space-x-2.5">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-950/80 border border-emerald-800/60 flex items-center justify-center text-emerald-400">
+                    <SlidersHorizontal size={16} />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-extrabold text-white">Filters</h3>
+                    <p className="text-[10px] text-gray-400">{properties.length} Listings Available</p>
+                  </div>
+                </div>
                 <button
                   type="button"
                   suppressHydrationWarning
                   onClick={() => setIsMobileFilterOpen(false)}
-                  className="p-2 text-gray-400 hover:text-white cursor-pointer"
+                  className="w-8 h-8 rounded-xl bg-[#050806] border border-emerald-950 flex items-center justify-center text-gray-400 hover:text-white cursor-pointer active:scale-95 transition-transform"
                 >
-                  <X size={20} />
+                  <X size={18} />
                 </button>
               </div>
 
-              {/* Mobile Filter Controls */}
-              {/* Category */}
-              <div>
-                <label className="block text-xs font-semibold text-gray-300 mb-2">Purpose / Category</label>
-                <div className="grid grid-cols-2 gap-1.5">
-                  {['all', 'rent', 'buy', 'pg', 'commercial'].map((cat) => (
+              {/* Scrollable Filters Content */}
+              <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-5 no-scrollbar">
+                {/* Category */}
+                <div>
+                  <label className="block text-xs font-semibold text-gray-300 mb-2">Purpose / Category</label>
+                  <div className="grid grid-cols-2 gap-2">
                     <button
-                      key={cat}
                       type="button"
                       suppressHydrationWarning
-                      onClick={() => handleCategoryChange(cat)}
-                      className={`px-3 py-2 rounded-xl cursor-pointer text-xs font-semibold capitalize border transition-all ${category === cat
+                      onClick={() => handleCategoryChange('all')}
+                      className={`px-3 py-2.5 rounded-xl cursor-pointer text-xs font-semibold capitalize border transition-all text-center ${category === 'all'
                         ? 'bg-emerald-500 text-black border-emerald-500 font-extrabold shadow-md'
-                        : 'bg-[#050806] text-gray-400 border-emerald-950'
+                        : 'bg-[#050806] text-gray-300 border-emerald-950 hover:border-emerald-800'
                         }`}
                     >
-                      {cat}
+                      All Properties
                     </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* City */}
-              <div>
-                <label className="block text-xs font-semibold text-gray-300 mb-2">City</label>
-                <select
-                  suppressHydrationWarning
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  className="w-full px-3 py-2.5 text-xs border border-emerald-900/80 rounded-xl bg-[#050806] text-white cursor-pointer"
-                >
-                  <option value="all">All Cities</option>
-                  <option value="Mohali">Mohali</option>
-                  <option value="Chandigarh">Chandigarh</option>
-                  <option value="Kharar">Kharar</option>
-                  <option value="Zirakpur">Zirakpur</option>
-                  <option value="Panchkula">Panchkula</option>
-                </select>
-              </div>
-
-              {/* Type */}
-              <div>
-                <label className="block text-xs font-semibold text-gray-300 mb-2">Property Type</label>
-                <select
-                  suppressHydrationWarning
-                  value={type}
-                  onChange={(e) => setType(e.target.value)}
-                  className="w-full px-3 py-2.5 text-xs border border-emerald-900/80 rounded-xl bg-[#050806] text-white cursor-pointer"
-                >
-                  <option value="all">All Types</option>
-                  <option value="flat">Flat / Apartment</option>
-                  <option value="house">House / Villa</option>
-                  <option value="pg">PG / Hostel</option>
-                  <option value="commercial">Commercial</option>
-                </select>
-              </div>
-
-              {/* Max Budget Slider */}
-              <div>
-                <div className="flex justify-between text-xs font-semibold mb-2">
-                  <span className="text-gray-300">Max Budget</span>
-                  <span className="text-emerald-400 font-extrabold">
-                    {`₹${maxPrice.toLocaleString('en-IN')}`}
-                  </span>
-                </div>
-                <input
-                  type="range"
-                  suppressHydrationWarning
-                  min={isBuyOrSell(category) ? 1000000 : 5000}
-                  max={isBuyOrSell(category) ? defaultBuyMax : defaultRentMax}
-                  step={isBuyOrSell(category) ? 500000 : 5000}
-                  value={maxPrice > (isBuyOrSell(category) ? defaultBuyMax : defaultRentMax) ? (isBuyOrSell(category) ? defaultBuyMax : defaultRentMax) : maxPrice}
-                  onChange={(e) => setMaxPrice(Number(e.target.value))}
-                  className="w-full accent-emerald-500 cursor-pointer"
-                />
-                <div className="flex justify-between text-[10px] text-gray-400 mt-1">
-                  <span>{isBuyOrSell(category) ? '₹10 Lakhs' : '₹5,000'}</span>
-                  <span>{isBuyOrSell(category) ? '₹5 Cr+' : '₹15 Lakhs+'}</span>
-                </div>
-              </div>
-
-              {/* Bedrooms */}
-              <div>
-                <label className="block text-xs font-semibold text-gray-300 mb-2">Bedrooms (BHK)</label>
-                <div className="flex space-x-2">
-                  {['all', '1', '2', '3'].map((bhk) => (
                     <button
-                      key={bhk}
                       type="button"
                       suppressHydrationWarning
-                      onClick={() => setBedrooms(bhk)}
-                      className={`flex-1 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${bedrooms === bhk
-                        ? 'bg-emerald-500 text-black border-emerald-500'
-                        : 'bg-[#050806] text-gray-400 border-emerald-950'
+                      onClick={() => handleCategoryChange('rent')}
+                      className={`px-3 py-2.5 rounded-xl cursor-pointer text-xs font-semibold capitalize border transition-all text-center ${category === 'rent'
+                        ? 'bg-emerald-500 text-black border-emerald-500 font-extrabold shadow-md'
+                        : 'bg-[#050806] text-gray-300 border-emerald-950 hover:border-emerald-800'
                         }`}
                     >
-                      {bhk === 'all' ? 'All' : `${bhk} BHK`}
+                      For Rent
                     </button>
-                  ))}
+                    <button
+                      type="button"
+                      suppressHydrationWarning
+                      onClick={() => handleCategoryChange('buy')}
+                      className={`px-3 py-2.5 rounded-xl cursor-pointer text-xs font-semibold capitalize border transition-all text-center ${category === 'buy' || category === 'sell'
+                        ? 'bg-emerald-500 text-black border-emerald-500 font-extrabold shadow-md'
+                        : 'bg-[#050806] text-gray-300 border-emerald-950 hover:border-emerald-800'
+                        }`}
+                    >
+                      Buy / Sale
+                    </button>
+                    <button
+                      type="button"
+                      suppressHydrationWarning
+                      onClick={() => handleCategoryChange('pg')}
+                      className={`px-3 py-2.5 rounded-xl cursor-pointer text-xs font-semibold capitalize border transition-all text-center ${category === 'pg'
+                        ? 'bg-emerald-500 text-black border-emerald-500 font-extrabold shadow-md'
+                        : 'bg-[#050806] text-gray-300 border-emerald-950 hover:border-emerald-800'
+                        }`}
+                    >
+                      PG / Hostel
+                    </button>
+                    <button
+                      type="button"
+                      suppressHydrationWarning
+                      onClick={() => handleCategoryChange('commercial')}
+                      className={`col-span-2 px-3 py-2.5 rounded-xl cursor-pointer text-xs font-semibold capitalize border transition-all text-center ${category === 'commercial'
+                        ? 'bg-emerald-500 text-black border-emerald-500 font-extrabold shadow-md'
+                        : 'bg-[#050806] text-gray-300 border-emerald-950 hover:border-emerald-800'
+                        }`}
+                    >
+                      Commercial Spaces
+                    </button>
+                  </div>
+                </div>
+
+                {/* City */}
+                <div>
+                  <label className="block text-xs font-semibold text-gray-300 mb-2">City</label>
+                  <select
+                    suppressHydrationWarning
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    className="w-full px-3.5 py-2.5 text-xs border border-emerald-900/80 rounded-xl bg-[#050806] focus:border-emerald-500 focus:outline-none text-white cursor-pointer font-medium"
+                  >
+                    <option value="all" className="bg-[#0a110d] text-white">All Cities</option>
+                    <option value="Mohali" className="bg-[#0a110d] text-white">Mohali</option>
+                    <option value="Chandigarh" className="bg-[#0a110d] text-white">Chandigarh</option>
+                    <option value="Kharar" className="bg-[#0a110d] text-white">Kharar</option>
+                    <option value="Zirakpur" className="bg-[#0a110d] text-white">Zirakpur</option>
+                    <option value="Panchkula" className="bg-[#0a110d] text-white">Panchkula</option>
+                  </select>
+                </div>
+
+                {/* Property Type */}
+                <div>
+                  <label className="block text-xs font-semibold text-gray-300 mb-2">Property Type</label>
+                  <select
+                    suppressHydrationWarning
+                    value={type}
+                    onChange={(e) => setType(e.target.value)}
+                    className="w-full px-3.5 py-2.5 text-xs border border-emerald-900/80 rounded-xl bg-[#050806] focus:border-emerald-500 focus:outline-none text-white cursor-pointer font-medium"
+                  >
+                    <option value="all" className="bg-[#0a110d] text-white">All Types</option>
+                    <option value="flat" className="bg-[#0a110d] text-white">Flat / Apartment</option>
+                    <option value="house" className="bg-[#0a110d] text-white">House / Villa</option>
+                    <option value="pg" className="bg-[#0a110d] text-white">PG / Hostel</option>
+                    <option value="commercial" className="bg-[#0a110d] text-white">Commercial Space</option>
+                  </select>
+                </div>
+
+                {/* Max Budget Slider */}
+                <div>
+                  <div className="flex justify-between text-xs font-semibold mb-2">
+                    <span className="text-gray-300">Max Budget</span>
+                    <span className="text-emerald-400 font-extrabold font-mono">
+                      {`₹${maxPrice.toLocaleString('en-IN')}`}
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    suppressHydrationWarning
+                    min={isBuyOrSell(category) ? 1000000 : 5000}
+                    max={isBuyOrSell(category) ? defaultBuyMax : defaultRentMax}
+                    step={isBuyOrSell(category) ? 500000 : 5000}
+                    value={maxPrice > (isBuyOrSell(category) ? defaultBuyMax : defaultRentMax) ? (isBuyOrSell(category) ? defaultBuyMax : defaultRentMax) : maxPrice}
+                    onChange={(e) => setMaxPrice(Number(e.target.value))}
+                    className="w-full accent-emerald-500 cursor-pointer"
+                  />
+                  <div className="flex justify-between text-[10px] text-gray-400 mt-1">
+                    <span>{isBuyOrSell(category) ? '₹10 Lakhs' : '₹5,000'}</span>
+                    <span>{isBuyOrSell(category) ? '₹5 Cr+' : '₹15 Lakhs+'}</span>
+                  </div>
+                </div>
+
+                {/* Bedrooms */}
+                <div>
+                  <label className="block text-xs font-semibold text-gray-300 mb-2">Bedrooms (BHK)</label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {['all', '1', '2', '3'].map((bhk) => (
+                      <button
+                        key={bhk}
+                        type="button"
+                        suppressHydrationWarning
+                        onClick={() => setBedrooms(bhk)}
+                        className={`py-2 rounded-xl text-xs font-bold border transition-all text-center cursor-pointer ${bedrooms === bhk
+                          ? 'bg-emerald-500 text-black border-emerald-500 shadow-md font-extrabold'
+                          : 'bg-[#050806] text-gray-300 border-emerald-950 hover:border-emerald-800'
+                          }`}
+                      >
+                        {bhk === 'all' ? 'All' : `${bhk} BHK`}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Verified Toggle */}
+                <div className="pt-3 border-t border-emerald-950">
+                  <label className="flex items-center justify-between cursor-pointer select-none bg-[#050806] border border-emerald-950 p-3 rounded-xl hover:border-emerald-900 transition-colors">
+                    <span className="text-xs font-semibold text-gray-300 flex items-center space-x-2">
+                      <ShieldCheck size={16} className="text-emerald-400" />
+                      <span>Verified Only</span>
+                    </span>
+                    <input
+                      type="checkbox"
+                      suppressHydrationWarning
+                      checked={verifiedOnly}
+                      onChange={(e) => setVerifiedOnly(e.target.checked)}
+                      className="w-4 h-4 text-emerald-500 rounded accent-emerald-500 cursor-pointer"
+                    />
+                  </label>
                 </div>
               </div>
 
-              {/* Verified Toggle */}
-              <div className="pt-2 border-t border-emerald-950">
-                <label className="flex items-center justify-between cursor-pointer select-none">
-                  <span className="text-xs font-semibold text-gray-300 flex items-center space-x-1.5">
-                    <ShieldCheck size={16} className="text-emerald-400" />
-                    <span>Verified Listings Only</span>
-                  </span>
-                  <input
-                    type="checkbox"
-                    suppressHydrationWarning
-                    checked={verifiedOnly}
-                    onChange={(e) => setVerifiedOnly(e.target.checked)}
-                    className="w-4 h-4 text-emerald-500 rounded accent-emerald-500 cursor-pointer"
-                  />
-                </label>
+              {/* Fixed Bottom Action Bar */}
+              <div className="p-4 border-t border-emerald-950 bg-[#0a140f] shrink-0 flex items-center space-x-2.5">
+                <button
+                  type="button"
+                  suppressHydrationWarning
+                  onClick={() => {
+                    setCategory('all');
+                    setCity('all');
+                    setType('all');
+                    setBedrooms('all');
+                    setVerifiedOnly(false);
+                    setMaxPrice(defaultRentMax);
+                    setLocality('');
+                    setPidSearch('');
+                  }}
+                  className="px-4 py-3 rounded-xl bg-[#050806] hover:bg-[#07130b] text-gray-400 hover:text-white border border-emerald-950 text-xs font-bold transition-colors cursor-pointer"
+                >
+                  Reset
+                </button>
+                <button
+                  type="button"
+                  suppressHydrationWarning
+                  onClick={() => setIsMobileFilterOpen(false)}
+                  className="flex-1 py-3 bg-emerald-500 hover:bg-emerald-400 text-black rounded-xl font-extrabold text-xs shadow-lg shadow-emerald-500/20 transition-all cursor-pointer text-center"
+                >
+                  Apply Filters ({properties.length})
+                </button>
               </div>
-
-              <button
-                type="button"
-                suppressHydrationWarning
-                onClick={() => setIsMobileFilterOpen(false)}
-                className="w-full py-3 bg-emerald-500 text-black rounded-xl font-extrabold text-xs shadow-lg cursor-pointer"
-              >
-                Apply & Close
-              </button>
             </div>
           </div>
         )}
@@ -440,21 +541,62 @@ function PropertySearchContent() {
             {/* Category Tabs */}
             <div>
               <label className="block text-xs font-semibold text-gray-300 mb-2">Purpose / Category</label>
-              <div className="grid grid-cols-2 gap-1.5">
-                {['all', 'rent', 'buy', 'pg', 'commercial'].map((cat) => (
-                  <button
-                    key={cat}
-                    type="button"
-                    suppressHydrationWarning
-                    onClick={() => handleCategoryChange(cat)}
-                    className={`px-3 py-2 rounded-xl text-xs font-semibold capitalize border transition-all cursor-pointer ${category === cat
-                      ? 'bg-emerald-500 text-black border-emerald-500 font-extrabold shadow-md'
-                      : 'bg-[#050806] text-gray-400 border-emerald-950 hover:text-white'
-                      }`}
-                  >
-                    {cat}
-                  </button>
-                ))}
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  suppressHydrationWarning
+                  onClick={() => handleCategoryChange('all')}
+                  className={`px-3 py-2 rounded-xl text-xs font-semibold capitalize border transition-all cursor-pointer text-center ${category === 'all'
+                    ? 'bg-emerald-500 text-black border-emerald-500 font-extrabold shadow-md'
+                    : 'bg-[#050806] text-gray-300 border-emerald-950 hover:border-emerald-800'
+                    }`}
+                >
+                  All Properties
+                </button>
+                <button
+                  type="button"
+                  suppressHydrationWarning
+                  onClick={() => handleCategoryChange('rent')}
+                  className={`px-3 py-2 rounded-xl text-xs font-semibold capitalize border transition-all cursor-pointer text-center ${category === 'rent'
+                    ? 'bg-emerald-500 text-black border-emerald-500 font-extrabold shadow-md'
+                    : 'bg-[#050806] text-gray-300 border-emerald-950 hover:border-emerald-800'
+                    }`}
+                >
+                  For Rent
+                </button>
+                <button
+                  type="button"
+                  suppressHydrationWarning
+                  onClick={() => handleCategoryChange('buy')}
+                  className={`px-3 py-2 rounded-xl text-xs font-semibold capitalize border transition-all cursor-pointer text-center ${category === 'buy' || category === 'sell'
+                    ? 'bg-emerald-500 text-black border-emerald-500 font-extrabold shadow-md'
+                    : 'bg-[#050806] text-gray-300 border-emerald-950 hover:border-emerald-800'
+                    }`}
+                >
+                  Buy / Sale
+                </button>
+                <button
+                  type="button"
+                  suppressHydrationWarning
+                  onClick={() => handleCategoryChange('pg')}
+                  className={`px-3 py-2 rounded-xl text-xs font-semibold capitalize border transition-all cursor-pointer text-center ${category === 'pg'
+                    ? 'bg-emerald-500 text-black border-emerald-500 font-extrabold shadow-md'
+                    : 'bg-[#050806] text-gray-300 border-emerald-950 hover:border-emerald-800'
+                    }`}
+                >
+                  PG / Hostel
+                </button>
+                <button
+                  type="button"
+                  suppressHydrationWarning
+                  onClick={() => handleCategoryChange('commercial')}
+                  className={`col-span-2 px-3 py-2 rounded-xl text-xs font-semibold capitalize border transition-all cursor-pointer text-center ${category === 'commercial'
+                    ? 'bg-emerald-500 text-black border-emerald-500 font-extrabold shadow-md'
+                    : 'bg-[#050806] text-gray-300 border-emerald-950 hover:border-emerald-800'
+                    }`}
+                >
+                  Commercial Spaces
+                </button>
               </div>
             </div>
 

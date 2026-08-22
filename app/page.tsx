@@ -10,13 +10,14 @@ import {
   FileText, Sparkle, Compass, UserCheck, HeartHandshake, Bell, Award,
   CircleDollarSign, User, ChevronLeft, ChevronRight
 } from 'lucide-react';
-import { PropertyItem, INITIAL_PROPERTIES } from '@/lib/seedData';
+import { PropertyItem } from '@/lib/seedData';
 import { PropertyCard } from '@/components/PropertyCard';
 import { InquiryModal } from '@/components/InquiryModal';
 import { useApp } from '@/context/AppContext';
 import { LazyImage } from '@/components/LazyImage';
 import { CallToActionBanner } from '@/components/CallToActionBanner';
 import { SkeletonPropertyCard } from '@/components/Loader';
+import { getClientPropertiesCache, setClientPropertiesCache } from '@/lib/clientPropertiesCache';
 
 export default function HomePage() {
   const router = useRouter();
@@ -28,8 +29,20 @@ export default function HomePage() {
   const [budgetFilter, setBudgetFilter] = useState('any');
   const [activeCategoryCity, setActiveCategoryCity] = useState('Mohali');
 
-  const [properties, setProperties] = useState<PropertyItem[]>(INITIAL_PROPERTIES);
-  const [loading, setLoading] = useState(true);
+  const [properties, setProperties] = useState<PropertyItem[]>(() => {
+    if (typeof window !== 'undefined') {
+      const cached = getClientPropertiesCache('home_featured');
+      return cached?.data || [];
+    }
+    return [];
+  });
+  const [loading, setLoading] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const cached = getClientPropertiesCache('home_featured');
+      return !cached || cached.data.length === 0;
+    }
+    return true;
+  });
 
   const [selectedPropertyForInquiry, setSelectedPropertyForInquiry] = useState<PropertyItem | null>(null);
 
@@ -45,14 +58,21 @@ export default function HomePage() {
   // Fetch properties from API
   useEffect(() => {
     async function fetchProperties() {
+      const cached = getClientPropertiesCache('home_featured');
+      if (cached && cached.data && cached.data.length > 0) {
+        setProperties(cached.data);
+        setLoading(false);
+      }
+
       try {
         const res = await fetch('/api/properties');
         const data = await res.json();
         if (data.success && data.data && data.data.length > 0) {
           setProperties(data.data);
+          setClientPropertiesCache('home_featured', data.data);
         }
       } catch (e) {
-        console.warn('Using initial seed data:', e);
+        console.warn('Properties fetch error:', e);
       } finally {
         setLoading(false);
       }
@@ -60,8 +80,55 @@ export default function HomePage() {
     fetchProperties();
   }, []);
 
+  // Restore scroll position to the city section user navigated from, or scroll to top
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const targetSectionId = sessionStorage.getItem('home_scroll_target');
+    const savedCity = sessionStorage.getItem('home_active_city');
+
+    if (savedCity) {
+      setActiveCategoryCity(savedCity);
+    }
+
+    if (targetSectionId) {
+      sessionStorage.removeItem('home_scroll_target');
+      
+      // Allow DOM & components to mount before scrolling into view
+      const timer = setTimeout(() => {
+        const el = document.getElementById(targetSectionId);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 120);
+
+      return () => clearTimeout(timer);
+    } else {
+      // Prevent browser from restoring scroll to arbitrary footer height
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+  }, []);
+
+  const handleCityNavigation = (cityName: string) => {
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('home_scroll_target', 'explore-locations');
+    }
+    router.push(`/properties?city=${encodeURIComponent(cityName)}`);
+  };
+
+  const handleSpaceCategoryNavigation = (type: string, city: string) => {
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('home_scroll_target', 'spaces-by-city');
+      sessionStorage.setItem('home_active_city', city);
+    }
+    router.push(`/properties?type=${encodeURIComponent(type)}&city=${encodeURIComponent(city)}`);
+  };
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('home_scroll_target', 'hero-search');
+    }
     const params = new URLSearchParams();
     params.set('category', activeTab);
     if (propertyType !== 'all') params.set('type', propertyType);
@@ -225,7 +292,7 @@ export default function HomePage() {
       {/* ─────────────────────────────────────────────────────────────
           SECTION 2: LOCATION CAROUSEL
       ───────────────────────────────────────────────────────────── */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="explore-locations" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 scroll-mt-24 sm:scroll-mt-28">
         <div className="text-center space-y-4 mb-10">
           <div className="inline-flex items-center space-x-1.5 px-4 py-1.5 rounded-full bg-[#0a2618] border border-emerald-800/60 text-emerald-400 text-[11px] font-extrabold tracking-widest uppercase">
             <MapPin size={13} />
@@ -242,9 +309,9 @@ export default function HomePage() {
           </p>
 
           {/* Stats Bar */}
-          <div className="pt-4 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-8 justify-items-center text-xs font-semibold text-gray-300 max-w-3xl mx-auto">
-            <div className="w-full max-w-60 sm:max-w-none flex items-center justify-center sm:justify-start space-x-2 rounded-2xl bg-[#06110c]/70 border border-emerald-950/70 px-4 py-3">
-              <div className="w-8 h-8 rounded-full bg-emerald-950/80 border border-emerald-800/60 flex items-center justify-center text-emerald-400">
+          <div className="pt-4 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6 text-xs font-semibold text-gray-300 max-w-3xl mx-auto">
+            <div className="w-full max-w-72 sm:max-w-none mx-auto flex items-center justify-start space-x-3 rounded-2xl bg-[#06110c]/70 border border-emerald-950/70 px-4 py-3">
+              <div className="w-8 h-8 rounded-full bg-emerald-950/80 border border-emerald-800/60 flex items-center justify-center text-emerald-400 shrink-0">
                 <HomeIcon size={14} />
               </div>
               <div className="text-left">
@@ -253,8 +320,8 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="w-full max-w-60 sm:max-w-none flex items-center justify-center sm:justify-start space-x-2 rounded-2xl bg-[#06110c]/70 border border-emerald-950/70 px-4 py-3">
-              <div className="w-8 h-8 rounded-full bg-emerald-950/80 border border-emerald-800/60 flex items-center justify-center text-emerald-400">
+            <div className="w-full max-w-72 sm:max-w-none mx-auto flex items-center justify-start space-x-3 rounded-2xl bg-[#06110c]/70 border border-emerald-950/70 px-4 py-3">
+              <div className="w-8 h-8 rounded-full bg-emerald-950/80 border border-emerald-800/60 flex items-center justify-center text-emerald-400 shrink-0">
                 <Compass size={14} />
               </div>
               <div className="text-left">
@@ -263,8 +330,8 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="w-full max-w-60 sm:max-w-none flex items-center justify-center sm:justify-start space-x-2 rounded-2xl bg-[#06110c]/70 border border-emerald-950/70 px-4 py-3">
-              <div className="w-8 h-8 rounded-full bg-emerald-950/80 border border-emerald-800/60 flex items-center justify-center text-emerald-400">
+            <div className="w-full max-w-72 sm:max-w-none mx-auto flex items-center justify-start space-x-3 rounded-2xl bg-[#06110c]/70 border border-emerald-950/70 px-4 py-3">
+              <div className="w-8 h-8 rounded-full bg-emerald-950/80 border border-emerald-800/60 flex items-center justify-center text-emerald-400 shrink-0">
                 <ShieldCheck size={14} />
               </div>
               <div className="text-left">
@@ -280,7 +347,7 @@ export default function HomePage() {
           {locationsList.map((loc, idx) => (
             <div
               key={idx}
-              onClick={() => router.push(`/properties?city=${loc.name}`)}
+              onClick={() => handleCityNavigation(loc.name)}
               className={`group relative aspect-3/4 w-full rounded-3xl overflow-hidden cursor-pointer border transition-all duration-300 ${loc.featured
                   ? 'border-emerald-500 shadow-xl shadow-emerald-950/50 scale-[1.02]'
                   : 'border-emerald-950/80 hover:border-emerald-700/60'
@@ -378,12 +445,12 @@ export default function HomePage() {
         {/* Property Cards Horizontal Slider */}
         <div
           ref={propertySliderRef}
-          className="flex space-x-6 overflow-x-auto pb-6 pt-1 snap-x snap-mandatory scroll-smooth no-scrollbar"
+          className="flex space-x-4 sm:space-x-6 overflow-x-auto pb-6 pt-1 snap-x snap-mandatory scroll-smooth no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {loading && properties.length === 0 ? (
             Array.from({ length: 4 }).map((_, i) => (
-              <div key={`skel-${i}`} className="w-71.25 sm:w-80 lg:w-85 shrink-0 snap-start">
+              <div key={`skel-${i}`} className="w-[82vw] max-w-[340px] sm:w-80 lg:w-85 shrink-0 snap-center sm:snap-start">
                 <SkeletonPropertyCard />
               </div>
             ))
@@ -391,7 +458,7 @@ export default function HomePage() {
             properties.map((prop) => (
               <div
                 key={prop.id || prop.pid}
-                className="w-71.25 sm:w-80 lg:w-85 shrink-0 snap-start"
+                className="w-[82vw] max-w-[340px] sm:w-80 lg:w-85 shrink-0 snap-center sm:snap-start"
               >
                 <PropertyCard
                   property={prop}
@@ -521,16 +588,16 @@ export default function HomePage() {
 
           {/* Bottom Feature Tags Bar (Separate boxes on mobile view) */}
           <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-3 sm:gap-6 text-xs text-gray-300 font-normal mx-auto max-w-3xl">
-            <div className="w-full sm:w-auto flex items-center justify-center space-x-2.5 px-6 py-3 rounded-2xl sm:rounded-full bg-[#050806] border border-emerald-900/50 shadow-md">
-              <CircleDollarSign size={16} className="text-emerald-400 stroke-[1.5]" />
+            <div className="w-full max-w-72 sm:w-auto flex items-center justify-start sm:justify-center space-x-3 px-6 py-3 rounded-2xl sm:rounded-full bg-[#050806] border border-emerald-900/50 shadow-md">
+              <CircleDollarSign size={16} className="text-emerald-400 stroke-[1.5] shrink-0" />
               <span className="text-gray-200 font-medium">0% Brokerage</span>
             </div>
-            <div className="w-full sm:w-auto flex items-center justify-center space-x-2.5 px-6 py-3 rounded-2xl sm:rounded-full bg-[#050806] border border-emerald-900/50 shadow-md">
-              <ShieldCheck size={16} className="text-emerald-400 stroke-[1.5]" />
+            <div className="w-full max-w-72 sm:w-auto flex items-center justify-start sm:justify-center space-x-3 px-6 py-3 rounded-2xl sm:rounded-full bg-[#050806] border border-emerald-900/50 shadow-md">
+              <ShieldCheck size={16} className="text-emerald-400 stroke-[1.5] shrink-0" />
               <span className="text-gray-200 font-medium">100% Transparency</span>
             </div>
-            <div className="w-full sm:w-auto flex items-center justify-center space-x-2.5 px-6 py-3 rounded-2xl sm:rounded-full bg-[#050806] border border-emerald-900/50 shadow-md">
-              <User size={16} className="text-emerald-400 stroke-[1.5]" />
+            <div className="w-full max-w-72 sm:w-auto flex items-center justify-start sm:justify-center space-x-3 px-6 py-3 rounded-2xl sm:rounded-full bg-[#050806] border border-emerald-900/50 shadow-md">
+              <User size={16} className="text-emerald-400 stroke-[1.5] shrink-0" />
               <span className="text-gray-200 font-medium">Direct Owner Properties</span>
             </div>
           </div>
@@ -540,7 +607,7 @@ export default function HomePage() {
       {/* ─────────────────────────────────────────────────────────────
           SECTION 5: SPACES BY CATEGORY 
       ───────────────────────────────────────────────────────────── */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="spaces-by-city" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 scroll-mt-24 sm:scroll-mt-28">
         <div className="text-center space-y-3 mb-8">
           <div className="inline-flex items-center space-x-1.5 px-4 py-1.5 rounded-full bg-[#0a2618] border border-emerald-800/60 text-emerald-400 text-[11px] font-extrabold tracking-widest uppercase">
             <Compass size={13} />
@@ -580,7 +647,7 @@ export default function HomePage() {
           {spaceCategories.map((cat, idx) => (
             <div
               key={idx}
-              onClick={() => router.push(`/properties?type=${cat.type}&city=${activeCategoryCity}`)}
+              onClick={() => handleSpaceCategoryNavigation(cat.type, activeCategoryCity)}
               className="group relative aspect-4/3 sm:aspect-square rounded-3xl overflow-hidden border border-emerald-400 hover:border-emerald-700/80 cursor-pointer transition-all shadow-xl"
             >
               <LazyImage

@@ -661,7 +661,7 @@ export default function PostPropertyPage() {
                 <div className="space-y-2">
                   <h3 className="text-base font-bold text-white">Electricity Bill Verification Under Admin Review</h3>
                   <p className="text-xs text-amber-300 max-w-md mx-auto leading-relaxed">
-                    Your Electricity Bill (Consumer No: <strong className="font-mono font-bold text-white">{user.consumerNumber || 'Submitted'}</strong>) is currently being reviewed by our Admin team. Once approved by Admin, your account will be authorized to post listings.
+                    Your Electricity Bill (Consumer No: <strong className="font-mono font-bold text-white break-all">{user.consumerNumber || 'Submitted'}</strong>) is currently being reviewed by our Admin team. Once approved by Admin, your account will be authorized to post listings.
                   </p>
                 </div>
               ) : (

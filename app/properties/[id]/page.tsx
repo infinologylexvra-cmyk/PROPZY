@@ -34,12 +34,11 @@ export default function PropertyDetailPage() {
         if (data.success && data.data) {
           setProperty(data.data);
         } else {
-          const found = INITIAL_PROPERTIES.find(p => p.id === id || p.pid === id);
-          if (found) setProperty(found);
+          setProperty(null);
         }
       } catch (e) {
-        const found = INITIAL_PROPERTIES.find(p => p.id === id || p.pid === id);
-        if (found) setProperty(found);
+        console.warn('Property detail fetch error:', e);
+        setProperty(null);
       } finally {
         setLoading(false);
       }

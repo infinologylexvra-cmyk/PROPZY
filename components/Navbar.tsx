@@ -110,7 +110,16 @@ function NavbarContent() {
             {/* Brand Logo */}
             <Link
               href="/"
-              onClick={() => setActiveItem('home')}
+              onClick={(e) => {
+                setActiveItem('home');
+                if (typeof window !== 'undefined') {
+                  sessionStorage.removeItem('home_scroll_target');
+                  if (pathname === '/') {
+                    e.preventDefault();
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }
+                }
+              }}
               className="flex items-center space-x-2.5 group shrink-0"
             >
               <div className="w-9 h-9 rounded-xl bg-emerald-500 flex items-center justify-center text-black shadow-lg shadow-emerald-500/25 group-hover:scale-105 transition-transform">

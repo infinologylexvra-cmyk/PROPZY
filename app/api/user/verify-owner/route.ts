@@ -15,7 +15,9 @@ export async function POST(req: NextRequest) {
 
     const userEmail = authUser?.email?.toLowerCase()?.trim();
     const documentUrl = typeof electricityBillUrl === 'string' ? electricityBillUrl.trim() : '';
-    const normalizedConsumerNumber = typeof consumerNumber === 'string' ? consumerNumber.trim() : '';
+    const cleanConsumerNumber = typeof consumerNumber === 'string' 
+      ? consumerNumber.replace(/[^a-zA-Z0-9]/g, '').trim().slice(0, 15) 
+      : '';
 
     if (!userEmail) {
       return NextResponse.json({ success: false, message: 'Unauthorized. Please login to submit verification.' }, { status: 401 });
@@ -29,10 +31,17 @@ export async function POST(req: NextRequest) {
       }, { status: 409 });
     }
 
-    if (!documentUrl || !normalizedConsumerNumber) {
+    if (!documentUrl || !cleanConsumerNumber) {
       return NextResponse.json({ 
         success: false, 
         message: 'Please provide both Electricity Bill document and Consumer Number.' 
+      }, { status: 400 });
+    }
+
+    if (cleanConsumerNumber.length < 3 || cleanConsumerNumber.length > 15) {
+      return NextResponse.json({ 
+        success: false, 
+        message: 'Consumer / CA Number must be between 3 and 15 digits.' 
       }, { status: 400 });
     }
 
@@ -58,7 +67,7 @@ export async function POST(req: NextRequest) {
             ownerVerified: false,
             verificationStatus: 'pending',
             electricityBillUrl: documentUrl,
-            consumerNumber: normalizedConsumerNumber
+            consumerNumber: cleanConsumerNumber
           },
           // Users authenticated through the local/fallback flow may not have a
           // MongoDB profile yet. Create that profile atomically so their
@@ -89,7 +98,7 @@ export async function POST(req: NextRequest) {
           ownerVerified: false,
           verificationStatus: 'pending',
           electricityBillUrl: documentUrl,
-          consumerNumber: normalizedConsumerNumber
+          consumerNumber: cleanConsumerNumber
         },
         message: 'Electricity Bill submitted! Pending admin approval.' 
       });
