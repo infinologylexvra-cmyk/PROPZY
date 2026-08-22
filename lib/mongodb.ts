@@ -67,12 +67,15 @@ export async function connectToDatabase(forceRefresh = false): Promise<typeof mo
       bufferCommands: false,
       autoIndex: false,
       minPoolSize: 1,
-      maxPoolSize: isServerless ? 1 : 10,
-      maxIdleTimeMS: isServerless ? 10000 : 45000,
-      serverSelectionTimeoutMS: 15000,
-      connectTimeoutMS: 15000,
+      maxPoolSize: 10,
+      maxIdleTimeMS: 30000,
+      serverSelectionTimeoutMS: 10000,
+      connectTimeoutMS: 10000,
       socketTimeoutMS: 45000,
-      heartbeatFrequencyMS: 10000,
+      heartbeatFrequencyMS: 5000,
+      retryWrites: true,
+      w: 'majority',
+      readPreference: 'primaryPreferred',
     };
 
     console.log('[MongoDB] Connecting to Atlas...');
