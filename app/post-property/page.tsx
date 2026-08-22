@@ -227,8 +227,8 @@ export default function PostPropertyPage() {
       reader.onload = (e) => {
         const img = new window.Image();
         img.onload = () => {
-          const MAX_WIDTH = 1280;
-          const MAX_HEIGHT = 960;
+          const MAX_WIDTH = 960;
+          const MAX_HEIGHT = 720;
           let width = img.width;
           let height = img.height;
 
@@ -254,7 +254,7 @@ export default function PostPropertyPage() {
           }
 
           ctx.drawImage(img, 0, 0, width, height);
-          const dataUrl = canvas.toDataURL('image/webp', 0.85);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.72);
           resolve(dataUrl);
         };
         img.onerror = () => {

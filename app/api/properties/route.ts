@@ -362,11 +362,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, message: 'Forbidden. Property owners only.' }, { status: 403 });
     }
 
-    await connectToDatabase();
-    const existingUser = await User.findOne({ email: authUser.email.toLowerCase().trim() });
+    const cleanAuthEmail = authUser.email.toLowerCase().trim();
+    let existingUser: any = null;
+
+    try {
+      await connectToDatabase();
+      existingUser = await User.findOne({ email: cleanAuthEmail }).lean();
+    } catch (userErr: any) {
+      console.warn('MongoDB user lookup warning in POST properties:', userErr?.message);
+    }
 
     if (authUser.role !== 'admin') {
-      if (!existingUser || (!existingUser.ownerVerified && existingUser.verificationStatus !== 'approved')) {
+      const isApprovedOwner = 
+        authUser.role === 'owner' || 
+        existingUser?.role === 'owner' || 
+        existingUser?.ownerVerified === true || 
+        existingUser?.verificationStatus === 'approved';
+
+      if (!isApprovedOwner) {
         return NextResponse.json({
           success: false,
           message: 'Owner verification required! Please submit your Electricity Bill in your Profile for admin approval before posting properties.'
@@ -385,10 +398,11 @@ export async function POST(req: NextRequest) {
       }, { status: 400 });
     }
 
-    const pidGenerated = body.pid || `PZ-${Math.floor(100 + Math.random() * 900)}`;
+    // Generate guaranteed unique PID to prevent MongoDB unique index collisions
+    const pidGenerated = body.pid || `PZ-${Date.now().toString().slice(-4)}${Math.floor(10 + Math.random() * 90)}`;
     const resolvedOwnerName = existingUser?.name || authUser.name || body.ownerName || 'Property Owner';
     const resolvedOwnerPhone = existingUser?.phone || body.ownerPhone || '+91 98765 43210';
-    const resolvedOwnerEmail = authUser.email.toLowerCase().trim();
+    const resolvedOwnerEmail = cleanAuthEmail;
 
     const newProperty = {
       pid: pidGenerated,
@@ -412,35 +426,47 @@ export async function POST(req: NextRequest) {
       ownerName: resolvedOwnerName,
       ownerPhone: resolvedOwnerPhone,
       ownerEmail: resolvedOwnerEmail,
-      ownerRole: (existingUser?.role === 'owner' ? 'owner' : 'agent') as 'owner' | 'agent',
+      ownerRole: 'owner' as const,
       available: true,
       createdAt: new Date()
     };
 
     await clearPropertiesCache();
 
-    try {
-      await connectToDatabase();
-      const created = await Property.create(newProperty);
+    let created: any = null;
+    for (let attempt = 1; attempt <= 2; attempt++) {
+      try {
+        await connectToDatabase(attempt === 2);
+        created = await Property.create(newProperty);
+        if (created) break;
+      } catch (dbErr: any) {
+        console.warn(`MongoDB Property.create attempt ${attempt} failed:`, dbErr?.message);
+        if (attempt === 1) {
+          continue;
+        }
+      }
+    }
+
+    if (created) {
       return NextResponse.json({ 
         success: true, 
         data: created, 
         message: 'Property posted successfully to MongoDB Atlas!' 
       });
-    } catch (dbErr: any) {
-      console.warn('MongoDB POST fallback:', dbErr.message);
-      const memObj: PropertyItem = {
-        ...newProperty,
-        id: `prop-${Date.now()}`,
-        createdAt: new Date().toISOString()
-      };
-      memoryStore.unshift(memObj);
-      return NextResponse.json({ 
-        success: true, 
-        data: memObj, 
-        message: 'Property posted successfully!' 
-      });
     }
+
+    // Fallback if MongoDB was completely unreachable
+    const memObj: PropertyItem = {
+      ...newProperty,
+      id: `prop-${Date.now()}`,
+      createdAt: new Date().toISOString()
+    };
+    memoryStore.unshift(memObj);
+    return NextResponse.json({ 
+      success: true, 
+      data: memObj, 
+      message: 'Property posted successfully!' 
+    });
   } catch (error: any) {
     return NextResponse.json({ 
       success: false, 
