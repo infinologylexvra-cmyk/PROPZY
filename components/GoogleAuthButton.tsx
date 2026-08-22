@@ -103,7 +103,7 @@ export const GoogleAuthButton: React.FC<GoogleAuthButtonProps> = ({
     if (loading || disabled) return;
 
     if (!googleClientId) {
-      onError('Google Client ID is not configured yet in .env.local (NEXT_PUBLIC_GOOGLE_CLIENT_ID).');
+      onError('Google Sign-In is not configured yet. Please add NEXT_PUBLIC_GOOGLE_CLIENT_ID in your hosting provider environment variables (e.g. Vercel) or .env.local.');
       return;
     }
 
