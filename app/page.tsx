@@ -80,31 +80,54 @@ export default function HomePage() {
     fetchProperties();
   }, []);
 
-  // Restore scroll position to the city section user navigated from, or scroll to top
+  // Disable automatic browser scroll restoration to prevent landing on footer
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'scrollRestoration' in window.history) {
+      window.history.scrollRestoration = 'manual';
+    }
+  }, []);
+
+  // Instantly restore scroll position to the exact section/coordinate user navigated from
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
     const targetSectionId = sessionStorage.getItem('home_scroll_target');
+    const savedY = sessionStorage.getItem('home_scroll_y');
     const savedCity = sessionStorage.getItem('home_active_city');
 
     if (savedCity) {
       setActiveCategoryCity(savedCity);
     }
 
-    if (targetSectionId) {
+    if (targetSectionId || savedY) {
       sessionStorage.removeItem('home_scroll_target');
-      
-      // Allow DOM & components to mount before scrolling into view
-      const timer = setTimeout(() => {
-        const el = document.getElementById(targetSectionId);
-        if (el) {
-          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      }, 120);
+      sessionStorage.removeItem('home_scroll_y');
 
-      return () => clearTimeout(timer);
+      const performScroll = () => {
+        if (targetSectionId) {
+          const el = document.getElementById(targetSectionId);
+          if (el) {
+            el.scrollIntoView({ behavior: 'instant' as ScrollBehavior, block: 'start' });
+            return;
+          }
+        }
+        if (savedY) {
+          window.scrollTo({ top: Number(savedY), behavior: 'instant' });
+        }
+      };
+
+      // Execute immediately on mount to prevent any footer glimpse
+      performScroll();
+
+      // Double-check after DOM rendering and layout paint
+      const raf = requestAnimationFrame(performScroll);
+      const timer = setTimeout(performScroll, 60);
+
+      return () => {
+        cancelAnimationFrame(raf);
+        clearTimeout(timer);
+      };
     } else {
-      // Prevent browser from restoring scroll to arbitrary footer height
       window.scrollTo({ top: 0, behavior: 'instant' });
     }
   }, []);
@@ -112,6 +135,7 @@ export default function HomePage() {
   const handleCityNavigation = (cityName: string) => {
     if (typeof window !== 'undefined') {
       sessionStorage.setItem('home_scroll_target', 'explore-locations');
+      sessionStorage.setItem('home_scroll_y', String(window.scrollY));
     }
     router.push(`/properties?city=${encodeURIComponent(cityName)}`);
   };
@@ -119,6 +143,7 @@ export default function HomePage() {
   const handleSpaceCategoryNavigation = (type: string, city: string) => {
     if (typeof window !== 'undefined') {
       sessionStorage.setItem('home_scroll_target', 'spaces-by-city');
+      sessionStorage.setItem('home_scroll_y', String(window.scrollY));
       sessionStorage.setItem('home_active_city', city);
     }
     router.push(`/properties?type=${encodeURIComponent(type)}&city=${encodeURIComponent(city)}`);
@@ -128,6 +153,7 @@ export default function HomePage() {
     e.preventDefault();
     if (typeof window !== 'undefined') {
       sessionStorage.setItem('home_scroll_target', 'hero-search');
+      sessionStorage.setItem('home_scroll_y', String(window.scrollY));
     }
     const params = new URLSearchParams();
     params.set('category', activeTab);
@@ -400,7 +426,7 @@ export default function HomePage() {
       {/* ─────────────────────────────────────────────────────────────
           SECTION 3: HAND PICKED & VERIFIED (PROPERTY SLIDER)
       ───────────────────────────────────────────────────────────── */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="handpicked-properties" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 scroll-mt-24 sm:scroll-mt-28">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
           <div className="space-y-3">
             <div className="inline-flex items-center space-x-1.5 px-4 py-1.5 rounded-full bg-[#0a2618] border border-emerald-800/60 text-emerald-400 text-[11px] font-extrabold tracking-widest uppercase">

@@ -51,6 +51,12 @@ export const PropertyCard: React.FC<PropertyCardProps> = React.memo(({ property,
   return (
     <Link
       href={propertyUrl}
+      onClick={() => {
+        if (typeof window !== 'undefined' && window.location.pathname === '/') {
+          sessionStorage.setItem('home_scroll_target', 'handpicked-properties');
+          sessionStorage.setItem('home_scroll_y', String(window.scrollY));
+        }
+      }}
       className="group bg-[#0a110d] rounded-3xl border border-emerald-950/90 hover:border-emerald-800/60 shadow-xl hover:shadow-emerald-950/40 transition-all duration-300 overflow-hidden flex flex-col h-full cursor-pointer"
     >
       {/* Photo Container */}
