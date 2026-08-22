@@ -19,6 +19,8 @@ import { CallToActionBanner } from '@/components/CallToActionBanner';
 import { SkeletonPropertyCard } from '@/components/Loader';
 import { getClientPropertiesCache, setClientPropertiesCache } from '@/lib/clientPropertiesCache';
 
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? React.useLayoutEffect : React.useEffect;
+
 export default function HomePage() {
   const router = useRouter();
   const { user, openAuthModal, openPidModal, showToast } = useApp();
@@ -80,16 +82,13 @@ export default function HomePage() {
     fetchProperties();
   }, []);
 
-  // Disable automatic browser scroll restoration to prevent landing on footer
-  useEffect(() => {
-    if (typeof window !== 'undefined' && 'scrollRestoration' in window.history) {
+  // Synchronously lock scroll position BEFORE browser paints the first frame
+  useIsomorphicLayoutEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    if ('scrollRestoration' in window.history) {
       window.history.scrollRestoration = 'manual';
     }
-  }, []);
-
-  // Instantly restore scroll position to the exact section/coordinate user navigated from
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
 
     const targetSectionId = sessionStorage.getItem('home_scroll_target');
     const savedY = sessionStorage.getItem('home_scroll_y');
@@ -100,10 +99,7 @@ export default function HomePage() {
     }
 
     if (targetSectionId || savedY) {
-      sessionStorage.removeItem('home_scroll_target');
-      sessionStorage.removeItem('home_scroll_y');
-
-      const performScroll = () => {
+      const applyScroll = () => {
         if (targetSectionId) {
           const el = document.getElementById(targetSectionId);
           if (el) {
@@ -111,24 +107,26 @@ export default function HomePage() {
             return;
           }
         }
-        if (savedY) {
+        if (savedY && Number(savedY) > 0) {
           window.scrollTo({ top: Number(savedY), behavior: 'instant' });
         }
       };
 
-      // Execute immediately on mount to prevent any footer glimpse
-      performScroll();
+      // 1. Execute synchronously before paint
+      applyScroll();
 
-      // Double-check after DOM rendering and layout paint
-      const raf = requestAnimationFrame(performScroll);
-      const timer = setTimeout(performScroll, 60);
+      // 2. Micro-task & animation frame re-check
+      const raf = requestAnimationFrame(applyScroll);
+      const timer = setTimeout(() => {
+        applyScroll();
+        sessionStorage.removeItem('home_scroll_target');
+        sessionStorage.removeItem('home_scroll_y');
+      }, 100);
 
       return () => {
         cancelAnimationFrame(raf);
         clearTimeout(timer);
       };
-    } else {
-      window.scrollTo({ top: 0, behavior: 'instant' });
     }
   }, []);
 
