@@ -12,6 +12,8 @@ import { CallToActionBanner } from '@/components/CallToActionBanner';
 import { useApp } from '@/context/AppContext';
 import { getClientPropertiesCache, setClientPropertiesCache } from '@/lib/clientPropertiesCache';
 
+const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? React.useLayoutEffect : React.useEffect;
+
 function PropertySearchContent() {
   const { user, openAuthModal, showToast } = useApp();
   const searchParams = useSearchParams();
@@ -25,6 +27,13 @@ function PropertySearchContent() {
   const urlType = searchParams.get('type') || 'all';
   const urlBedrooms = searchParams.get('bedrooms') || 'all';
   const urlVerified = searchParams.get('verified') === 'true';
+
+  // Always reset scroll to top immediately when entering or filtering properties
+  useIsomorphicLayoutEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+  }, [urlCategory, urlCity, urlType]);
 
   const isBuyOrSell = (c: string) => c === 'buy' || c === 'sell';
   const defaultRentMax = 1500000; // 15 Lakh
@@ -228,18 +237,14 @@ function PropertySearchContent() {
 
   return (
     <div className="bg-[#050806] text-gray-100 min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6 min-h-[85vh]">
         {/* Top Back Navigation Bar & Breadcrumbs */}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <button
             type="button"
             suppressHydrationWarning
             onClick={() => {
-              if (typeof window !== 'undefined' && window.history.length > 1) {
-                router.back();
-              } else {
-                router.push('/');
-              }
+              router.push('/');
             }}
             className="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-[#0a140f] border border-emerald-900/80 hover:border-emerald-500 hover:bg-[#0f2219] text-gray-200 hover:text-white text-xs font-bold transition-all shadow-md active:scale-95 group cursor-pointer"
           >

@@ -26,6 +26,12 @@ export default function PropertyDetailPage() {
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+  }, [id]);
+
+  useEffect(() => {
     async function fetchProperty() {
       if (!id) return;
       try {
