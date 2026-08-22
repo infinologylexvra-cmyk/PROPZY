@@ -191,7 +191,7 @@ export default function PostPropertyPage() {
     { label: 'Cozy Room', url: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=800&q=80' }
   ];
 
-  const maxSellImages = 6;
+  const maxSellImages = 10;
   const maxImagesReached = images.length >= maxSellImages;
 
   const validateImageSource = (src: string) => {
