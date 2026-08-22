@@ -55,8 +55,8 @@ export async function POST(req: NextRequest) {
 
     if (!cloudName || !apiKey || !apiSecret) {
       return NextResponse.json(
-        { success: false, message: 'Cloudinary credentials are not configured on server (.env.local).' },
-        { status: 500 }
+        { success: false, isConfigured: false, message: 'Cloudinary credentials are not configured. Using client optimization fallback.' },
+        { status: 200 }
       );
     }
 
@@ -73,6 +73,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
+      isConfigured: true,
       signature,
       timestamp,
       apiKey,
@@ -80,10 +81,10 @@ export async function POST(req: NextRequest) {
       folder,
     });
   } catch (error: any) {
-    console.error('Error generating Cloudinary upload signature:', error);
+    console.warn('Notice: Cloudinary upload signature bypassed, using local fallback:', error?.message);
     return NextResponse.json(
-      { success: false, message: error.message || 'Failed to generate upload signature' },
-      { status: 500 }
+      { success: false, isConfigured: false, message: error?.message || 'Using local image optimization fallback' },
+      { status: 200 }
     );
   }
 }
