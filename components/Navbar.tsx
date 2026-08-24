@@ -103,7 +103,7 @@ function NavbarContent() {
   const currentWishlist = mounted ? wishlist : [];
 
   return (
-    <header className="sticky top-0 z-50 bg-[#060907]/95 backdrop-blur-xl border-b border-emerald-950/60 overflow-hidden">
+    <header className="sticky top-0 z-50 bg-[#060907]/95 backdrop-blur-xl border-b border-emerald-950/60">
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           <div className="flex items-center space-x-4 md:space-x-8 lg:space-x-12 shrink-0">
@@ -220,7 +220,7 @@ function NavbarContent() {
                 </button>
                 {/* Profile Dropdown */}
                 {isProfileMenuOpen && (
-                  <div className="absolute right-0 mt-3 w-56 bg-[#0a110d] rounded-2xl shadow-2xl border border-emerald-900/70 p-2 space-y-1 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="absolute right-0 top-full mt-2 w-56 bg-[#0a110d] rounded-2xl shadow-2xl border border-emerald-900/80 p-2 space-y-1 z-[60] backdrop-blur-xl animate-in fade-in slide-in-from-top-2 duration-200">
                     {currentUser.role === 'admin' ? (
                       <>
                         <div className="px-4 py-2 border-b border-emerald-950 text-[10px] font-extrabold text-emerald-400 uppercase tracking-wider">
@@ -395,7 +395,7 @@ function NavbarContent() {
               ))}
             </div>
 
-            {!currentUser && (
+            {!currentUser ? (
               <button
                 type="button"
                 onClick={() => {
@@ -407,6 +407,29 @@ function NavbarContent() {
                 <User size={14} className="stroke-[2.5]" />
                 <span>Login or Create Free Account</span>
               </button>
+            ) : (
+              <div className="pt-2 border-t border-emerald-950/80 flex items-center justify-between gap-2">
+                <div className="flex items-center space-x-2">
+                  <div className="w-7 h-7 rounded-full bg-emerald-500 text-black font-extrabold flex items-center justify-center text-xs">
+                    {currentUser.name?.charAt(0) || 'U'}
+                  </div>
+                  <div className="text-xs">
+                    <div className="font-bold text-white leading-tight">{currentUser.name}</div>
+                    <div className="text-[10px] text-emerald-400 capitalize">{currentUser.role}</div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsMobileMenuOpen(false);
+                    logoutUser();
+                    router.replace('/');
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-rose-950/60 border border-rose-900/80 text-rose-300 text-xs font-bold hover:bg-rose-900 transition-colors cursor-pointer"
+                >
+                  Logout
+                </button>
+              </div>
             )}
           </div>
         </div>
