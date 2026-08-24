@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
-import { 
-  Building, ShieldCheck, MessageSquare, Users, FileText, 
+import {
+  Building, ShieldCheck, MessageSquare, Users, FileText,
   ArrowUpRight, Clock, PlusCircle, CheckCircle2, XCircle, Search, Sparkles, RefreshCw,
   Trash2, AlertTriangle
 } from 'lucide-react';
@@ -104,9 +104,9 @@ export default function AdminOverviewPage() {
     const newStatus = !currentVerified;
 
     setProperties(prev => {
-      const updated = prev.map(p => 
-        (p._id === propertyId || p.pid === propertyId || p.id === propertyId) 
-          ? { ...p, verified: newStatus } 
+      const updated = prev.map(p =>
+        (p._id === propertyId || p.pid === propertyId || p.id === propertyId)
+          ? { ...p, verified: newStatus }
           : p
       );
       setCachedProperties(updated, true);
@@ -128,9 +128,9 @@ export default function AdminOverviewPage() {
       console.error('Verify toggle error:', e);
       // Revert optimistic update
       setProperties(prev => {
-        const reverted = prev.map(p => 
-          (p._id === propertyId || p.pid === propertyId || p.id === propertyId) 
-            ? { ...p, verified: currentVerified } 
+        const reverted = prev.map(p =>
+          (p._id === propertyId || p.pid === propertyId || p.id === propertyId)
+            ? { ...p, verified: currentVerified }
             : p
         );
         setCachedProperties(reverted, true);
@@ -385,50 +385,49 @@ export default function AdminOverviewPage() {
                 <TableSkeletonLoader rows={4} cols={7} message="Loading property queue..." />
               ) : (
                 properties.slice(0, 6).map((item) => (
-                <tr key={item.id || item.pid} className="hover:bg-[#07120a] transition-colors">
-                  <td className="p-3 font-mono font-bold text-emerald-400">{item.pid}</td>
-                  <td className="p-3 font-bold text-white max-w-xs truncate">{item.title}</td>
-                  <td className="p-3 text-gray-300">{(item.locality || '')}, {(item.city || '')}</td>
-                  <td className="p-3 font-bold text-emerald-400">₹{(item.price || 0).toLocaleString('en-IN')}</td>
-                  <td className="p-3 font-mono text-gray-300">{item.ownerPhone || '+91 98765 43210'}</td>
-                  <td className="p-3">
-                    {item.verified ? (
-                      <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800 text-[10px] font-extrabold">
-                        <CheckCircle2 size={12} />
-                        <span>VERIFIED</span>
-                      </span>
-                    ) : (
-                      <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full bg-amber-950 text-amber-400 border border-amber-800 text-[10px] font-extrabold">
-                        <Clock size={12} />
-                        <span>PENDING</span>
-                      </span>
-                    )}
-                  </td>
-                  <td className="p-3 text-right">
-                    <div className="flex items-center justify-end space-x-2">
-                      <button
-                        disabled={Boolean(actionPendingId)}
-                        onClick={() => handleVerifyToggle(item.pid || item._id || item.id, !!item.verified)}
-                        className={`px-3 py-1 rounded-xl text-[11px] font-extrabold border transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
-                          item.verified
-                            ? 'bg-[#140b0d] text-rose-400 border-rose-900/80 hover:bg-rose-950'
-                            : 'bg-emerald-500 hover:bg-emerald-400 text-black border-emerald-500'
-                        }`}
-                      >
-                        {item.verified ? 'Unverify' : 'Verify Now'}
-                      </button>
+                  <tr key={item.id || item.pid} className="hover:bg-[#07120a] transition-colors">
+                    <td className="p-3 font-mono font-bold text-emerald-400">{item.pid}</td>
+                    <td className="p-3 font-bold text-white max-w-xs truncate">{item.title}</td>
+                    <td className="p-3 text-gray-300">{(item.locality || '')}, {(item.city || '')}</td>
+                    <td className="p-3 font-bold text-emerald-400">₹{(item.price || 0).toLocaleString('en-IN')}</td>
+                    <td className="p-3 font-mono text-gray-300">{item.ownerPhone || '+91 98765 43210'}</td>
+                    <td className="p-3">
+                      {item.verified ? (
+                        <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800 text-[10px] font-extrabold">
+                          <CheckCircle2 size={12} />
+                          <span>VERIFIED</span>
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full bg-amber-950 text-amber-400 border border-amber-800 text-[10px] font-extrabold">
+                          <Clock size={12} />
+                          <span>PENDING</span>
+                        </span>
+                      )}
+                    </td>
+                    <td className="p-3 text-right">
+                      <div className="flex items-center justify-end space-x-2">
+                        <button
+                          disabled={Boolean(actionPendingId)}
+                          onClick={() => handleVerifyToggle(item.pid || item._id || item.id, !!item.verified)}
+                          className={`px-3 py-1 rounded-xl text-[11px] font-extrabold border transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${item.verified
+                              ? 'bg-[#140b0d] text-rose-400 border-rose-900/80 hover:bg-rose-950'
+                              : 'bg-emerald-500 hover:bg-emerald-400 text-black border-emerald-500'
+                            }`}
+                        >
+                          {item.verified ? 'Unverify' : 'Verify Now'}
+                        </button>
 
-                      <button
-                        disabled={Boolean(actionPendingId)}
-                        onClick={() => setPropertyPendingDeletion(item)}
-                        className="p-1.5 rounded-xl bg-[#140b0d] text-rose-400 hover:text-white hover:bg-rose-600 border border-rose-900/80 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                        title="Delete Property"
-                      >
-                        <Trash2 size={13} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
+                        <button
+                          disabled={Boolean(actionPendingId)}
+                          onClick={() => setPropertyPendingDeletion(item)}
+                          className="p-1.5 rounded-xl bg-[#140b0d] text-rose-400 hover:text-white hover:bg-rose-600 border border-rose-900/80 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                          title="Delete Property"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
                 ))
               )}
             </tbody>

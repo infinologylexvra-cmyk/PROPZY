@@ -3,8 +3,8 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { 
-  LayoutDashboard, Building, MessageSquare, Users, FileText, 
+import {
+  LayoutDashboard, Building, MessageSquare, Users, FileText,
   ArrowLeft, Home, ShieldCheck, Sparkles, ChevronRight, LogOut, XCircle, AlertTriangle
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
@@ -33,7 +33,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen = true, onClo
     setIsExiting(true);
     try {
       logoutUser();
-    } catch (e) {}
+    } catch (e) { }
     window.location.href = '/';
   };
 
@@ -47,12 +47,12 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen = true, onClo
               <div className="w-9 h-9 rounded-xl bg-emerald-500 flex items-center justify-center text-black shadow-lg shadow-emerald-500/25 group-hover:scale-105 transition-transform">
                 <Home size={20} className="stroke-[2.5]" />
               </div>
-              <div className="flex flex-col">
+              <div className="flex flex-col leading-none">
                 <span className="text-base font-extrabold tracking-wider uppercase text-white font-sans">
                   PROP<span className="text-emerald-400">ZY</span>
                 </span>
-                <span className="text-[10px] font-extrabold tracking-widest text-emerald-400 uppercase -mt-1">
-                  Admin Panel
+                <span className="text-[8px] font-extrabold tracking-widest text-emerald-400 uppercase mt-0.5">
+                  TRICITY • ADMIN
                 </span>
               </div>
             </Link>
@@ -84,11 +84,10 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen = true, onClo
                   key={item.href}
                   href={item.href}
                   onClick={onClose}
-                  className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
-                    isActive
+                  className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${isActive
                       ? 'bg-emerald-950/80 text-emerald-400 border border-emerald-800/60 shadow-md font-bold'
                       : 'text-gray-400 hover:text-white hover:bg-[#0b1610]'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center space-x-3">
                     <Icon size={18} className={isActive ? 'text-emerald-400' : 'text-gray-400'} />

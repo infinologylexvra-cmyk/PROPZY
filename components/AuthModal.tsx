@@ -2,18 +2,18 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { 
-  X, Mail, Lock, User, ShieldCheck, UserCheck, KeyRound, Building, 
-  Home, ArrowRight, Eye, EyeOff, Check, CheckCircle2, XCircle, AlertCircle, MapPin 
+import {
+  X, Mail, Lock, User, ShieldCheck, UserCheck, KeyRound, Building,
+  Home, ArrowRight, Eye, EyeOff, Check, CheckCircle2, XCircle, AlertCircle, MapPin
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { GoogleAuthButton } from '@/components/GoogleAuthButton';
 import { UserProfile } from '@/store/useAppStore';
-import { 
-  sanitizeName, 
-  sanitizePhone, 
-  isValidName, 
-  isValidPhone, 
+import {
+  sanitizeName,
+  sanitizePhone,
+  isValidName,
+  isValidPhone,
   isValidEmail,
   checkPasswordCriteria,
   isValidStrongPassword,
@@ -40,7 +40,7 @@ export const AuthModal: React.FC = () => {
   const [showLoginPassword, setShowLoginPassword] = useState(false);
   const [showRegisterPassword, setShowRegisterPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  
+
   // Login Form State
   const [loginIdentifier, setLoginIdentifier] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
@@ -230,7 +230,7 @@ export const AuthModal: React.FC = () => {
               <UserCheck size={14} />
               <span>Role: {user.role.toUpperCase()}</span>
             </div>
-            
+
             <div className="pt-4 border-t border-emerald-950 space-y-3">
               <button
                 onClick={() => navigateByRole(user.role, true)}
@@ -265,22 +265,20 @@ export const AuthModal: React.FC = () => {
               <button
                 type="button"
                 onClick={() => { setMode('login'); setError(''); }}
-                className={`flex-1 py-2.5 rounded-xl transition-all ${
-                  mode === 'login'
+                className={`flex-1 py-2.5 rounded-xl transition-all ${mode === 'login'
                     ? 'bg-emerald-500 text-black font-extrabold shadow-md'
                     : 'text-gray-400 hover:text-white'
-                }`}
+                  }`}
               >
                 Sign In / Login
               </button>
               <button
                 type="button"
                 onClick={() => { setMode('register'); setError(''); }}
-                className={`flex-1 py-2.5 rounded-xl transition-all ${
-                  mode === 'register'
+                className={`flex-1 py-2.5 rounded-xl transition-all ${mode === 'register'
                     ? 'bg-emerald-500 text-black font-extrabold shadow-md'
                     : 'text-gray-400 hover:text-white'
-                }`}
+                  }`}
               >
                 Register / Sign Up
               </button>
@@ -406,11 +404,10 @@ export const AuthModal: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setRegisterRole('tenant')}
-                      className={`p-3 rounded-2xl border text-left flex flex-col justify-between transition-all cursor-pointer ${
-                        registerRole === 'tenant'
+                      className={`p-3 rounded-2xl border text-left flex flex-col justify-between transition-all cursor-pointer ${registerRole === 'tenant'
                           ? 'bg-[#0b2619] border-emerald-500 text-white font-extrabold shadow-md'
                           : 'bg-[#050806] border-emerald-950 text-gray-400 hover:text-gray-200'
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center space-x-1.5 mb-1">
                         <Home size={16} className={registerRole === 'tenant' ? 'text-emerald-400' : 'text-gray-500'} />
@@ -422,11 +419,10 @@ export const AuthModal: React.FC = () => {
                     <button
                       type="button"
                       onClick={() => setRegisterRole('owner')}
-                      className={`p-3 rounded-2xl border text-left flex flex-col justify-between transition-all cursor-pointer ${
-                        registerRole === 'owner'
+                      className={`p-3 rounded-2xl border text-left flex flex-col justify-between transition-all cursor-pointer ${registerRole === 'owner'
                           ? 'bg-[#0b2619] border-emerald-500 text-white font-extrabold shadow-md'
                           : 'bg-[#050806] border-emerald-950 text-gray-400 hover:text-gray-200'
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center space-x-1.5 mb-1">
                         <Building size={16} className={registerRole === 'owner' ? 'text-emerald-400' : 'text-gray-500'} />
@@ -493,13 +489,12 @@ export const AuthModal: React.FC = () => {
                 {/* Password */}
                 <div>
                   <label className="block text-xs font-semibold text-gray-300 mb-1">Create Password</label>
-                  <div className={`flex items-center border bg-[#050806] rounded-xl overflow-hidden transition-all pr-2 ${
-                    password.length > 0
+                  <div className={`flex items-center border bg-[#050806] rounded-xl overflow-hidden transition-all pr-2 ${password.length > 0
                       ? checkPasswordCriteria(password).isValid
                         ? 'border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.2)]'
                         : 'border-amber-700/80 focus-within:border-amber-400'
                       : 'border-emerald-900/80 focus-within:border-emerald-500'
-                  }`}>
+                    }`}>
                     <span className="px-3 text-emerald-400">
                       <Lock size={16} />
                     </span>
@@ -533,8 +528,8 @@ export const AuthModal: React.FC = () => {
                             criteria.score <= 2
                               ? 'text-rose-400 font-extrabold'
                               : criteria.score <= 4
-                              ? 'text-amber-400 font-extrabold'
-                              : 'text-emerald-400 font-extrabold flex items-center space-x-1'
+                                ? 'text-amber-400 font-extrabold'
+                                : 'text-emerald-400 font-extrabold flex items-center space-x-1'
                           }>
                             {criteria.score <= 1 && 'Weak (Incomplete)'}
                             {criteria.score === 2 && 'Fair (Weak)'}
@@ -549,15 +544,14 @@ export const AuthModal: React.FC = () => {
                           {Array.from({ length: 5 }).map((_, idx) => (
                             <div
                               key={idx}
-                              className={`h-full rounded-full transition-all duration-300 ${
-                                idx < criteria.score
+                              className={`h-full rounded-full transition-all duration-300 ${idx < criteria.score
                                   ? criteria.score <= 2
                                     ? 'bg-rose-500 shadow-[0_0_6px_rgba(244,63,94,0.6)]'
                                     : criteria.score <= 4
-                                    ? 'bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.6)]'
-                                    : 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]'
+                                      ? 'bg-amber-400 shadow-[0_0_6px_rgba(251,191,36,0.6)]'
+                                      : 'bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]'
                                   : 'bg-emerald-950/70 border border-emerald-900/30'
-                              }`}
+                                }`}
                             />
                           ))}
                         </div>
@@ -597,13 +591,12 @@ export const AuthModal: React.FC = () => {
                 {/* Confirm Password */}
                 <div>
                   <label className="block text-xs font-semibold text-gray-300 mb-1">Confirm Password</label>
-                  <div className={`flex items-center border bg-[#050806] rounded-xl overflow-hidden transition-all pr-2 ${
-                    confirmPassword.length > 0
+                  <div className={`flex items-center border bg-[#050806] rounded-xl overflow-hidden transition-all pr-2 ${confirmPassword.length > 0
                       ? password === confirmPassword
                         ? 'border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.2)]'
                         : 'border-rose-700/80 focus-within:border-rose-400'
                       : 'border-emerald-900/80 focus-within:border-emerald-500'
-                  }`}>
+                    }`}>
                     <span className="px-3 text-emerald-400">
                       <KeyRound size={16} />
                     </span>

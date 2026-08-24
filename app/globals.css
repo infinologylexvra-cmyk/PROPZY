@@ -5,11 +5,13 @@
   --foreground: #f3f4f6;
 }
 
+html,
 body {
+  max-width: 100vw;
+  overflow-x: hidden;
   background-color: #050806;
   color: #f3f4f6;
   font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
-  overflow-x: hidden;
 }
 
 .font-serif {

@@ -51,7 +51,7 @@ export default function RootLayout({
           <HideOnRoute prefix="/admin">
             <Navbar />
           </HideOnRoute>
-          <main className="flex-1">
+          <main className="flex-1 w-full max-w-full overflow-x-hidden">
             {children}
           </main>
           <HideOnRoute prefix="/admin">

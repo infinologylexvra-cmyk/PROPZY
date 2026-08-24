@@ -103,10 +103,10 @@ function NavbarContent() {
   const currentWishlist = mounted ? wishlist : [];
 
   return (
-    <header className="sticky top-0 z-50 bg-[#060907]/95 backdrop-blur-xl border-b border-emerald-950/60">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-50 bg-[#060907]/95 backdrop-blur-xl border-b border-emerald-950/60 overflow-hidden">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
-          <div className="flex items-center space-x-8 md:space-x-10 lg:space-x-12 shrink-0">
+          <div className="flex items-center space-x-4 md:space-x-8 lg:space-x-12 shrink-0">
             {/* Brand Logo */}
             <Link
               href="/"
@@ -120,14 +120,19 @@ function NavbarContent() {
                   }
                 }
               }}
-              className="flex items-center space-x-2.5 group shrink-0"
+              className="flex items-center space-x-2 sm:space-x-2.5 group shrink-0"
             >
-              <div className="w-9 h-9 rounded-xl bg-emerald-500 flex items-center justify-center text-black shadow-lg shadow-emerald-500/25 group-hover:scale-105 transition-transform">
-                <Home size={20} className="stroke-[2.5]" />
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-emerald-500 flex items-center justify-center text-black shadow-lg shadow-emerald-500/25 group-hover:scale-105 transition-transform shrink-0">
+                <Home size={18} className="stroke-[2.5]" />
               </div>
-              <span className="text-xl font-extrabold tracking-wider uppercase text-white font-sans">
-                PROP<span className="text-emerald-400">ZY</span>
-              </span>
+              <div className="flex flex-col leading-none">
+                <span className="text-base sm:text-xl font-extrabold tracking-wider uppercase text-white font-sans">
+                  PROP<span className="text-emerald-400">ZY</span>
+                </span>
+                <span className="text-[8px] sm:text-[9px] font-extrabold tracking-widest text-emerald-400 uppercase mt-0.5">
+                  TRICITY
+                </span>
+              </div>
             </Link>
 
             {/* Center Navigation Links with Smooth Sliding Animated Underline */}
@@ -144,8 +149,8 @@ function NavbarContent() {
                     data-nav-key={item.key}
                     onClick={() => setActiveItem(item.key)}
                     className={`py-1 transition-colors duration-200 ${isActive
-                        ? 'text-emerald-400 font-extrabold'
-                        : 'text-gray-300 hover:text-emerald-400'
+                      ? 'text-emerald-400 font-extrabold'
+                      : 'text-gray-300 hover:text-emerald-400'
                       }`}
                   >
                     {item.label}
@@ -323,14 +328,14 @@ function NavbarContent() {
                 )}
               </div>
             ) : (
-              <div className="flex items-center space-x-2 shrink-0">
+              <div className="flex items-center space-x-1.5 sm:space-x-2 shrink-0">
                 <button
                   type="button"
                   suppressHydrationWarning
                   onClick={openAuthModal}
-                  className="inline-flex items-center justify-center space-x-1.5 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-[11px] sm:text-xs tracking-wide transition-all cursor-pointer shadow-md shadow-emerald-500/20 active:scale-95 whitespace-nowrap shrink-0"
+                  className="inline-flex items-center justify-center space-x-1 sm:space-x-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-[11px] sm:text-xs tracking-wide transition-all cursor-pointer shadow-md shadow-emerald-500/20 active:scale-95 whitespace-nowrap shrink-0"
                 >
-                  <User size={13} className="stroke-[2.5]" />
+                  <User size={12} className="stroke-[2.5] hidden xs:inline" />
                   <span>Login / Sign Up</span>
                 </button>
               </div>
@@ -381,8 +386,8 @@ function NavbarContent() {
                     setIsMobileMenuOpen(false);
                   }}
                   className={`px-3 py-2.5 rounded-xl text-xs font-bold transition-all text-center flex items-center justify-center ${activeItem === item.key
-                      ? 'bg-emerald-950/90 text-emerald-400 border border-emerald-800/60 shadow-sm'
-                      : 'bg-[#0b140f] text-gray-300 hover:text-emerald-400 hover:bg-emerald-950/40 border border-transparent hover:border-emerald-900/40'
+                    ? 'bg-emerald-950/90 text-emerald-400 border border-emerald-800/60 shadow-sm'
+                    : 'bg-[#0b140f] text-gray-300 hover:text-emerald-400 hover:bg-emerald-950/40 border border-transparent hover:border-emerald-900/40'
                     }`}
                 >
                   {item.label}

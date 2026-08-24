@@ -3,8 +3,8 @@
 import React from 'react';
 import { Building2, Loader2, Sparkles } from 'lucide-react';
 
-export const BrandSpinner: React.FC<{ 
-  message?: string; 
+export const BrandSpinner: React.FC<{
+  message?: string;
   size?: 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
 }> = ({
@@ -12,118 +12,118 @@ export const BrandSpinner: React.FC<{
   size = 'md',
   className = ''
 }) => {
-  const sizeClasses = {
-    sm: 'w-7 h-7 border-2',
-    md: 'w-11 h-11 border-3',
-    lg: 'w-16 h-16 border-4',
-    xl: 'w-20 h-20 border-4'
-  }[size];
+    const sizeClasses = {
+      sm: 'w-7 h-7 border-2',
+      md: 'w-11 h-11 border-3',
+      lg: 'w-16 h-16 border-4',
+      xl: 'w-20 h-20 border-4'
+    }[size];
 
-  const iconSizes = {
-    sm: 12,
-    md: 18,
-    lg: 26,
-    xl: 32
-  }[size];
+    const iconSizes = {
+      sm: 12,
+      md: 18,
+      lg: 26,
+      xl: 32
+    }[size];
 
-  return (
-    <div className={`flex flex-col items-center justify-center p-6 sm:p-8 space-y-3.5 ${className}`}>
-      <div className="relative flex items-center justify-center">
-        {/* Ambient glow background */}
-        <div className="absolute inset-0 rounded-full bg-emerald-500/20 blur-md animate-pulse" />
-        
-        {/* Outer glowing ring spinner */}
-        <div className={`${sizeClasses} border-emerald-950 border-t-emerald-400 border-r-emerald-500 rounded-full animate-spin shadow-[0_0_15px_rgba(16,185,129,0.3)]`} />
-        
-        {/* Inner static building / sparkles icon */}
-        <div className="absolute inset-0 flex items-center justify-center text-emerald-400">
-          <Building2 size={iconSizes} className="animate-pulse" />
+    return (
+      <div className={`flex flex-col items-center justify-center p-6 sm:p-8 space-y-3.5 ${className}`}>
+        <div className="relative flex items-center justify-center">
+          {/* Ambient glow background */}
+          <div className="absolute inset-0 rounded-full bg-emerald-500/20 blur-md animate-pulse" />
+
+          {/* Outer glowing ring spinner */}
+          <div className={`${sizeClasses} border-emerald-950 border-t-emerald-400 border-r-emerald-500 rounded-full animate-spin shadow-[0_0_15px_rgba(16,185,129,0.3)]`} />
+
+          {/* Inner static building / sparkles icon */}
+          <div className="absolute inset-0 flex items-center justify-center text-emerald-400">
+            <Building2 size={iconSizes} className="animate-pulse" />
+          </div>
         </div>
+
+        {message && (
+          <div className="flex items-center space-x-1.5 text-center">
+            <p className="text-xs font-bold text-gray-300 tracking-wider animate-pulse font-mono uppercase">
+              {message}
+            </p>
+          </div>
+        )}
       </div>
+    );
+  };
 
-      {message && (
-        <div className="flex items-center space-x-1.5 text-center">
-          <p className="text-xs font-bold text-gray-300 tracking-wider animate-pulse font-mono uppercase">
-            {message}
-          </p>
-        </div>
-      )}
-    </div>
-  );
-};
-
-export const PageLoader: React.FC<{ 
+export const PageLoader: React.FC<{
   message?: string;
   subMessage?: string;
 }> = ({
   message = 'Loading Propzy Platform...',
   subMessage = 'Fetching 0% brokerage verified properties & directory...'
 }) => {
-  return (
-    <div className="min-h-[50vh] flex-1 flex flex-col items-center justify-center p-6 sm:p-12 text-center">
-      <div className="relative mb-6">
-        <div className="w-20 h-20 rounded-3xl bg-[#091811] border border-emerald-800/80 flex items-center justify-center shadow-[0_0_30px_rgba(16,185,129,0.2)]">
-          <Building2 size={36} className="text-emerald-400 animate-pulse" />
+    return (
+      <div className="min-h-[50vh] flex-1 flex flex-col items-center justify-center p-6 sm:p-12 text-center">
+        <div className="relative mb-6">
+          <div className="w-20 h-20 rounded-3xl bg-[#091811] border border-emerald-800/80 flex items-center justify-center shadow-[0_0_30px_rgba(16,185,129,0.2)]">
+            <Building2 size={36} className="text-emerald-400 animate-pulse" />
+          </div>
+          <div className="absolute -bottom-2 -right-2 w-7 h-7 rounded-full bg-emerald-500 text-black flex items-center justify-center shadow-lg">
+            <Loader2 size={16} className="animate-spin text-black" />
+          </div>
         </div>
-        <div className="absolute -bottom-2 -right-2 w-7 h-7 rounded-full bg-emerald-500 text-black flex items-center justify-center shadow-lg">
-          <Loader2 size={16} className="animate-spin text-black" />
+
+        <h3 className="text-base sm:text-lg font-extrabold text-white tracking-tight">
+          {message}
+        </h3>
+        {subMessage && (
+          <p className="text-xs text-gray-400 mt-1 max-w-sm">
+            {subMessage}
+          </p>
+        )}
+
+        {/* Animated pulsing bar */}
+        <div className="w-48 h-1.5 bg-[#0a1811] rounded-full overflow-hidden mt-6 border border-emerald-950">
+          <div className="h-full bg-gradient-to-r from-emerald-500 via-teal-300 to-emerald-400 rounded-full animate-[pulse_1.2s_ease-in-out_infinite]" />
         </div>
       </div>
+    );
+  };
 
-      <h3 className="text-base sm:text-lg font-extrabold text-white tracking-tight">
-        {message}
-      </h3>
-      {subMessage && (
-        <p className="text-xs text-gray-400 mt-1 max-w-sm">
-          {subMessage}
-        </p>
-      )}
-      
-      {/* Animated pulsing bar */}
-      <div className="w-48 h-1.5 bg-[#0a1811] rounded-full overflow-hidden mt-6 border border-emerald-950">
-        <div className="h-full bg-gradient-to-r from-emerald-500 via-teal-300 to-emerald-400 rounded-full animate-[pulse_1.2s_ease-in-out_infinite]" />
-      </div>
-    </div>
-  );
-};
-
-export const TableSkeletonLoader: React.FC<{ 
-  rows?: number; 
+export const TableSkeletonLoader: React.FC<{
+  rows?: number;
   cols?: number;
   message?: string;
-}> = ({ 
-  rows = 5, 
+}> = ({
+  rows = 5,
   cols = 5,
   message = 'Loading directory records...'
 }) => {
-  return (
-    <>
-      {Array.from({ length: rows }).map((_, rIdx) => (
-        <tr key={rIdx} className="border-b border-emerald-950/40 animate-pulse">
-          {Array.from({ length: cols }).map((_, cIdx) => (
-            <td key={cIdx} className="p-4">
-              {cIdx === 0 ? (
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 rounded-full bg-emerald-950/80 border border-emerald-900/50 shrink-0" />
-                  <div className="space-y-1.5 flex-1 max-w-[140px]">
-                    <div className="h-3.5 bg-emerald-950/70 rounded-md w-full" />
-                    <div className="h-2.5 bg-emerald-950/40 rounded-md w-3/4" />
+    return (
+      <>
+        {Array.from({ length: rows }).map((_, rIdx) => (
+          <tr key={rIdx} className="border-b border-emerald-950/40 animate-pulse">
+            {Array.from({ length: cols }).map((_, cIdx) => (
+              <td key={cIdx} className="p-4">
+                {cIdx === 0 ? (
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 rounded-full bg-emerald-950/80 border border-emerald-900/50 shrink-0" />
+                    <div className="space-y-1.5 flex-1 max-w-[140px]">
+                      <div className="h-3.5 bg-emerald-950/70 rounded-md w-full" />
+                      <div className="h-2.5 bg-emerald-950/40 rounded-md w-3/4" />
+                    </div>
                   </div>
-                </div>
-              ) : cIdx === cols - 1 ? (
-                <div className="flex justify-end">
-                  <div className="h-7 w-20 bg-emerald-950/60 border border-emerald-900/50 rounded-xl" />
-                </div>
-              ) : (
-                <div className="h-3.5 bg-emerald-950/60 rounded-md w-3/4" />
-              )}
-            </td>
-          ))}
-        </tr>
-      ))}
-    </>
-  );
-};
+                ) : cIdx === cols - 1 ? (
+                  <div className="flex justify-end">
+                    <div className="h-7 w-20 bg-emerald-950/60 border border-emerald-900/50 rounded-xl" />
+                  </div>
+                ) : (
+                  <div className="h-3.5 bg-emerald-950/60 rounded-md w-3/4" />
+                )}
+              </td>
+            ))}
+          </tr>
+        ))}
+      </>
+    );
+  };
 
 export const SkeletonPropertyCard: React.FC = () => {
   return (
@@ -141,7 +141,7 @@ export const SkeletonPropertyCard: React.FC = () => {
         </div>
         <div className="h-5 bg-[#0d2217] rounded-md w-3/4" />
         <div className="h-4 bg-[#0d2217]/70 rounded-md w-1/2" />
-        
+
         {/* Footer */}
         <div className="pt-3 border-t border-emerald-950 flex items-center justify-between">
           <div className="h-4 bg-[#0d2217] rounded-md w-1/4" />
@@ -162,19 +162,19 @@ export const SkeletonGrid: React.FC<{ count?: number }> = ({ count = 6 }) => {
   );
 };
 
-export const InlineLoader: React.FC<{ 
-  text?: string; 
+export const InlineLoader: React.FC<{
+  text?: string;
   size?: number;
   className?: string;
-}> = ({ 
-  text = 'Loading...', 
+}> = ({
+  text = 'Loading...',
   size = 14,
   className = ''
 }) => {
-  return (
-    <span className={`inline-flex items-center space-x-2 text-emerald-400 font-bold text-xs ${className}`}>
-      <Loader2 size={size} className="animate-spin text-emerald-400" />
-      {text && <span>{text}</span>}
-    </span>
-  );
-};
+    return (
+      <span className={`inline-flex items-center space-x-2 text-emerald-400 font-bold text-xs ${className}`}>
+        <Loader2 size={size} className="animate-spin text-emerald-400" />
+        {text && <span>{text}</span>}
+      </span>
+    );
+  };

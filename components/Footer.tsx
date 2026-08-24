@@ -52,9 +52,14 @@ export const Footer: React.FC = () => {
               <div className="w-9 h-9 rounded-xl bg-emerald-500 flex items-center justify-center text-black shadow-lg shadow-emerald-500/20">
                 <Home size={20} className="stroke-[2.5]" />
               </div>
-              <span className="text-xl font-extrabold tracking-wider uppercase text-white font-sans">
-                PROP<span className="text-emerald-400">ZY</span>
-              </span>
+              <div className="flex flex-col leading-none">
+                <span className="text-xl font-extrabold tracking-wider uppercase text-white font-sans">
+                  PROP<span className="text-emerald-400">ZY</span>
+                </span>
+                <span className="text-[9px] font-extrabold tracking-widest text-emerald-400 uppercase mt-0.5">
+                  TRICITY
+                </span>
+              </div>
             </Link>
 
             <p className="text-xs text-gray-400 leading-relaxed">
