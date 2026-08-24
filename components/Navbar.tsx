@@ -323,14 +323,15 @@ function NavbarContent() {
                 )}
               </div>
             ) : (
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 shrink-0">
                 <button
                   type="button"
                   suppressHydrationWarning
                   onClick={openAuthModal}
-                  className="px-4 py-2 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs transition-all cursor-pointer shadow-md"
+                  className="inline-flex items-center justify-center space-x-1.5 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-[11px] sm:text-xs tracking-wide transition-all cursor-pointer shadow-md shadow-emerald-500/20 active:scale-95 whitespace-nowrap shrink-0"
                 >
-                  Login / Sign Up
+                  <User size={13} className="stroke-[2.5]" />
+                  <span>Login / Sign Up</span>
                 </button>
               </div>
             )}
@@ -340,7 +341,7 @@ function NavbarContent() {
               type="button"
               suppressHydrationWarning
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="xl:hidden p-2 rounded-xl text-gray-300 hover:text-white hover:bg-emerald-950 focus:outline-none transition-colors cursor-pointer border border-transparent hover:border-emerald-900/60"
+              className="xl:hidden p-2 rounded-xl text-gray-300 hover:text-white hover:bg-emerald-950 focus:outline-none transition-colors cursor-pointer border border-transparent hover:border-emerald-900/60 shrink-0"
               aria-label={isMobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
               aria-expanded={isMobileMenuOpen}
             >
@@ -369,7 +370,7 @@ function NavbarContent() {
       {/* Mobile/Tablet/Laptop Navigation Drawer */}
       {isMobileMenuOpen && (
         <div className="xl:hidden bg-[#070d09]/98 backdrop-blur-xl border-b border-emerald-950/80 px-4 sm:px-6 lg:px-8 pt-3 pb-4 animate-in fade-in slide-in-from-top-4 duration-200 shadow-2xl">
-          <div className="max-w-7xl mx-auto">
+          <div className="max-w-7xl mx-auto space-y-3">
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
               {navItems.map((item) => (
                 <Link
@@ -388,6 +389,20 @@ function NavbarContent() {
                 </Link>
               ))}
             </div>
+
+            {!currentUser && (
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  openAuthModal();
+                }}
+                className="w-full py-2.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs flex items-center justify-center space-x-2 shadow-lg shadow-emerald-500/20 transition-all cursor-pointer"
+              >
+                <User size={14} className="stroke-[2.5]" />
+                <span>Login or Create Free Account</span>
+              </button>
+            )}
           </div>
         </div>
       )}

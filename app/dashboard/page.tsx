@@ -682,7 +682,7 @@ function DashboardContent() {
                   <div className="flex-1 min-w-0">
                     <span className="text-gray-500 font-medium block text-[11px] mb-0.5">Account Role</span>
                     <span className="text-sm font-bold text-emerald-400 truncate block">
-                      {user.role === 'owner' ? 'Property Owner / Landlord' : 'Tenant Account'}
+                      {user.role === 'owner' ? 'Property Owner' : 'Tenant Account'}
                     </span>
                   </div>
                 </div>
@@ -740,7 +740,7 @@ function DashboardContent() {
                 <div className="space-y-1">
                   <label className="block text-gray-300 font-semibold">Account Type / Role</label>
                   <div className="w-full px-4 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white font-bold capitalize flex items-center justify-between">
-                    <span className="text-emerald-400 font-extrabold">{user.role === 'owner' ? 'Property Owner / Landlord' : 'Tenant Account'}</span>
+                    <span className="text-emerald-400 font-extrabold">{user.role === 'owner' ? 'Property Owner' : 'Tenant Account'}</span>
                     <span className="text-[10px] bg-emerald-950 border border-emerald-800 text-emerald-300 px-2.5 py-0.5 rounded-full font-mono uppercase">
                       {user.role}
                     </span>
@@ -1174,7 +1174,7 @@ function DashboardContent() {
                       </span>
                       <strong className="text-white">{inq.propertyTitle}</strong>
                       <div className="text-gray-400 mt-1">
-                        Tenant: <strong className="text-white">{inq.tenantName}</strong> ({inq.tenantPhone})
+                        Tenant: <strong className="text-white">{inq.tenantName}</strong>
                       </div>
                     </div>
 

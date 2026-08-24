@@ -17,7 +17,7 @@ export default function SafetySecurityPage() {
     {
       icon: Key,
       title: 'Direct 0% Brokerage Guarantee',
-      desc: 'Eliminating third-party brokers ensures transparent transactions directly between verified landlords and prospective tenants.',
+      desc: 'Eliminating third-party brokers ensures transparent transactions directly between verified property owners and prospective tenants.',
     },
     {
       icon: Lock,

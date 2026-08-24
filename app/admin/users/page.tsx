@@ -50,13 +50,15 @@ export default function AdminUsersPage() {
   });
 
   const filteredUsers = users.filter((u) => {
-    if (roleFilter !== 'all' && u.role !== roleFilter) return false;
+    const roleKey = (u.role || '').toLowerCase();
+    const normalizedRole = roleKey.includes('admin') ? 'admin' : roleKey.includes('owner') || roleKey.includes('landlord') ? 'owner' : 'tenant';
+    if (roleFilter !== 'all' && normalizedRole !== roleFilter) return false;
     if (searchTerm) {
       const q = searchTerm.toLowerCase();
       const matchName = (u.name || '').toLowerCase().includes(q);
       const matchEmail = (u.email || '').toLowerCase().includes(q);
       const matchPhone = (u.phone || '').includes(q);
-      const matchRole = (u.role || '').toLowerCase().includes(q);
+      const matchRole = normalizedRole.includes(q);
       if (!matchName && !matchEmail && !matchPhone && !matchRole) return false;
     }
     return true;
@@ -68,10 +70,10 @@ export default function AdminUsersPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-emerald-950/80 pb-6">
         <div>
           <h1 className="text-3xl font-extrabold text-white tracking-tight">
-            User & Landlord Directory
+            User Directory
           </h1>
           <p className="text-xs text-gray-400 mt-1">
-            Registered owners, landlords, tenants, and admin account permissions.
+            Registered property owners, tenants, and admin account permissions.
           </p>
         </div>
 
@@ -131,7 +133,7 @@ export default function AdminUsersPage() {
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-gray-300">
+          <table className="w-full min-w-[650px] text-left text-xs text-gray-300">
             <thead className="bg-[#050806] text-gray-400 font-extrabold uppercase tracking-wider text-[10px] border-b border-emerald-950">
               <tr>
                 <th className="p-3.5">User Profile</th>
@@ -153,49 +155,56 @@ export default function AdminUsersPage() {
                   </td>
                 </tr>
               ) : (
-                filteredUsers.map((u) => (
-                  <tr key={u.id || u._id || u.email} className="hover:bg-[#07120a] transition-colors">
-                    <td className="p-3.5 flex items-center space-x-3">
-                      <div className="w-8 h-8 rounded-full bg-emerald-500 text-black font-extrabold flex items-center justify-center text-xs shadow">
-                        {(u.name || 'U').charAt(0).toUpperCase()}
-                      </div>
-                      <div>
-                        <div className="font-bold text-white flex items-center space-x-1.5">
-                          <span>{u.name || 'Anonymous User'}</span>
-                          {u.ownerVerified && (
-                            <span className="text-[9px] bg-emerald-950 text-emerald-400 border border-emerald-800 px-1.5 py-0.2 rounded-full font-bold">
-                              Verified
-                            </span>
-                          )}
+                filteredUsers.map((u) => {
+                  const roleKey = (u.role || '').toLowerCase();
+                  const isAdmin = roleKey.includes('admin');
+                  const isOwner = roleKey.includes('owner') || roleKey.includes('landlord');
+                  const displayRole = isAdmin ? 'Admin' : isOwner ? 'Owner' : 'Tenant';
+
+                  return (
+                    <tr key={u.id || u._id || u.email} className="hover:bg-[#07120a] transition-colors">
+                      <td className="p-3.5 flex items-center space-x-3">
+                        <div className="w-8 h-8 rounded-full bg-emerald-500 text-black font-extrabold flex items-center justify-center text-xs shadow">
+                          {(u.name || 'U').charAt(0).toUpperCase()}
                         </div>
-                        <div className="text-[10px] text-gray-400 font-mono">{u.email}</div>
-                      </div>
-                    </td>
-                    <td className="p-3.5 font-mono text-gray-300">{u.phone || 'Not provided'}</td>
-                    <td className="p-3.5 font-semibold capitalize">
-                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                        u.role === 'admin'
-                          ? 'bg-purple-950 text-purple-400 border border-purple-800'
-                          : u.role === 'owner'
-                          ? 'bg-emerald-950 text-emerald-400 border border-emerald-800'
-                          : 'bg-cyan-950 text-cyan-400 border border-cyan-800'
-                      }`}>
-                        {u.role || 'tenant'}
-                      </span>
-                    </td>
-                    <td className="p-3.5 font-bold text-white">
-                      {u.propertiesCount !== undefined ? u.propertiesCount : (u.postedProperties?.length || 0)} Listings
-                    </td>
-                    <td className="p-3.5 text-right">
-                      <button
-                        onClick={() => showToast(`User ${u.name || u.email} is active and verified`)}
-                        className="px-3 py-1 rounded-xl bg-[#0a1810] border border-emerald-900 hover:border-emerald-500 text-emerald-400 text-[10px] font-bold transition-all cursor-pointer"
-                      >
-                        Active
-                      </button>
-                    </td>
-                  </tr>
-                ))
+                        <div>
+                          <div className="font-bold text-white flex items-center space-x-1.5">
+                            <span>{u.name || 'Anonymous User'}</span>
+                            {u.ownerVerified && (
+                              <span className="text-[9px] bg-emerald-950 text-emerald-400 border border-emerald-800 px-1.5 py-0.2 rounded-full font-bold">
+                                Verified
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-[10px] text-gray-400 font-mono">{u.email}</div>
+                        </div>
+                      </td>
+                      <td className="p-3.5 font-mono text-gray-300">{u.phone || 'Not provided'}</td>
+                      <td className="p-3.5">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold whitespace-nowrap uppercase tracking-wider ${
+                          isAdmin
+                            ? 'bg-purple-950/80 text-purple-400 border border-purple-800/80'
+                            : isOwner
+                            ? 'bg-emerald-950/80 text-emerald-400 border border-emerald-800/80'
+                            : 'bg-cyan-950/80 text-cyan-400 border border-cyan-800/80'
+                        }`}>
+                          {displayRole}
+                        </span>
+                      </td>
+                      <td className="p-3.5 font-bold text-white">
+                        {u.propertiesCount !== undefined ? u.propertiesCount : (u.postedProperties?.length || 0)} Listings
+                      </td>
+                      <td className="p-3.5 text-right">
+                        <button
+                          onClick={() => showToast(`User ${u.name || u.email} is active and verified`)}
+                          className="px-3 py-1 rounded-xl bg-[#0a1810] border border-emerald-900 hover:border-emerald-500 text-emerald-400 text-[10px] font-bold transition-all cursor-pointer whitespace-nowrap"
+                        >
+                          Active
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>

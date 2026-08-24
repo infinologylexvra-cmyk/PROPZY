@@ -572,7 +572,7 @@ export default function PostPropertyPage() {
             </span>
             <h1 className="text-2xl sm:text-4xl font-extrabold text-white">Login Required to Post Property</h1>
             <p className="text-xs sm:text-sm text-gray-400 leading-relaxed max-w-md mx-auto">
-              You are currently not logged in. Posting properties on PROPZY requires a registered Property Owner / Landlord account.
+              You are currently not logged in. Posting properties on PROPZY requires a registered Property Owner account.
             </p>
           </div>
 
@@ -611,7 +611,7 @@ export default function PostPropertyPage() {
             </span>
             <h1 className="text-2xl sm:text-4xl font-extrabold text-white">Tenants Cannot Post Property Listings</h1>
             <p className="text-xs sm:text-sm text-gray-300 leading-relaxed max-w-md mx-auto">
-              You are currently logged in as a <strong className="text-amber-400 font-bold">Tenant ({user.name})</strong>. Posting property listings on PROPZY is reserved for Property Owners and Landlords.
+              You are currently logged in as a <strong className="text-amber-400 font-bold">Tenant ({user.name})</strong>. Posting property listings on PROPZY is reserved for Property Owners.
             </p>
           </div>
 

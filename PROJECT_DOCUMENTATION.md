@@ -68,7 +68,7 @@
 
 ### 3.1 User Schema ([`models/User.ts`](file:///c:/Users/amank/Desktop/LetsRentz/letsrentz-app/models/User.ts))
 
-Manages platform users, authentication credentials, roles, saved properties, and landlord verification status.
+Manages platform users, authentication credentials, roles, saved properties, and owner verification status.
 
 | Field Name | Type | Enum / Default | Description |
 | :--- | :--- | :--- | :--- |
@@ -116,7 +116,7 @@ Manages real estate property listings across rent, buy, sell, PG, and commercial
 | `images` | `Array<String>` | Required (Min: 1) | Array of Cloudinary / Unsplash image URLs |
 | `description` | `String` | Required | Detailed property overview and features |
 | `amenities` | `Array<String>` | Default: `[]` | Amenities list (Power Backup, AC, Parking, etc.) |
-| `ownerName` | `String` | Required | Property Owner / Landlord name |
+| `ownerName` | `String` | Required | Property Owner name |
 | `ownerPhone` | `String` | Required | Owner contact phone number |
 | `ownerEmail` | `String` | Default: `''`, Indexed | Owner contact email address |
 | `ownerRole` | `String` | Enum: `['owner', 'agent']` | Author role (Default: `'owner'`) |
@@ -178,10 +178,10 @@ Global client-side application state is managed with **Zustand** using `persist`
 ## 🔒 5. Key System Workflows
 
 ### 5.1 Electricity Bill Owner Verification Workflow
-To guarantee genuine 0% brokerage listings, only landlords verified via an official Electricity Bill can publish properties:
+To guarantee genuine 0% brokerage listings, only property owners verified via an official Electricity Bill can publish properties:
 
 ```
-[Landlord Profile] ──> Submits CA / Consumer No & Electricity Bill ──> Status: PENDING
+[Property Owner Profile] ──> Submits CA / Consumer No & Electricity Bill ──> Status: PENDING
                                                                               │
                                                                               ▼
                                                                 [Admin Verification Queue]
@@ -247,7 +247,7 @@ To avoid streaming heavy base64 or multipart payloads through Next.js server mem
 
 | Endpoint | Method | Access Level | Description |
 | :--- | :--- | :--- | :--- |
-| `/api/auth/register` | `POST` | Public | Registers a new tenant or landlord user account with bcrypt password hashing |
+| `/api/auth/register` | `POST` | Public | Registers a new tenant or property owner user account with bcrypt password hashing |
 | `/api/auth/login` | `POST` | Public | Authenticates credentials, issues a signed JWT, and sets 7-day HttpOnly cookie (`propzy_token`) |
 | `/api/auth/logout` | `POST` | Public | Clears the `propzy_token` HttpOnly cookie |
 | `/api/auth/me` | `GET` | Authenticated | Returns current authenticated user profile and reconciles saved wishlist with active properties |

@@ -114,7 +114,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   if (!isHydrated || !isSessionChecked || !user || user.role !== 'admin') {
     return (
       <div className="bg-[#050806] min-h-screen flex items-center justify-center">
-        <BrandSpinner message="Authenticating Admin Portal..." size="lg" />
+        <BrandSpinner message="Logging Out..." size="lg" />
       </div>
     );
   }

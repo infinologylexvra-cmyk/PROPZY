@@ -9,7 +9,7 @@ export default function PrivacyPolicyPage() {
     {
       id: '1',
       title: '1. Information We Collect',
-      content: 'We collect personal information necessary to facilitate property verification and direct owner-tenant communication. This includes your name, email address, mobile phone number, city, and property details. For landlords, we collect electricity bill documents and consumer numbers strictly for ownership verification.',
+      content: 'We collect personal information necessary to facilitate property verification and direct owner-tenant communication. This includes your name, email address, mobile phone number, city, and property details. For property owners, we collect electricity bill documents and consumer numbers strictly for ownership verification.',
     },
     {
       id: '2',
@@ -24,7 +24,7 @@ export default function PrivacyPolicyPage() {
     {
       id: '4',
       title: '4. Communication Privacy',
-      content: 'When you request property contact information or schedule a visit, your phone number and message are shared strictly with the verified landlord of that specific listing.',
+      content: 'When you request property contact information or schedule a visit, your phone number and message are shared strictly with the verified property owner of that specific listing.',
     },
     {
       id: '5',

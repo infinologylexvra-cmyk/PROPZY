@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { 
   Building, ShieldCheck, Search, Filter, RefreshCw, PlusCircle, 
-  CheckCircle2, Clock, Trash2, Edit3, Star, X, MapPin 
+  CheckCircle2, Clock, Trash2, Edit3, Star, X, MapPin, Phone, XCircle 
 } from 'lucide-react';
 import { PropertyItem, INITIAL_PROPERTIES } from '@/lib/seedData';
 import { useApp } from '@/context/AppContext';
@@ -331,19 +331,165 @@ function AdminPropertiesContent() {
           <span className="text-xs font-bold text-gray-300">
             Showing <span className="text-emerald-400 font-extrabold">{filteredProperties.length}</span> of {properties.length} Listings
           </span>
+          {loading && (
+            <span className="text-xs text-emerald-400 font-bold flex items-center space-x-1.5 animate-pulse">
+              <RefreshCw size={12} className="animate-spin" />
+              <span>Fetching properties...</span>
+            </span>
+          )}
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-gray-300">
+        {/* Mobile View: Dedicated Property Cards (sm:hidden) */}
+        <div className="block sm:hidden divide-y divide-emerald-950/60">
+          {loading && properties.length === 0 ? (
+            <div className="p-8 text-center text-gray-400 text-xs">Loading properties...</div>
+          ) : filteredProperties.length === 0 ? (
+            <div className="p-8 text-center text-gray-400 text-xs">
+              No properties match your filter criteria.
+            </div>
+          ) : (
+            filteredProperties.map((item: any) => {
+              const targetId = item.pid || item._id || item.id;
+              return (
+                <div key={`m-${targetId}`} className="p-4 space-y-3 bg-[#070e0a]/60">
+                  {/* Top Row: PID, Type & Status Badges */}
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <div className="flex items-center space-x-2">
+                      <span className="px-2.5 py-1 rounded-lg bg-emerald-950/80 border border-emerald-800/80 font-mono font-extrabold text-xs text-emerald-400">
+                        {item.pid}
+                      </span>
+                      <span className="px-2 py-0.5 rounded-full bg-[#0d1c14] border border-emerald-950 text-gray-300 text-[10px] font-semibold capitalize">
+                        {item.category} • {item.type}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center space-x-1.5 flex-wrap">
+                      {item.verified ? (
+                        <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full bg-emerald-950/90 text-emerald-400 border border-emerald-800 text-[10px] font-extrabold whitespace-nowrap">
+                          <CheckCircle2 size={11} />
+                          <span>VERIFIED</span>
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full bg-amber-950/90 text-amber-400 border border-amber-800 text-[10px] font-extrabold whitespace-nowrap">
+                          <Clock size={11} />
+                          <span>UNVERIFIED</span>
+                        </span>
+                      )}
+
+                      {item.featured && (
+                        <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full bg-purple-950/90 text-purple-400 border border-purple-800 text-[10px] font-extrabold whitespace-nowrap">
+                          <Star size={10} className="fill-purple-400" />
+                          <span>FEATURED</span>
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Title, Location & Price */}
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="font-extrabold text-white text-sm line-clamp-1">{item.title}</div>
+                      <div className="text-xs text-gray-400 mt-0.5 truncate">{item.locality}, {item.city}</div>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <div className="text-sm font-extrabold text-emerald-400 whitespace-nowrap">
+                        ₹{item.price?.toLocaleString('en-IN')}
+                      </div>
+                      <div className="text-[10px] text-gray-500 font-medium">
+                        {item.category === 'rent' || item.category === 'pg' ? '/month' : 'total'}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Owner Contact */}
+                  <div className="flex items-center justify-between py-2 px-3 rounded-xl bg-[#040805] border border-emerald-950 text-xs">
+                    <span className="text-gray-400 text-[11px]">Owner Contact:</span>
+                    <a
+                      href={`tel:${item.ownerPhone || '+919876543210'}`}
+                      className="font-mono font-bold text-emerald-400 flex items-center space-x-1.5 hover:underline whitespace-nowrap"
+                    >
+                      <Phone size={12} className="stroke-[2.5]" />
+                      <span>{item.ownerPhone || '+91 98765 43210'}</span>
+                    </a>
+                  </div>
+
+                  {/* Moderation Actions Toolbar */}
+                  <div className="flex items-center gap-2 pt-1">
+                    {/* Verify / Unverify Button */}
+                    <button
+                      disabled={Boolean(actionPendingId)}
+                      onClick={() => handleVerifyToggle(targetId, !!item.verified)}
+                      className={`flex-1 flex items-center justify-center space-x-1.5 py-2 px-3 rounded-xl text-xs font-extrabold transition-all cursor-pointer disabled:opacity-50 whitespace-nowrap shadow-sm active:scale-95 ${
+                        item.verified
+                          ? 'bg-[#180d10] text-rose-300 border border-rose-800/80 hover:bg-rose-950'
+                          : 'bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold shadow-emerald-500/20'
+                      }`}
+                    >
+                      {item.verified ? (
+                        <>
+                          <XCircle size={13} />
+                          <span>Unverify</span>
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle2 size={13} />
+                          <span>Verify Listing</span>
+                        </>
+                      )}
+                    </button>
+
+                    {/* Feature Button */}
+                    <button
+                      disabled={Boolean(actionPendingId)}
+                      onClick={() => handleFeatureToggle(targetId, !!item.featured)}
+                      className={`p-2 rounded-xl border text-xs font-bold transition-all cursor-pointer disabled:opacity-50 shrink-0 ${
+                        item.featured
+                          ? 'bg-purple-950 text-purple-300 border-purple-800'
+                          : 'bg-[#0a1810] text-gray-300 border-emerald-900 hover:text-white'
+                      }`}
+                      title="Toggle Featured"
+                    >
+                      <Star size={15} className={item.featured ? 'text-purple-400 fill-purple-400' : ''} />
+                    </button>
+
+                    {/* Edit Button */}
+                    <button
+                      disabled={Boolean(actionPendingId)}
+                      onClick={() => setEditingProperty(item)}
+                      className="p-2 rounded-xl bg-[#0a1810] border border-emerald-900 text-gray-300 hover:text-emerald-400 text-xs font-bold transition-colors cursor-pointer disabled:opacity-50 shrink-0"
+                      title="Edit Property Details"
+                    >
+                      <Edit3 size={15} />
+                    </button>
+
+                    {/* Delete Button */}
+                    <button
+                      disabled={Boolean(actionPendingId)}
+                      onClick={() => setPropertyPendingDeletion(item)}
+                      className="p-2 rounded-xl bg-[#180a0a] border border-rose-950 text-rose-400 hover:bg-rose-950 text-xs font-bold transition-colors cursor-pointer disabled:opacity-50 shrink-0"
+                      title="Delete Listing"
+                    >
+                      <Trash2 size={15} />
+                    </button>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* Desktop & Tablet Table View (hidden sm:block) */}
+        <div className="hidden sm:block overflow-x-auto">
+          <table className="w-full min-w-[850px] text-left text-xs text-gray-300">
             <thead className="bg-[#050806] text-gray-400 font-extrabold uppercase tracking-wider text-[10px] border-b border-emerald-950">
               <tr>
-                <th className="p-3.5">ID</th>
-                <th className="p-3.5">Property Details</th>
-                <th className="p-3.5">Category</th>
-                <th className="p-3.5">Price</th>
-                <th className="p-3.5">Owner Contact</th>
-                <th className="p-3.5">Status</th>
-                <th className="p-3.5 text-right">Moderation Actions</th>
+                <th className="p-3.5 whitespace-nowrap">ID</th>
+                <th className="p-3.5 min-w-[160px]">Property Details</th>
+                <th className="p-3.5 whitespace-nowrap">Category</th>
+                <th className="p-3.5 whitespace-nowrap">Price</th>
+                <th className="p-3.5 whitespace-nowrap">Owner Contact</th>
+                <th className="p-3.5 whitespace-nowrap">Status</th>
+                <th className="p-3.5 text-right whitespace-nowrap">Moderation Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-emerald-950/60">
@@ -360,83 +506,85 @@ function AdminPropertiesContent() {
                   const targetId = item.pid || item._id || item.id;
                   return (
                     <tr key={targetId} className="hover:bg-[#07120a] transition-colors">
-                      <td className="p-3.5 font-mono font-bold text-emerald-400">{item.pid}</td>
+                      <td className="p-3.5 font-mono font-bold text-emerald-400 whitespace-nowrap">{item.pid}</td>
                       <td className="p-3.5 max-w-xs">
                         <div className="font-bold text-white truncate">{item.title}</div>
                         <div className="text-[10px] text-gray-400 truncate">{item.locality}, {item.city}</div>
                       </td>
-                      <td className="p-3.5 capitalize font-semibold">{item.category} ({item.type})</td>
-                      <td className="p-3.5 font-bold text-emerald-400">₹{item.price?.toLocaleString('en-IN')}</td>
-                      <td className="p-3.5 font-mono text-gray-300">{item.ownerPhone || '+91 98765 43210'}</td>
-                      <td className="p-3.5">
+                      <td className="p-3.5 capitalize font-semibold whitespace-nowrap">{item.category} ({item.type})</td>
+                      <td className="p-3.5 font-bold text-emerald-400 whitespace-nowrap">₹{item.price?.toLocaleString('en-IN')}</td>
+                      <td className="p-3.5 font-mono text-gray-300 whitespace-nowrap">{item.ownerPhone || '+91 98765 43210'}</td>
+                      <td className="p-3.5 whitespace-nowrap">
                         <div className="flex flex-col space-y-1">
                           {item.verified ? (
-                            <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800 text-[9px] font-extrabold w-fit">
+                            <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-800 text-[9px] font-extrabold w-fit whitespace-nowrap">
                               <CheckCircle2 size={11} />
                               <span>VERIFIED</span>
                             </span>
                           ) : (
-                            <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full bg-amber-950 text-amber-400 border border-amber-800 text-[9px] font-extrabold w-fit">
+                            <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full bg-amber-950 text-amber-400 border border-amber-800 text-[9px] font-extrabold w-fit whitespace-nowrap">
                               <Clock size={11} />
                               <span>UNVERIFIED</span>
                             </span>
                           )}
 
                           {item.featured && (
-                            <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full bg-purple-950 text-purple-400 border border-purple-800 text-[9px] font-extrabold w-fit">
+                            <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full bg-purple-950 text-purple-400 border border-purple-800 text-[9px] font-extrabold w-fit whitespace-nowrap">
                               <Star size={11} />
                               <span>FEATURED</span>
                             </span>
                           )}
                         </div>
                       </td>
-                      <td className="p-3.5 text-right space-x-1.5">
-                        {/* Verify / Unverify Button */}
-                        <button
-                          disabled={Boolean(actionPendingId)}
-                          onClick={() => handleVerifyToggle(targetId, !!item.verified)}
-                          className={`px-2.5 py-1 rounded-xl text-[10px] font-extrabold border transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
-                            item.verified
-                              ? 'bg-[#140b0d] text-rose-400 border-rose-900/80 hover:bg-rose-950'
-                              : 'bg-emerald-500 hover:bg-emerald-400 text-black border-emerald-500 shadow-md shadow-emerald-500/20'
-                          }`}
-                        >
-                          {item.verified ? 'Unverify' : 'Verify'}
-                        </button>
+                      <td className="p-3.5 text-right whitespace-nowrap">
+                        <div className="inline-flex items-center justify-end space-x-1.5">
+                          {/* Verify / Unverify Button */}
+                          <button
+                            disabled={Boolean(actionPendingId)}
+                            onClick={() => handleVerifyToggle(targetId, !!item.verified)}
+                            className={`px-3 py-1.5 rounded-xl text-xs font-extrabold border transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap shadow-sm active:scale-95 ${
+                              item.verified
+                                ? 'bg-[#180d10] text-rose-300 border-rose-900/80 hover:bg-rose-950'
+                                : 'bg-emerald-500 hover:bg-emerald-400 text-black border-emerald-500 shadow-md shadow-emerald-500/20'
+                            }`}
+                          >
+                            {item.verified ? 'Unverify' : 'Verify'}
+                          </button>
 
-                        {/* Feature Button */}
-                        <button
-                          disabled={Boolean(actionPendingId)}
-                          onClick={() => handleFeatureToggle(targetId, !!item.featured)}
-                          className={`px-2 py-1 rounded-xl text-[10px] font-bold border transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${
-                            item.featured
-                              ? 'bg-purple-950 text-purple-300 border-purple-800'
-                              : 'bg-[#0a1810] text-gray-300 border-emerald-900 hover:text-white'
-                          }`}
-                          title="Toggle Featured status"
-                        >
-                          <Star size={12} className={item.featured ? 'text-purple-400 fill-purple-400' : ''} />
-                        </button>
+                          {/* Feature Button */}
+                          <button
+                            disabled={Boolean(actionPendingId)}
+                            onClick={() => handleFeatureToggle(targetId, !!item.featured)}
+                            className={`p-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shrink-0 ${
+                              item.featured
+                                ? 'bg-purple-950 text-purple-300 border-purple-800'
+                                : 'bg-[#0a1810] text-gray-300 border-emerald-900 hover:text-white'
+                            }`}
+                            title="Toggle Featured status"
+                          >
+                            <Star size={13} className={item.featured ? 'text-purple-400 fill-purple-400' : ''} />
+                          </button>
 
-                        {/* Edit Button */}
-                        <button
-                          disabled={Boolean(actionPendingId)}
-                          onClick={() => setEditingProperty(item)}
-                          className="px-2 py-1 rounded-xl bg-[#0a1810] border border-emerald-900 text-gray-300 hover:text-emerald-400 text-[10px] font-bold transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                          title="Edit Property Details"
-                        >
-                          <Edit3 size={12} />
-                        </button>
+                          {/* Edit Button */}
+                          <button
+                            disabled={Boolean(actionPendingId)}
+                            onClick={() => setEditingProperty(item)}
+                            className="p-1.5 rounded-xl bg-[#0a1810] border border-emerald-900 text-gray-300 hover:text-emerald-400 text-xs font-bold transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+                            title="Edit Property Details"
+                          >
+                            <Edit3 size={13} />
+                          </button>
 
-                        {/* Delete Button */}
-                        <button
-                          disabled={Boolean(actionPendingId)}
-                          onClick={() => setPropertyPendingDeletion(item)}
-                          className="px-2 py-1 rounded-xl bg-[#180a0a] border border-rose-950 text-rose-400 hover:bg-rose-950 text-[10px] font-bold transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                          title="Delete Listing"
-                        >
-                          <Trash2 size={12} />
-                        </button>
+                          {/* Delete Button */}
+                          <button
+                            disabled={Boolean(actionPendingId)}
+                            onClick={() => setPropertyPendingDeletion(item)}
+                            className="p-1.5 rounded-xl bg-[#180a0a] border border-rose-950 text-rose-400 hover:bg-rose-950 text-xs font-bold transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+                            title="Delete Listing"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );

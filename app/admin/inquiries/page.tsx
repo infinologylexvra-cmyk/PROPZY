@@ -112,23 +112,91 @@ export default function AdminInquiriesPage() {
         </div>
       </div>
 
-      {/* Inquiries Table */}
+      {/* Inquiries List & Table */}
       <div className="bg-[#0a110d] rounded-3xl border border-emerald-950/90 shadow-xl overflow-hidden">
         <div className="p-4 border-b border-emerald-950 flex items-center justify-between">
           <span className="text-xs font-bold text-gray-300">
             Total Leads: <span className="text-emerald-400 font-extrabold">{filteredInquiries.length}</span>
           </span>
+          {loading && (
+            <span className="text-xs text-emerald-400 font-bold flex items-center space-x-1.5 animate-pulse">
+              <RefreshCw size={12} className="animate-spin" />
+              <span>Updating leads...</span>
+            </span>
+          )}
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-gray-300">
+        {/* Mobile Lead Cards View (sm:hidden) */}
+        <div className="block sm:hidden divide-y divide-emerald-950/60">
+          {loading && inquiries.length === 0 ? (
+            <div className="p-6 text-center text-gray-400 text-xs">Loading tenant leads...</div>
+          ) : filteredInquiries.length === 0 ? (
+            <div className="p-8 text-center text-gray-400 text-xs">
+              No leads found matching status filter.
+            </div>
+          ) : (
+            filteredInquiries.map((item) => (
+              <div key={`m-${item.id || item._id}`} className="p-4 space-y-3 bg-[#070e0a]/60">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center space-x-2">
+                    <span className="px-2.5 py-1 rounded-lg bg-emerald-950/80 border border-emerald-800/80 font-mono font-bold text-xs text-emerald-400">
+                      {item.propertyPid || 'PZ-101'}
+                    </span>
+                  </div>
+
+                  <select
+                    value={item.status || 'New'}
+                    onChange={(e) => handleStatusChange(item.id || item._id, e.target.value)}
+                    className={`px-2.5 py-1 rounded-xl text-[10px] font-extrabold border bg-[#050806] cursor-pointer whitespace-nowrap ${
+                      item.status === 'Closed'
+                        ? 'text-gray-400 border-gray-800'
+                        : item.status === 'Visit Scheduled'
+                        ? 'text-purple-400 border-purple-800'
+                        : item.status === 'Contacted'
+                        ? 'text-cyan-400 border-cyan-800'
+                        : 'text-emerald-400 border-emerald-800'
+                    }`}
+                  >
+                    <option value="New">NEW LEAD</option>
+                    <option value="Contacted">CONTACTED</option>
+                    <option value="Visit Scheduled">VISIT SCHEDULED</option>
+                    <option value="Closed">CLOSED</option>
+                  </select>
+                </div>
+
+                <div>
+                  <div className="font-extrabold text-white text-sm">{item.tenantName}</div>
+                  <div className="text-xs font-mono text-gray-400 mt-0.5">{item.tenantPhone}</div>
+                </div>
+
+                {item.tenantMessage && (
+                  <div className="p-2.5 rounded-xl bg-[#040805] border border-emerald-950/60 text-xs text-gray-300 italic">
+                    "{item.tenantMessage}"
+                  </div>
+                )}
+
+                <a
+                  href={`tel:${item.tenantPhone}`}
+                  className="w-full flex items-center justify-center space-x-2 py-2.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs transition-all shadow-md shadow-emerald-500/20 active:scale-[0.98] cursor-pointer whitespace-nowrap"
+                >
+                  <Phone size={14} className="stroke-[2.5]" />
+                  <span>Call Tenant ({item.tenantPhone})</span>
+                </a>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Desktop / Tablet Table View (hidden sm:block) */}
+        <div className="hidden sm:block overflow-x-auto">
+          <table className="w-full min-w-[700px] text-left text-xs text-gray-300">
             <thead className="bg-[#050806] text-gray-400 font-extrabold uppercase tracking-wider text-[10px] border-b border-emerald-950">
               <tr>
-                <th className="p-3.5">Property ID</th>
-                <th className="p-3.5">Tenant Details</th>
+                <th className="p-3.5 whitespace-nowrap">Property ID</th>
+                <th className="p-3.5 whitespace-nowrap">Tenant Details</th>
                 <th className="p-3.5">Message / Request</th>
-                <th className="p-3.5">Lead Status</th>
-                <th className="p-3.5 text-right">Quick Contact Actions</th>
+                <th className="p-3.5 whitespace-nowrap">Lead Status</th>
+                <th className="p-3.5 text-right whitespace-nowrap">Quick Contact Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-emerald-950/60">
@@ -143,19 +211,19 @@ export default function AdminInquiriesPage() {
               ) : (
                 filteredInquiries.map((item) => (
                   <tr key={item.id || item._id} className="hover:bg-[#07120a] transition-colors">
-                    <td className="p-3.5 font-mono font-bold text-emerald-400">{item.propertyPid || 'PZ-101'}</td>
-                    <td className="p-3.5">
+                    <td className="p-3.5 font-mono font-bold text-emerald-400 whitespace-nowrap">{item.propertyPid || 'PZ-101'}</td>
+                    <td className="p-3.5 whitespace-nowrap">
                       <div className="font-bold text-white">{item.tenantName}</div>
                       <div className="text-[10px] font-mono text-gray-400">{item.tenantPhone}</div>
                     </td>
                     <td className="p-3.5 max-w-xs text-gray-300">
                       <div className="line-clamp-2 italic">"{item.tenantMessage}"</div>
                     </td>
-                    <td className="p-3.5">
+                    <td className="p-3.5 whitespace-nowrap">
                       <select
                         value={item.status || 'New'}
                         onChange={(e) => handleStatusChange(item.id || item._id, e.target.value)}
-                        className={`px-2.5 py-1 rounded-xl text-[10px] font-extrabold border bg-[#050806] cursor-pointer ${
+                        className={`px-2.5 py-1 rounded-xl text-[10px] font-extrabold border bg-[#050806] cursor-pointer whitespace-nowrap ${
                           item.status === 'Closed'
                             ? 'text-gray-400 border-gray-800'
                             : item.status === 'Visit Scheduled'
@@ -171,12 +239,12 @@ export default function AdminInquiriesPage() {
                         <option value="Closed">CLOSED</option>
                       </select>
                     </td>
-                    <td className="p-3.5 text-right space-x-2">
+                    <td className="p-3.5 text-right whitespace-nowrap">
                       <a
                         href={`tel:${item.tenantPhone}`}
-                        className="inline-flex items-center space-x-1 px-3 py-1 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-[10px] font-extrabold transition-all"
+                        className="inline-flex items-center justify-center space-x-1.5 px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-[11px] font-extrabold transition-all whitespace-nowrap shadow-sm shadow-emerald-500/20 active:scale-95 cursor-pointer"
                       >
-                        <Phone size={12} />
+                        <Phone size={12} className="stroke-[2.5]" />
                         <span>Call Tenant</span>
                       </a>
                     </td>

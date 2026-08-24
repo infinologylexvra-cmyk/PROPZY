@@ -26,9 +26,10 @@ export async function GET(req: NextRequest) {
       name: u.name,
       email: u.email,
       phone: u.phone,
-      role: u.role === 'owner' ? 'Landlord / Owner' : u.role === 'admin' ? 'Super Admin' : 'Tenant',
+      role: u.role === 'owner' ? 'owner' : u.role === 'admin' ? 'admin' : 'tenant',
+      ownerVerified: u.ownerVerified || false,
       status: 'Active',
-      propertiesCount: 0,
+      propertiesCount: u.postedProperties?.length || 0,
       createdAt: u.createdAt || new Date()
     }));
 
@@ -41,9 +42,10 @@ export async function GET(req: NextRequest) {
         name: m.name,
         email: m.email,
         phone: m.phone,
-        role: m.role === 'owner' ? 'Landlord / Owner' : m.role === 'admin' ? 'Super Admin' : 'Tenant',
+        role: m.role === 'owner' ? 'owner' : m.role === 'admin' ? 'admin' : 'tenant',
+        ownerVerified: m.ownerVerified || false,
         status: 'Active',
-        propertiesCount: 0,
+        propertiesCount: (m as any).postedProperties?.length || 0,
         createdAt: new Date()
       }));
 

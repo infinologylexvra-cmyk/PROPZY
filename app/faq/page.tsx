@@ -16,7 +16,7 @@ export default function FAQPage() {
     {
       category: 'tenants',
       question: 'Is PROPZY really 100% 0% Brokerage?',
-      answer: 'Yes! PROPZY connects tenants directly with verified property owners without middleman brokers. You schedule visits directly with landlords and pay zero commission fees.',
+      answer: 'Yes! PROPZY connects tenants directly with verified property owners without middleman brokers. You schedule visits directly with property owners and pay zero commission fees.',
     },
     {
       category: 'tenants',
@@ -94,7 +94,7 @@ export default function FAQPage() {
           {[
             { key: 'all', label: 'All FAQs' },
             { key: 'tenants', label: 'Tenants & Renting' },
-            { key: 'owners', label: 'Owners & Landlords' },
+            { key: 'owners', label: 'Property Owners' },
             { key: 'verification', label: 'Verification & Safety' },
           ].map((tab) => (
             <button

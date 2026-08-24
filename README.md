@@ -7,7 +7,7 @@
 ## ✨ Key Features
 
 - **0% Brokerage Guarantee**: Connects prospective tenants and buyers directly with verified property owners.
-- **⚡ Electricity Bill Landlord Verification**: Mandatory CA / Consumer Number & Electricity Bill proof moderation to eliminate fraudulent listings and broker spam.
+- **⚡ Electricity Bill Property Owner Verification**: Mandatory CA / Consumer Number & Electricity Bill proof moderation to eliminate fraudulent listings and broker spam.
 - **☁️ Cloudinary Media Integration**: Direct browser-to-Cloudinary image uploads with server-signed SHA-1 authentication and automatic image lifecycle cleanup.
 - **⚡ Multi-Tier High-Performance Caching**:
   - In-memory server-side cache with 45s TTL, 5-minute stale fallback, and in-flight request deduplication.

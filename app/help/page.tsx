@@ -19,7 +19,7 @@ export default function HelpCenterPage() {
     },
     {
       icon: UserCheck,
-      title: 'Owner & Landlord Guide',
+      title: 'Property Owner Guide',
       desc: 'Listing properties, electricity bill verification, and managing tenant inquiries.',
       articles: 10,
     },
@@ -54,7 +54,7 @@ export default function HelpCenterPage() {
       title: 'How do I schedule a property visit?',
       category: 'Tenant Support',
       readTime: '2 min read',
-      content: 'Click "Contact Owner" or "Schedule Visit" on any property listing page. You will get direct WhatsApp or phone access to coordinate visit times with the landlord.',
+      content: 'Click "Contact Owner" or "Schedule Visit" on any property listing page. You will get direct WhatsApp or phone access to coordinate visit times with the property owner.',
     },
     {
       title: 'What is the PROPZY Relax Plan?',

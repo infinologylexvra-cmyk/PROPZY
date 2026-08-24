@@ -19,17 +19,17 @@ export default function TermsOfUsePage() {
     {
       id: '3',
       title: '3. Owner Verification & Listing Authenticity',
-      content: 'Property owners and landlords submitting listings must upload genuine proof of property ownership (including Electricity Bill with Consumer Number). PROPZY reserves the right to reject or suspend listings that fail verification or provide misleading information.',
+      content: 'Property owners submitting listings must upload genuine proof of property ownership (including Electricity Bill with Consumer Number). PROPZY reserves the right to reject or suspend listings that fail verification or provide misleading information.',
     },
     {
       id: '4',
       title: '4. Tenant Responsibilities',
-      content: 'Tenants are responsible for inspecting properties, verifying landlord identities, and executing legally binding rental agreements directly with owners before paying security deposits or advance rent.',
+      content: 'Tenants are responsible for inspecting properties, verifying owner identities, and executing legally binding rental agreements directly with owners before paying security deposits or advance rent.',
     },
     {
       id: '5',
       title: '5. Limitation of Liability',
-      content: 'While PROPZY moderates listings for authenticity, PROPZY shall not be held liable for disputes, property damages, lease contractual breaches, or monetary transactions occurring directly between tenants and landlords outside the platform.',
+      content: 'While PROPZY moderates listings for authenticity, PROPZY shall not be held liable for disputes, property damages, lease contractual breaches, or monetary transactions occurring directly between tenants and owners outside the platform.',
     },
     {
       id: '6',

@@ -40,12 +40,10 @@ export async function invalidateMongoConnection(): Promise<void> {
   globalThis.mongooseCache = { conn: null, promise: null };
 }
 
-const FALLBACK_DIRECT_URI = 'mongodb://letsrentz_admin:Infinologylexvra@ac-29l4zhq-shard-00-00.saq1nen.mongodb.net:27017,ac-29l4zhq-shard-00-01.saq1nen.mongodb.net:27017,ac-29l4zhq-shard-00-02.saq1nen.mongodb.net:27017/letsrentz?ssl=true&replicaSet=atlas-dw2hzl-shard-0&authSource=admin&retryWrites=true&w=majority';
-
 export async function connectToDatabase(forceRefresh = false): Promise<typeof mongoose> {
-  const uri = process.env.MONGODB_URI || FALLBACK_DIRECT_URI;
+  const uri = process.env.MONGODB_URI;
   if (!uri) {
-    throw new Error('Please define the MONGODB_URI environment variable inside .env.local');
+    throw new Error('Please define the MONGODB_URI environment variable inside .env.local / hosting platform settings');
   }
 
   if (forceRefresh) {
