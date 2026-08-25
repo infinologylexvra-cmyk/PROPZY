@@ -351,11 +351,11 @@ export default function PropertyDetailPage() {
       {/* Full-Screen Photo Lightbox Modal */}
       {isLightboxOpen && (
         <div
-          className="fixed inset-0 z-50 bg-black/95 backdrop-blur-2xl flex flex-col justify-between p-3 sm:p-5 text-white w-screen h-screen overflow-hidden"
+          className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-2xl flex flex-col justify-between p-3 sm:p-5 pb-6 sm:pb-5 text-white w-screen h-screen overflow-hidden"
           onClick={() => setIsLightboxOpen(false)}
         >
           {/* Modal Header */}
-          <div className="flex items-center justify-between border-b border-gray-800 pb-3 gap-3" onClick={(e) => e.stopPropagation()}>
+          <div className="flex items-center justify-between border-b border-gray-800 pb-3 gap-3 shrink-0" onClick={(e) => e.stopPropagation()}>
             <div className="flex-1 min-w-0">
               <h3 className="text-sm sm:text-base font-extrabold text-white leading-snug break-words">{property.title}</h3>
               <p className="text-[11px] sm:text-xs text-emerald-400 font-mono mt-0.5">Photo {currentImgIndex + 1} of {images.length}</p>
@@ -371,11 +371,11 @@ export default function PropertyDetailPage() {
           </div>
 
           {/* Main Active Image View - Medium Crisp Sizing */}
-          <div className="relative flex-1 w-full flex items-center justify-center py-2 overflow-hidden" onClick={(e) => e.stopPropagation()}>
+          <div className="relative flex-1 min-h-0 w-full flex items-center justify-center py-2 overflow-hidden" onClick={(e) => e.stopPropagation()}>
             <LazyImage
               src={images[currentImgIndex]}
               alt={property.title}
-              className="max-h-[75vh] max-w-4xl lg:max-w-5xl w-auto h-auto object-contain rounded-2xl shadow-2xl"
+              className="max-h-[62vh] sm:max-h-[72vh] max-w-4xl lg:max-w-5xl w-auto h-auto object-contain rounded-2xl shadow-2xl"
             />
 
             {images.length > 1 && (
@@ -383,30 +383,30 @@ export default function PropertyDetailPage() {
                 <button
                   type="button"
                   onClick={() => setCurrentImgIndex((prev) => (prev - 1 + images.length) % images.length)}
-                  className="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/70 hover:bg-black border border-white/20 text-white shadow-xl transition-all"
+                  className="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 p-2.5 sm:p-3 rounded-full bg-black/70 hover:bg-black border border-white/20 text-white shadow-xl transition-all cursor-pointer"
                 >
-                  <ChevronLeft size={24} />
+                  <ChevronLeft size={22} />
                 </button>
                 <button
                   type="button"
                   onClick={() => setCurrentImgIndex((prev) => (prev + 1) % images.length)}
-                  className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 p-3 rounded-full bg-black/70 hover:bg-black border border-white/20 text-white shadow-xl transition-all"
+                  className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 p-2.5 sm:p-3 rounded-full bg-black/70 hover:bg-black border border-white/20 text-white shadow-xl transition-all cursor-pointer"
                 >
-                  <ChevronRight size={24} />
+                  <ChevronRight size={22} />
                 </button>
               </>
             )}
           </div>
 
           {/* Bottom Thumbnail Strip */}
-          <div className="pt-3 border-t border-gray-900 overflow-x-auto flex items-center justify-center space-x-2 max-w-4xl mx-auto w-full" onClick={(e) => e.stopPropagation()}>
+          <div className="pt-2.5 pb-2 border-t border-gray-900 overflow-x-auto flex items-center justify-center space-x-2.5 max-w-4xl mx-auto w-full shrink-0" onClick={(e) => e.stopPropagation()}>
             {images.map((img, idx) => (
               <button
                 key={idx}
                 type="button"
                 onClick={() => setCurrentImgIndex(idx)}
-                className={`relative w-16 h-12 rounded-xl overflow-hidden border-2 shrink-0 transition-all cursor-pointer ${
-                  currentImgIndex === idx ? 'border-emerald-500 scale-105' : 'border-transparent opacity-50 hover:opacity-100'
+                className={`relative w-14 h-11 sm:w-16 sm:h-12 rounded-lg sm:rounded-xl overflow-hidden border-2 shrink-0 transition-all cursor-pointer ${
+                  currentImgIndex === idx ? 'border-emerald-500 scale-105 shadow-md shadow-emerald-500/30' : 'border-transparent opacity-50 hover:opacity-100'
                 }`}
               >
                 <LazyImage src={img} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
