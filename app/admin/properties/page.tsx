@@ -330,7 +330,7 @@ function AdminPropertiesContent() {
           >
             <option value="all">All Statuses</option>
             <option value="verified">Verified Only</option>
-            <option value="pending">Pending Moderation</option>
+            <option value="pending">Unverified</option>
             <option value="featured">Featured Homes</option>
           </select>
         </div>

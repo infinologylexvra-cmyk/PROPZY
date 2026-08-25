@@ -946,7 +946,7 @@ export default function PostPropertyPage() {
           {/* STEP 2: Specs & Amenities */}
           {step === 2 && (
             <div className="space-y-5 sm:space-y-6 text-xs">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                 <div>
                   <label className="block text-gray-300 font-semibold mb-1">Bedrooms (BHK)</label>
                   <select
@@ -993,24 +993,18 @@ export default function PostPropertyPage() {
                     className="w-full px-3.5 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white font-mono focus:border-emerald-500 focus:outline-none font-bold"
                   />
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-gray-300 font-semibold mb-2">Furnishing Status</label>
-                <div className="grid grid-cols-3 gap-2">
-                  {(['unfurnished', 'semi-furnished', 'fully-furnished'] as const).map((f) => (
-                    <button
-                      key={f}
-                      type="button"
-                      onClick={() => setFurnishing(f)}
-                      className={`py-2.5 rounded-xl text-xs font-bold capitalize transition-all border text-center ${furnishing === f
-                        ? 'bg-emerald-500 text-black border-emerald-500 shadow-md'
-                        : 'bg-[#050806] text-gray-400 border-emerald-950 hover:text-white'
-                        }`}
-                    >
-                      {f.replace('-', ' ')}
-                    </button>
-                  ))}
+                <div>
+                  <label className="block text-gray-300 font-semibold mb-1">Furnishing Status</label>
+                  <select
+                    value={furnishing}
+                    onChange={(e) => setFurnishing(e.target.value as 'unfurnished' | 'semi-furnished' | 'fully-furnished')}
+                    className="w-full px-3.5 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white focus:border-emerald-500 focus:outline-none cursor-pointer"
+                  >
+                    <option value="unfurnished">Unfurnished</option>
+                    <option value="semi-furnished">Semi-Furnished</option>
+                    <option value="fully-furnished">Fully Furnished</option>
+                  </select>
                 </div>
               </div>
 
