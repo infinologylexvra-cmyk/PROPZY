@@ -257,8 +257,6 @@ export const Footer: React.FC = () => {
               <Link href="/terms" className="hover:text-emerald-400 transition-colors">Terms of Use</Link>
               <span className="text-gray-700">•</span>
               <Link href="/privacy" className="hover:text-emerald-400 transition-colors">Privacy Policy</Link>
-              <span className="text-gray-700">•</span>
-              <Link href="/localities" className="hover:text-emerald-400 transition-colors">Sitemap</Link>
             </div>
 
             <span className="hidden sm:inline text-gray-700">•</span>

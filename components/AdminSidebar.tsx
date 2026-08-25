@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
-  LayoutDashboard, Building, MessageSquare, Users, FileText,
+  LayoutDashboard, Building, MessageSquare, Users, FileText, Mail,
   ArrowLeft, Home, ShieldCheck, Sparkles, ChevronRight, LogOut, XCircle, AlertTriangle
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
@@ -25,6 +25,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen = true, onClo
     { label: 'Overview', href: '/admin', icon: LayoutDashboard },
     { label: 'Property Manager', href: '/admin/properties', icon: Building, badge: 'All ID' },
     { label: 'Inquiries & Leads', href: '/admin/inquiries', icon: MessageSquare },
+    { label: 'Contact Messages', href: '/admin/contacts', icon: Mail },
     { label: 'User Directory', href: '/admin/users', icon: Users },
     { label: 'Owner Verifications', href: '/admin/verifications', icon: ShieldCheck, badge: 'Verify' },
   ];
@@ -105,17 +106,7 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ isOpen = true, onClo
         </div>
 
         {/* Footer Quick Links & Main Site Return */}
-        <div className="p-4 border-t border-emerald-950/80 space-y-3 bg-[#050906]">
-          <div className="p-3 bg-[#0a140f] rounded-2xl border border-emerald-900/60 flex items-center space-x-3">
-            <div className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-800/60 flex items-center justify-center font-bold text-xs">
-              ★
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="text-xs font-bold text-white truncate">System Status</div>
-              <div className="text-[10px] text-emerald-400 font-medium">100% Operational</div>
-            </div>
-          </div>
-
+        <div className="p-4 border-t border-emerald-950/80 bg-[#050906]">
           <button
             type="button"
             onClick={() => setShowExitConfirm(true)}

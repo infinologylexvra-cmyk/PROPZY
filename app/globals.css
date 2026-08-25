@@ -18,6 +18,13 @@ body {
   font-family: var(--font-serif), Georgia, Cambria, "Times New Roman", Times, serif;
 }
 
+/* Mobile typography scale matching admin panel compact aesthetic */
+@media (max-width: 640px) {
+  html {
+    font-size: 14.5px;
+  }
+}
+
 /* Custom emerald scrollbars */
 ::-webkit-scrollbar {
   width: 6px;

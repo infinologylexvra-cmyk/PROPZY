@@ -65,36 +65,36 @@ export default function AdminUsersPage() {
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3.5 sm:space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-emerald-950/80 pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4 border-b border-emerald-950/80 pb-3.5 sm:pb-6">
         <div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">
+          <h1 className="text-xl sm:text-3xl font-extrabold text-white tracking-tight">
             User Directory
           </h1>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-[11px] sm:text-xs text-gray-400 mt-0.5 sm:mt-1">
             Registered property owners, tenants, and admin account permissions.
           </p>
         </div>
 
         <button
           onClick={() => fetchUsers(false)}
-          className="flex items-center justify-center space-x-1.5 px-4 py-2 bg-[#091a12] border border-emerald-800 text-emerald-400 hover:bg-emerald-900/60 rounded-full text-xs font-bold transition-all cursor-pointer self-start sm:self-auto"
+          className="flex items-center justify-center space-x-1.5 px-3 py-1.5 sm:px-4 sm:py-2 bg-[#091a12] border border-emerald-800 text-emerald-400 hover:bg-emerald-900/60 rounded-lg sm:rounded-full text-[11px] sm:text-xs font-bold transition-all cursor-pointer self-start sm:self-auto shadow"
         >
-          <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+          <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
           <span>Refresh Directory</span>
         </button>
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="bg-[#0a110d] p-4 rounded-3xl border border-emerald-950/90 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div className="bg-[#0a110d] p-2.5 sm:p-4 rounded-2xl sm:rounded-3xl border border-emerald-950/90 shadow-xl flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-3">
         {/* Role Filter Tabs */}
-        <div className="flex flex-wrap gap-1.5 w-full sm:w-auto">
+        <div className="flex flex-wrap gap-1 w-full sm:w-auto">
           {(['all', 'owner', 'tenant', 'admin'] as const).map((r) => (
             <button
               key={r}
               onClick={() => setRoleFilter(r)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
+              className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
                 roleFilter === r
                   ? 'bg-emerald-500 text-black shadow-md'
                   : 'bg-[#050806] text-gray-400 border border-emerald-950 hover:text-white'
@@ -107,32 +107,94 @@ export default function AdminUsersPage() {
 
         {/* Search Box */}
         <div className="relative w-full sm:w-64">
-          <Search size={14} className="absolute left-3.5 top-3 text-gray-400" />
+          <Search size={13} className="absolute left-3 top-2.5 sm:top-3 text-gray-400" />
           <input
             type="text"
             placeholder="Search name, email, phone..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-[#050806] border border-emerald-950 rounded-xl text-xs text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500"
+            className="w-full pl-8 pr-3 py-1.5 sm:py-2 bg-[#050806] border border-emerald-950 rounded-lg sm:rounded-xl text-[11px] sm:text-xs text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500"
           />
         </div>
       </div>
 
-      {/* Main Table */}
-      <div className="bg-[#0a110d] rounded-3xl border border-emerald-950/90 shadow-xl overflow-hidden">
-        <div className="p-4 border-b border-emerald-950 flex items-center justify-between">
-          <span className="text-xs font-bold text-gray-300">
+      {/* Main Table & Mobile Cards */}
+      <div className="bg-[#0a110d] rounded-2xl sm:rounded-3xl border border-emerald-950/90 shadow-xl overflow-hidden">
+        <div className="p-2.5 sm:p-4 border-b border-emerald-950 flex items-center justify-between">
+          <span className="text-[11px] sm:text-xs font-bold text-gray-300">
             Total Users: <span className="text-emerald-400 font-extrabold">{filteredUsers.length}</span> of {users.length}
           </span>
           {loading && (
-            <span className="text-xs text-emerald-400 font-bold flex items-center space-x-1.5 animate-pulse">
-              <RefreshCw size={12} className="animate-spin" />
-              <span>Fetching live user records...</span>
+            <span className="text-[11px] sm:text-xs text-emerald-400 font-bold flex items-center space-x-1.5 animate-pulse">
+              <RefreshCw size={11} className="animate-spin" />
+              <span>Fetching live users...</span>
             </span>
           )}
         </div>
 
-        <div className="overflow-x-auto">
+        {/* Mobile View: Dedicated Compact User Cards */}
+        <div className="block sm:hidden p-2.5 space-y-2.5 bg-[#050806]">
+          {loading && users.length === 0 ? (
+            <div className="p-6 text-center text-gray-400 text-xs">Loading users...</div>
+          ) : filteredUsers.length === 0 ? (
+            <div className="p-6 text-center text-gray-400 text-xs bg-[#09110c] border border-emerald-950 rounded-xl">
+              No registered users found.
+            </div>
+          ) : (
+            filteredUsers.map((u) => {
+              const roleKey = (u.role || '').toLowerCase();
+              const isAdmin = roleKey.includes('admin');
+              const isOwner = roleKey.includes('owner') || roleKey.includes('landlord');
+              const displayRole = isAdmin ? 'Admin' : isOwner ? 'Owner' : 'Tenant';
+
+              return (
+                <div
+                  key={`m-${u.id || u._id || u.email}`}
+                  className="p-3 space-y-2 bg-[#08120c] border border-emerald-900/70 rounded-xl shadow-md"
+                >
+                  <div className="flex items-center justify-between gap-1.5">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-7 h-7 rounded-full bg-emerald-500 text-black font-extrabold flex items-center justify-center text-[10px] shadow shrink-0">
+                        {(u.name || 'U').charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <div className="font-bold text-white text-xs flex items-center space-x-1">
+                          <span>{u.name || 'Anonymous User'}</span>
+                          {u.ownerVerified && (
+                            <span className="text-[8px] bg-emerald-950 text-emerald-400 border border-emerald-800 px-1 py-0.2 rounded font-bold">
+                              Verified
+                            </span>
+                          )}
+                        </div>
+                        <div className="text-[10px] text-gray-400 font-mono">{u.email}</div>
+                      </div>
+                    </div>
+
+                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold whitespace-nowrap uppercase tracking-wider border ${
+                      isAdmin
+                        ? 'bg-purple-950/80 text-purple-400 border-purple-800/80'
+                        : isOwner
+                        ? 'bg-emerald-950/80 text-emerald-400 border border-emerald-800/80'
+                        : 'bg-cyan-950/80 text-cyan-400 border border-cyan-800/80'
+                    }`}>
+                      {displayRole}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between text-[10px] text-gray-400 pt-1 border-t border-emerald-950/70">
+                    <div className="font-mono">{u.phone || 'No phone'}</div>
+                    <div className="text-emerald-400 font-bold">
+                      {u.propertiesCount !== undefined ? u.propertiesCount : (u.postedProperties?.length || 0)} Listings
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* Desktop / Tablet Table View */}
+        <div className="hidden sm:block overflow-x-auto">
           <table className="w-full min-w-[650px] text-left text-xs text-gray-300">
             <thead className="bg-[#050806] text-gray-400 font-extrabold uppercase tracking-wider text-[10px] border-b border-emerald-950">
               <tr>

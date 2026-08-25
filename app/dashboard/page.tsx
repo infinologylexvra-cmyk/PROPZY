@@ -688,56 +688,58 @@ function DashboardContent() {
                 </div>
               </div>
             ) : (
-              <form onSubmit={handleAccountFormSave} className="space-y-4 max-w-xl text-xs">
-                <div className="space-y-1">
-                  <label className="block text-gray-300 font-semibold">Full Name</label>
-                  <input
-                    type="text"
-                    required
-                    maxLength={50}
-                    value={accountForm.name}
-                    onChange={(e) => setAccountForm({ ...accountForm, name: sanitizeName(e.target.value) })}
-                    className="w-full px-4 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white text-xs focus:border-emerald-500 focus:outline-none transition-colors"
-                    placeholder="Your full name"
-                  />
+              <form onSubmit={handleAccountFormSave} className="space-y-5 max-w-2xl mx-auto text-xs py-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="block text-gray-300 font-semibold">Full Name</label>
+                    <input
+                      type="text"
+                      required
+                      maxLength={50}
+                      value={accountForm.name}
+                      onChange={(e) => setAccountForm({ ...accountForm, name: sanitizeName(e.target.value) })}
+                      className="w-full px-4 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white text-xs focus:border-emerald-500 focus:outline-none transition-colors"
+                      placeholder="Your full name"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="block text-gray-300 font-semibold">Phone Number (10 Digits)</label>
+                    <input
+                      type="tel"
+                      required
+                      maxLength={10}
+                      value={accountForm.phone}
+                      onChange={(e) => setAccountForm({ ...accountForm, phone: sanitizePhone(e.target.value) })}
+                      className="w-full px-4 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white font-mono text-xs focus:border-emerald-500 focus:outline-none transition-colors"
+                      placeholder="10-digit mobile number"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="block text-gray-300 font-semibold">Email Address</label>
+                    <input
+                      type="email"
+                      value={accountForm.email}
+                      onChange={(e) => setAccountForm({ ...accountForm, email: e.target.value })}
+                      className="w-full px-4 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white text-xs focus:border-emerald-500 focus:outline-none transition-colors"
+                      placeholder="name@example.com"
+                    />
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="block text-gray-300 font-semibold">City</label>
+                    <input
+                      type="text"
+                      value={accountForm.city}
+                      onChange={(e) => setAccountForm({ ...accountForm, city: e.target.value })}
+                      className="w-full px-4 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white text-xs focus:border-emerald-500 focus:outline-none transition-colors"
+                      placeholder="e.g. Mohali, Chandigarh, Zirakpur"
+                    />
+                  </div>
                 </div>
 
-                <div className="space-y-1">
-                  <label className="block text-gray-300 font-semibold">Phone Number (10 Digits)</label>
-                  <input
-                    type="tel"
-                    required
-                    maxLength={10}
-                    value={accountForm.phone}
-                    onChange={(e) => setAccountForm({ ...accountForm, phone: sanitizePhone(e.target.value) })}
-                    className="w-full px-4 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white font-mono text-xs focus:border-emerald-500 focus:outline-none transition-colors"
-                    placeholder="10-digit mobile number"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="block text-gray-300 font-semibold">Email Address</label>
-                  <input
-                    type="email"
-                    value={accountForm.email}
-                    onChange={(e) => setAccountForm({ ...accountForm, email: e.target.value })}
-                    className="w-full px-4 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white text-xs focus:border-emerald-500 focus:outline-none transition-colors"
-                    placeholder="name@example.com"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="block text-gray-300 font-semibold">City</label>
-                  <input
-                    type="text"
-                    value={accountForm.city}
-                    onChange={(e) => setAccountForm({ ...accountForm, city: e.target.value })}
-                    className="w-full px-4 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white text-xs focus:border-emerald-500 focus:outline-none transition-colors"
-                    placeholder="e.g. Mohali, Chandigarh, Zirakpur"
-                  />
-                </div>
-
-                <div className="space-y-1">
+                <div className="space-y-1.5">
                   <label className="block text-gray-300 font-semibold">Account Type / Role</label>
                   <div className="w-full px-4 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white font-bold capitalize flex items-center justify-between">
                     <span className="text-emerald-400 font-extrabold">{user.role === 'owner' ? 'Property Owner' : 'Tenant Account'}</span>
@@ -747,17 +749,17 @@ function DashboardContent() {
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-3 pt-2">
+                <div className="flex items-center justify-center space-x-3 pt-3 border-t border-emerald-950/60">
                   <button
                     type="submit"
-                    className="px-6 py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs rounded-full shadow-lg shadow-emerald-500/20 transition-all uppercase tracking-wider cursor-pointer"
+                    className="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs rounded-full shadow-lg shadow-emerald-500/20 transition-all uppercase tracking-wider cursor-pointer"
                   >
                     Save Changes
                   </button>
                   <button
                     type="button"
                     onClick={() => setIsEditingAccount(false)}
-                    className="px-5 py-3 bg-[#050806] hover:bg-[#09150e] text-gray-400 hover:text-white border border-emerald-950 rounded-full font-bold text-xs transition-colors cursor-pointer"
+                    className="px-5 py-2.5 bg-[#050806] hover:bg-[#09150e] text-gray-400 hover:text-white border border-emerald-950 rounded-full font-bold text-xs transition-colors cursor-pointer"
                   >
                     Cancel
                   </button>

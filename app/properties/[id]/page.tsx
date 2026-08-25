@@ -150,7 +150,7 @@ export default function PropertyDetailPage() {
           </span>
         </div>
 
-        <h1 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
+        <h1 className="text-xl sm:text-4xl font-extrabold text-white tracking-tight">
           {property.title}
         </h1>
 

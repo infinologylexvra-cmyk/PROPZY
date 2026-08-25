@@ -8,7 +8,6 @@ import { PropertyItem, INITIAL_PROPERTIES } from '@/lib/seedData';
 import { PropertyCard } from '@/components/PropertyCard';
 import { InquiryModal } from '@/components/InquiryModal';
 import { SkeletonGrid } from '@/components/Loader';
-import { CallToActionBanner } from '@/components/CallToActionBanner';
 import { useApp } from '@/context/AppContext';
 import { getClientPropertiesCache, setClientPropertiesCache } from '@/lib/clientPropertiesCache';
 
@@ -190,10 +189,44 @@ function PropertySearchContent() {
     fetchFilteredProperties();
   }, [category, city, locality, pidSearch, debouncedMaxPrice, type, bedrooms, verifiedOnly]);
 
+  // Synchronize browser address bar URL with active filter state
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (category && category !== 'all') params.set('category', category);
+    if (city && city !== 'all') params.set('city', city);
+    if (locality) params.set('locality', locality);
+    if (pidSearch) params.set('pid', pidSearch);
+    if (type && type !== 'all') params.set('type', type);
+    if (bedrooms && bedrooms !== 'all') params.set('bedrooms', bedrooms);
+    if (verifiedOnly) params.set('verified', 'true');
+    const isCustomMax = isBuyOrSell(category)
+      ? debouncedMaxPrice !== defaultBuyMax
+      : debouncedMaxPrice !== defaultRentMax;
+    if (debouncedMaxPrice && isCustomMax) {
+      params.set('maxPrice', debouncedMaxPrice.toString());
+    }
+
+    const queryString = params.toString();
+    const targetUrl = queryString ? `/properties?${queryString}` : '/properties';
+
+    if (typeof window !== 'undefined') {
+      const currentFullUrl = `${window.location.pathname}${window.location.search}`;
+      if (currentFullUrl !== targetUrl) {
+        window.history.replaceState(null, '', targetUrl);
+      }
+    }
+  }, [category, city, locality, pidSearch, debouncedMaxPrice, type, bedrooms, verifiedOnly]);
+
   // Reset lazy load batch size whenever filter options change
   useEffect(() => {
     setDisplayedCount(21);
   }, [category, city, locality, pidSearch, debouncedMaxPrice, type, bedrooms, verifiedOnly]);
+
+  const handleCityChange = (newCity: string) => {
+    setCity(newCity);
+    setLocality('');
+    setDisplayedCount(21);
+  };
 
   const handleResetFilters = () => {
     setCategory('all');
@@ -218,9 +251,10 @@ function PropertySearchContent() {
 
     const typeLabel = type !== 'all' ? typeNames[type] || type : 'Properties';
     const cityLabel = city !== 'all' ? `in ${city}` : 'in Chandigarh Tricity';
-    const purposeLabel = category === 'buy' ? 'for Sale' : category === 'pg' || type === 'pg' ? '' : 'for Rent';
+    const purposeLabel = category === 'buy' ? 'for Sale' : category === 'rent' ? 'for Rent' : category === 'pg' || type === 'pg' ? 'PG & Rooms' : '';
+    const localityLabel = locality ? `(${locality})` : '';
 
-    return `${typeLabel} ${purposeLabel} ${cityLabel}`.replace(/\s+/g, ' ').trim();
+    return `${typeLabel} ${purposeLabel} ${cityLabel} ${localityLabel}`.replace(/\s+/g, ' ').trim();
   };
 
   const getBreadcrumbTypeLabel = () => {
@@ -278,7 +312,7 @@ function PropertySearchContent() {
         {/* Header Title */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-emerald-950/80 pb-6">
           <div>
-            <h1 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
+            <h1 className="text-xl sm:text-4xl font-extrabold text-white tracking-tight">
               {getDynamicPageHeading()}
             </h1>
             <p className="text-xs text-gray-400 mt-1">
@@ -406,7 +440,7 @@ function PropertySearchContent() {
                   <select
                     suppressHydrationWarning
                     value={city}
-                    onChange={(e) => setCity(e.target.value)}
+                    onChange={(e) => handleCityChange(e.target.value)}
                     className="w-full px-3.5 py-2.5 text-xs border border-emerald-900/80 rounded-xl bg-[#050806] focus:border-emerald-500 focus:outline-none text-white cursor-pointer font-medium"
                   >
                     <option value="all" className="bg-[#0a110d] text-white">All Cities</option>
@@ -532,7 +566,7 @@ function PropertySearchContent() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8">
           {/* Desktop/Tablet Sidebar Filters */}
-          <aside className="hidden md:block md:col-span-1 bg-[#0a110d] p-6 rounded-3xl border border-emerald-950/90 shadow-xl sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto space-y-6">
+          <aside className="hidden md:block md:col-span-1 bg-[#0a110d] p-6 rounded-3xl border border-emerald-950/90 shadow-xl h-fit self-start space-y-6">
             <div className="flex items-center justify-between border-b border-emerald-950 pb-3">
               <span className="text-sm font-bold text-white flex items-center space-x-2">
                 <SlidersHorizontal size={16} className="text-emerald-400" />
@@ -611,7 +645,7 @@ function PropertySearchContent() {
               <select
                 suppressHydrationWarning
                 value={city}
-                onChange={(e) => setCity(e.target.value)}
+                onChange={(e) => handleCityChange(e.target.value)}
                 className="w-full px-3 py-2.5 text-xs border border-emerald-900/80 rounded-xl bg-[#050806] focus:border-emerald-500 focus:outline-none font-medium text-white cursor-pointer"
               >
                 <option value="all" className="bg-[#0a110d] text-white">All Cities</option>
@@ -705,6 +739,31 @@ function PropertySearchContent() {
 
           {/* Main Property Listings Grid */}
           <main className="md:col-span-2 lg:col-span-3 space-y-6">
+            {/* Active Locality Filter Pill */}
+            {locality && (
+              <div className="flex items-center space-x-2 bg-[#0a110d] px-4 py-2.5 rounded-2xl border border-emerald-950/80">
+                <span className="text-xs text-gray-400 font-medium">Filtering by Locality:</span>
+                <span className="inline-flex items-center space-x-1.5 px-3 py-1 bg-[#0e261a] border border-emerald-800 text-emerald-400 text-xs font-bold rounded-full">
+                  <span>{locality}</span>
+                  <button
+                    type="button"
+                    onClick={() => setLocality('')}
+                    className="hover:text-white cursor-pointer ml-1 transition-colors"
+                    title="Clear locality filter"
+                  >
+                    <X size={12} />
+                  </button>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setLocality('')}
+                  className="text-[11px] text-gray-400 hover:text-emerald-400 font-semibold underline underline-offset-2 ml-auto cursor-pointer"
+                >
+                  Clear Locality
+                </button>
+              </div>
+            )}
+
             {loading ? (
               <SkeletonGrid count={6} />
             ) : properties.length === 0 ? (
@@ -764,17 +823,6 @@ function PropertySearchContent() {
               </>
             )}
           </main>
-        </div>
-
-        <div className="mt-16">
-          <CallToActionBanner
-            subTag="IS READY TO MOVE"
-            titleMain="Let's find your"
-            titleItalic="perfect space."
-            description="Verified homes. Zero brokerage. Hassle-free renting."
-            buttonText="Explore Properties"
-            buttonHref="/properties"
-          />
         </div>
 
         <InquiryModal

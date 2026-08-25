@@ -35,7 +35,7 @@ export default function RelaxPlanPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           propertyId: `relax-${Date.now()}`,
-          propertyTitle: `PROPZY Relax Plan Request (${bhk} in ${city})`,
+          propertyTitle: `PROPZY TRICITY Relax Plan Request (${bhk} in ${city})`,
           propertyPid: `RELAX-PLAN`,
           tenantName: name.trim(),
           tenantPhone: phone.trim(),
@@ -70,9 +70,8 @@ export default function RelaxPlanPage() {
           <span>Personal Assistant Service</span> 
         </div>
 
-        <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight">
-          PROPZY <span className="text-emerald-400">Relax Plan</span>
-
+        <h1 className="text-xl sm:text-5xl font-extrabold tracking-tight">
+          PROPZY TRICITY <span className="text-emerald-400">Relax Plan</span>
         </h1>
         <p className="text-xs sm:text-sm text-gray-300 max-w-2xl leading-relaxed">
           Skip the stress of endless property searching. Get a dedicated Relationship Manager (RM) who understands your exact requirements, handpicks verified owner listings, schedules visits, and negotiates the best rent for you — with 100% guarantee & 0% brokerage.

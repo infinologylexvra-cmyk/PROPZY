@@ -27,9 +27,17 @@ function AdminPropertiesContent() {
   const [statusFilter, setStatusFilter] = useState('all'); // all, verified, pending, featured
   const [categoryFilter, setCategoryFilter] = useState('all');
 
+  // Pagination State (Show 10 listings initially)
+  const [visibleCount, setVisibleCount] = useState(10);
+
   // Edit Modal State
   const [editingProperty, setEditingProperty] = useState<PropertyItem | null>(null);
   const [propertyPendingDeletion, setPropertyPendingDeletion] = useState<PropertyItem | null>(null);
+
+  // Reset pagination when search or filters change
+  useEffect(() => {
+    setVisibleCount(10);
+  }, [searchTerm, cityFilter, statusFilter, categoryFilter]);
 
   const fetchProperties = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
@@ -97,6 +105,8 @@ function AdminPropertiesContent() {
 
     return true;
   });
+
+  const displayedProperties = filteredProperties.slice(0, visibleCount);
 
   // Actions
   const handleVerifyToggle = async (id: string, currentVerified: boolean) => {
@@ -236,37 +246,38 @@ function AdminPropertiesContent() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3.5 sm:space-y-6">
       {/* Header Title */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-emerald-950/80 pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 sm:gap-4 border-b border-emerald-950/80 pb-3.5 sm:pb-6">
         <div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">
+          <h1 className="text-xl sm:text-3xl font-extrabold text-white tracking-tight">
             Property Listings Manager
           </h1>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-[11px] sm:text-xs text-gray-400 mt-0.5 sm:mt-1">
             Search, moderate, verify, feature, or edit all registered property listings.
           </p>
         </div>
 
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-2 sm:space-x-3 self-start sm:self-auto">
           <button
             onClick={() => {
               setSearchTerm('');
               setCityFilter('all');
               setStatusFilter('all');
               setCategoryFilter('all');
+              setVisibleCount(10);
               fetchProperties(false);
             }}
-            className="px-3.5 py-2 rounded-xl bg-[#0b140f] border border-emerald-900/80 text-emerald-400 text-xs font-semibold flex items-center space-x-1.5 hover:bg-emerald-950 transition-colors"
+            className="px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-lg sm:rounded-xl bg-[#0b140f] border border-emerald-900/80 text-emerald-400 text-[11px] sm:text-xs font-semibold flex items-center space-x-1.5 hover:bg-emerald-950 transition-colors cursor-pointer"
           >
-            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
+            <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
             <span>Reset Search</span>
           </button>
         </div>
       </div>
 
       {/* Filter Controls Bar */}
-      <div className="bg-[#0a110d] p-4 sm:p-5 rounded-3xl border border-emerald-950/90 shadow-xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="bg-[#0a110d] p-2.5 sm:p-5 rounded-2xl sm:rounded-3xl border border-emerald-950/90 shadow-xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3">
         {/* Search ID or Keyword */}
         <div className="relative">
           <input
@@ -274,9 +285,9 @@ function AdminPropertiesContent() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search ID, Title, Locality..."
-            className="w-full pl-9 pr-4 py-2.5 bg-[#050806] border border-emerald-900/80 rounded-xl text-xs text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500"
+            className="w-full pl-8 pr-3 py-1.5 sm:py-2.5 bg-[#050806] border border-emerald-900/80 rounded-lg sm:rounded-xl text-[11px] sm:text-xs text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500"
           />
-          <Search className="absolute left-3 top-3 text-emerald-400" size={14} />
+          <Search className="absolute left-2.5 top-2.5 sm:top-3 text-emerald-400" size={13} />
         </div>
 
         {/* City Select */}
@@ -284,7 +295,7 @@ function AdminPropertiesContent() {
           <select
             value={cityFilter}
             onChange={(e) => setCityFilter(e.target.value)}
-            className="w-full px-3 py-2.5 bg-[#050806] border border-emerald-900/80 rounded-xl text-xs font-semibold text-white focus:outline-none focus:border-emerald-500"
+            className="w-full px-2.5 py-1.5 sm:px-3 sm:py-2.5 bg-[#050806] border border-emerald-900/80 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-semibold text-white focus:outline-none focus:border-emerald-500 cursor-pointer"
           >
             <option value="all">All Cities</option>
             <option value="Mohali">Mohali</option>
@@ -300,7 +311,7 @@ function AdminPropertiesContent() {
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
-            className="w-full px-3 py-2.5 bg-[#050806] border border-emerald-900/80 rounded-xl text-xs font-semibold text-white focus:outline-none focus:border-emerald-500"
+            className="w-full px-2.5 py-1.5 sm:px-3 sm:py-2.5 bg-[#050806] border border-emerald-900/80 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-semibold text-white focus:outline-none focus:border-emerald-500 cursor-pointer"
           >
             <option value="all">All Categories</option>
             <option value="rent">Rent</option>
@@ -315,7 +326,7 @@ function AdminPropertiesContent() {
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="w-full px-3 py-2.5 bg-[#050806] border border-emerald-900/80 rounded-xl text-xs font-semibold text-white focus:outline-none focus:border-emerald-500"
+            className="w-full px-2.5 py-1.5 sm:px-3 sm:py-2.5 bg-[#050806] border border-emerald-900/80 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-semibold text-white focus:outline-none focus:border-emerald-500 cursor-pointer"
           >
             <option value="all">All Statuses</option>
             <option value="verified">Verified Only</option>
@@ -325,101 +336,146 @@ function AdminPropertiesContent() {
         </div>
       </div>
 
-      {/* Main Table */}
-      <div className="bg-[#0a110d] rounded-3xl border border-emerald-950/90 shadow-xl overflow-hidden">
-        <div className="p-4 border-b border-emerald-950 flex items-center justify-between">
-          <span className="text-xs font-bold text-gray-300">
-            Showing <span className="text-emerald-400 font-extrabold">{filteredProperties.length}</span> of {properties.length} Listings
+      {/* Main Table Container */}
+      <div className="bg-[#0a110d] rounded-2xl sm:rounded-3xl border border-emerald-950/90 shadow-xl overflow-hidden">
+        <div className="p-2.5 sm:p-4 border-b border-emerald-950 flex items-center justify-between">
+          <span className="text-[11px] sm:text-xs font-bold text-gray-300">
+            Showing <span className="text-emerald-400 font-extrabold">{displayedProperties.length}</span> of {filteredProperties.length} Listings
           </span>
           {loading && (
-            <span className="text-xs text-emerald-400 font-bold flex items-center space-x-1.5 animate-pulse">
-              <RefreshCw size={12} className="animate-spin" />
+            <span className="text-[11px] sm:text-xs text-emerald-400 font-bold flex items-center space-x-1.5 animate-pulse">
+              <RefreshCw size={11} className="animate-spin" />
               <span>Fetching properties...</span>
             </span>
           )}
         </div>
 
-        {/* Mobile View: Dedicated Property Cards (sm:hidden) */}
-        <div className="block sm:hidden divide-y divide-emerald-950/60">
+        {/* Mobile View: Dedicated Distinct Compact Property Cards (sm:hidden) */}
+        <div className="block sm:hidden p-2.5 space-y-2.5 bg-[#050806]">
           {loading && properties.length === 0 ? (
-            <div className="p-8 text-center text-gray-400 text-xs">Loading properties...</div>
+            <div className="p-6 text-center text-gray-400 text-xs">Loading properties...</div>
           ) : filteredProperties.length === 0 ? (
-            <div className="p-8 text-center text-gray-400 text-xs">
+            <div className="p-6 text-center text-gray-400 text-xs bg-[#09110c] border border-emerald-950 rounded-xl">
               No properties match your filter criteria.
             </div>
           ) : (
-            filteredProperties.map((item: any) => {
+            displayedProperties.map((item: any) => {
               const targetId = item.pid || item._id || item.id;
+              const mainImg = item.images && item.images.length > 0 ? item.images[0] : null;
+
               return (
-                <div key={`m-${targetId}`} className="p-4 space-y-3 bg-[#070e0a]/60">
-                  {/* Top Row: PID, Type & Status Badges */}
-                  <div className="flex items-center justify-between gap-2 flex-wrap">
-                    <div className="flex items-center space-x-2">
-                      <span className="px-2.5 py-1 rounded-lg bg-emerald-950/80 border border-emerald-800/80 font-mono font-extrabold text-xs text-emerald-400">
+                <div 
+                  key={`m-${targetId}`} 
+                  className="p-3 space-y-2.5 bg-[#08120c] border border-emerald-900/70 hover:border-emerald-700/90 rounded-xl shadow-md transition-all"
+                >
+                  {/* Top Row: PID, Category Pill & Status Badges */}
+                  <div className="flex items-center justify-between gap-1.5 flex-wrap pb-2 border-b border-emerald-950/70">
+                    <div className="flex items-center space-x-1.5">
+                      <span className="px-2 py-0.5 rounded-md bg-emerald-950 text-emerald-400 border border-emerald-800/80 font-mono font-bold text-[11px]">
                         {item.pid}
                       </span>
-                      <span className="px-2 py-0.5 rounded-full bg-[#0d1c14] border border-emerald-950 text-gray-300 text-[10px] font-semibold capitalize">
+                      <span className="px-1.5 py-0.5 rounded-full bg-[#0d1f15] border border-emerald-900/80 text-gray-300 text-[9px] font-semibold capitalize">
                         {item.category} • {item.type}
                       </span>
                     </div>
 
-                    <div className="flex items-center space-x-1.5 flex-wrap">
+                    <div className="flex items-center space-x-1 flex-wrap">
                       {item.verified ? (
-                        <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full bg-emerald-950/90 text-emerald-400 border border-emerald-800 text-[10px] font-extrabold whitespace-nowrap">
-                          <CheckCircle2 size={11} />
+                        <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full bg-emerald-950/90 text-emerald-400 border border-emerald-800 text-[9px] font-extrabold whitespace-nowrap shadow-sm">
+                          <CheckCircle2 size={10} />
                           <span>VERIFIED</span>
                         </span>
                       ) : (
-                        <span className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full bg-amber-950/90 text-amber-400 border border-amber-800 text-[10px] font-extrabold whitespace-nowrap">
-                          <Clock size={11} />
+                        <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full bg-amber-950/90 text-amber-400 border border-amber-800 text-[9px] font-extrabold whitespace-nowrap shadow-sm">
+                          <Clock size={10} />
                           <span>UNVERIFIED</span>
                         </span>
                       )}
 
                       {item.featured && (
-                        <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full bg-purple-950/90 text-purple-400 border border-purple-800 text-[10px] font-extrabold whitespace-nowrap">
-                          <Star size={10} className="fill-purple-400" />
+                        <span className="inline-flex items-center space-x-1 px-1.5 py-0.5 rounded-full bg-purple-950/90 text-purple-300 border border-purple-800 text-[9px] font-extrabold whitespace-nowrap shadow-sm">
+                          <Star size={9} className="fill-purple-400 text-purple-400" />
                           <span>FEATURED</span>
                         </span>
                       )}
                     </div>
                   </div>
 
-                  {/* Title, Location & Price */}
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0 flex-1">
-                      <div className="font-extrabold text-white text-sm line-clamp-1">{item.title}</div>
-                      <div className="text-xs text-gray-400 mt-0.5 truncate">{item.locality}, {item.city}</div>
-                    </div>
-                    <div className="text-right shrink-0">
-                      <div className="text-sm font-extrabold text-emerald-400 whitespace-nowrap">
-                        ₹{item.price?.toLocaleString('en-IN')}
+                  {/* Middle Row: Image Thumbnail + Title + Price + Location */}
+                  <div className="flex items-start gap-2.5">
+                    {mainImg ? (
+                      <img
+                        src={mainImg}
+                        alt={item.title}
+                        className="w-11 h-11 rounded-lg object-cover border border-emerald-900/80 shrink-0 bg-[#040805]"
+                        onError={(e) => {
+                          (e.target as HTMLElement).style.display = 'none';
+                        }}
+                      />
+                    ) : (
+                      <div className="w-11 h-11 rounded-lg bg-[#040805] border border-emerald-950 flex items-center justify-center text-emerald-500 shrink-0">
+                        <Building size={16} />
                       </div>
-                      <div className="text-[10px] text-gray-500 font-medium">
-                        {item.category === 'rent' || item.category === 'pg' ? '/month' : 'total'}
+                    )}
+
+                    <div className="min-w-0 flex-1 space-y-0.5">
+                      <div className="flex items-baseline justify-between gap-1.5">
+                        <div className="font-bold text-white text-xs line-clamp-1 flex-1">{item.title}</div>
+                        <div className="text-right shrink-0">
+                          <span className="text-xs font-extrabold text-emerald-400 whitespace-nowrap">
+                            ₹{item.price?.toLocaleString('en-IN')}
+                          </span>
+                          <span className="text-[9px] text-gray-500 font-medium block -mt-0.5">
+                            {item.category === 'rent' || item.category === 'pg' ? '/mo' : 'total'}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="text-[10px] text-gray-400 truncate flex items-center space-x-1">
+                        <MapPin size={10} className="text-emerald-500 shrink-0" />
+                        <span>{item.locality}, {item.city}</span>
+                      </div>
+
+                      {/* Specs badges */}
+                      <div className="flex items-center gap-1 flex-wrap pt-0.5">
+                        {item.bedrooms && (
+                          <span className="text-[8px] font-bold bg-[#050806] text-gray-300 border border-emerald-950 px-1 py-0.2 rounded">
+                            {item.bedrooms} BHK
+                          </span>
+                        )}
+                        {item.areaSqFt && (
+                          <span className="text-[8px] font-bold bg-[#050806] text-gray-300 border border-emerald-950 px-1 py-0.2 rounded">
+                            {item.areaSqFt} sq.ft
+                          </span>
+                        )}
+                        {item.furnishing && (
+                          <span className="text-[8px] font-semibold bg-[#050806] text-gray-400 border border-emerald-950 px-1 py-0.2 rounded capitalize">
+                            {item.furnishing}
+                          </span>
+                        )}
                       </div>
                     </div>
                   </div>
 
-                  {/* Owner Contact */}
-                  <div className="flex items-center justify-between py-2 px-3 rounded-xl bg-[#040805] border border-emerald-950 text-xs">
-                    <span className="text-gray-400 text-[11px]">Owner Contact:</span>
+                  {/* Owner Contact Bar */}
+                  <div className="flex items-center justify-around py-1.5 px-2.5 rounded-lg bg-[#040805] border border-emerald-950/80 text-[10px]">
+                    <span className="text-gray-400 text-[10px]">Owner:</span>
                     <a
                       href={`tel:${item.ownerPhone || '+919876543210'}`}
-                      className="font-mono font-bold text-emerald-400 flex items-center space-x-1.5 hover:underline whitespace-nowrap"
+                      className="font-mono font-bold text-emerald-400 flex items-center space-x-1 hover:underline whitespace-nowrap text-[11px]"
                     >
-                      <Phone size={12} className="stroke-[2.5]" />
+                      <Phone size={10} className="stroke-[2.5]" />
                       <span>{item.ownerPhone || '+91 98765 43210'}</span>
                     </a>
                   </div>
 
                   {/* Moderation Actions Toolbar */}
-                  <div className="flex items-center gap-2 pt-1">
+                  <div className="flex items-center gap-1.5 pt-0.5">
                     {/* Verify / Unverify Button */}
                     <button
                       disabled={Boolean(actionPendingId)}
                       onClick={() => handleVerifyToggle(targetId, !!item.verified)}
-                      className={`flex-1 flex items-center justify-center space-x-1.5 py-2 px-3 rounded-xl text-xs font-extrabold transition-all cursor-pointer disabled:opacity-50 whitespace-nowrap shadow-sm active:scale-95 ${
+                      className={`flex-1 h-7 flex items-center justify-center space-x-1 px-2 rounded-lg text-[10px] font-bold transition-all cursor-pointer disabled:opacity-50 whitespace-nowrap shadow-sm active:scale-95 ${
                         item.verified
                           ? 'bg-[#180d10] text-rose-300 border border-rose-800/80 hover:bg-rose-950'
                           : 'bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold shadow-emerald-500/20'
@@ -427,13 +483,13 @@ function AdminPropertiesContent() {
                     >
                       {item.verified ? (
                         <>
-                          <XCircle size={13} />
+                          <XCircle size={11} />
                           <span>Unverify</span>
                         </>
                       ) : (
                         <>
-                          <CheckCircle2 size={13} />
-                          <span>Verify Listing</span>
+                          <CheckCircle2 size={11} />
+                          <span>Verify</span>
                         </>
                       )}
                     </button>
@@ -442,34 +498,34 @@ function AdminPropertiesContent() {
                     <button
                       disabled={Boolean(actionPendingId)}
                       onClick={() => handleFeatureToggle(targetId, !!item.featured)}
-                      className={`p-2 rounded-xl border text-xs font-bold transition-all cursor-pointer disabled:opacity-50 shrink-0 ${
+                      className={`w-7 h-7 flex items-center justify-center rounded-lg border text-xs font-bold transition-all cursor-pointer disabled:opacity-50 shrink-0 ${
                         item.featured
                           ? 'bg-purple-950 text-purple-300 border-purple-800'
                           : 'bg-[#0a1810] text-gray-300 border-emerald-900 hover:text-white'
                       }`}
                       title="Toggle Featured"
                     >
-                      <Star size={15} className={item.featured ? 'text-purple-400 fill-purple-400' : ''} />
+                      <Star size={12} className={item.featured ? 'text-purple-400 fill-purple-400' : ''} />
                     </button>
 
                     {/* Edit Button */}
                     <button
                       disabled={Boolean(actionPendingId)}
                       onClick={() => setEditingProperty(item)}
-                      className="p-2 rounded-xl bg-[#0a1810] border border-emerald-900 text-gray-300 hover:text-emerald-400 text-xs font-bold transition-colors cursor-pointer disabled:opacity-50 shrink-0"
+                      className="w-7 h-7 flex items-center justify-center rounded-lg bg-[#0a1810] border border-emerald-900 text-gray-300 hover:text-emerald-400 text-xs font-bold transition-colors cursor-pointer disabled:opacity-50 shrink-0"
                       title="Edit Property Details"
                     >
-                      <Edit3 size={15} />
+                      <Edit3 size={12} />
                     </button>
 
                     {/* Delete Button */}
                     <button
                       disabled={Boolean(actionPendingId)}
                       onClick={() => setPropertyPendingDeletion(item)}
-                      className="p-2 rounded-xl bg-[#180a0a] border border-rose-950 text-rose-400 hover:bg-rose-950 text-xs font-bold transition-colors cursor-pointer disabled:opacity-50 shrink-0"
+                      className="w-7 h-7 flex items-center justify-center rounded-lg bg-[#180a0a] border border-rose-950 text-rose-400 hover:bg-rose-950 text-xs font-bold transition-colors cursor-pointer disabled:opacity-50 shrink-0"
                       title="Delete Listing"
                     >
-                      <Trash2 size={15} />
+                      <Trash2 size={12} />
                     </button>
                   </div>
                 </div>
@@ -502,7 +558,7 @@ function AdminPropertiesContent() {
                   </td>
                 </tr>
               ) : (
-                filteredProperties.map((item: any) => {
+                displayedProperties.map((item: any) => {
                   const targetId = item.pid || item._id || item.id;
                   return (
                     <tr key={targetId} className="hover:bg-[#07120a] transition-colors">
@@ -593,6 +649,22 @@ function AdminPropertiesContent() {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination: Show More Button */}
+        {visibleCount < filteredProperties.length && (
+          <div className="p-4 border-t border-emerald-950/90 flex flex-col sm:flex-row items-center justify-between gap-3 bg-[#060b08]">
+            <span className="text-xs text-gray-400">
+              Showing <span className="text-emerald-400 font-extrabold">{displayedProperties.length}</span> of <span className="text-white font-bold">{filteredProperties.length}</span> listings
+            </span>
+            <button
+              type="button"
+              onClick={() => setVisibleCount((prev) => prev + 10)}
+              className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs shadow-lg shadow-emerald-500/20 transition-all flex items-center justify-center space-x-2 cursor-pointer active:scale-95"
+            >
+              <span>Show More ({filteredProperties.length - displayedProperties.length} remaining)</span>
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Delete Property Confirmation */}
@@ -703,12 +775,17 @@ function AdminPropertiesContent() {
 
                 <div>
                   <label className="block text-gray-400 font-semibold mb-1">Bedrooms (BHK)</label>
-                  <input
-                    type="number"
-                    value={editingProperty.bedrooms || 2}
+                  <select
+                    value={editingProperty.bedrooms || 1}
                     onChange={(e) => setEditingProperty({ ...editingProperty, bedrooms: Number(e.target.value) })}
-                    className="w-full px-3 py-2 bg-[#050806] border border-emerald-900 rounded-xl text-white"
-                  />
+                    className="w-full px-3 py-2 bg-[#050806] border border-emerald-900 rounded-xl text-white font-semibold focus:outline-none focus:border-emerald-500"
+                  >
+                    <option value={1}>1 BHK</option>
+                    <option value={2}>2 BHK</option>
+                    <option value={3}>3 BHK</option>
+                    <option value={4}>4 BHK</option>
+                    <option value={5}>4+ BHK / Villa</option>
+                  </select>
                 </div>
               </div>
 

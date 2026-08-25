@@ -26,6 +26,8 @@ export const AuthModal: React.FC = () => {
   const router = useRouter();
   const { isAuthModalOpen, closeAuthModal, setUser, user, logoutUser, showToast } = useApp();
   const [mode, setMode] = useState<'login' | 'register'>('login');
+  const modalScrollRef = React.useRef<HTMLDivElement>(null);
+  const errorBannerRef = React.useRef<HTMLDivElement>(null);
 
   // Registration Form State
   const [name, setName] = useState('');
@@ -48,6 +50,25 @@ export const AuthModal: React.FC = () => {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
+  const setFormError = (errMsg: string) => {
+    setError(errMsg);
+    showToast(errMsg);
+  };
+
+  // Automatically scroll to the error notification whenever an error occurs
+  React.useEffect(() => {
+    if (error) {
+      const timer = setTimeout(() => {
+        if (errorBannerRef.current) {
+          errorBannerRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        } else if (modalScrollRef.current) {
+          modalScrollRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [error]);
+
   if (!isAuthModalOpen) return null;
 
   // Google Auth Handlers
@@ -59,7 +80,7 @@ export const AuthModal: React.FC = () => {
   };
 
   const handleGoogleError = (errMsg: string) => {
-    setError(errMsg);
+    setFormError(errMsg);
   };
 
   // Helper for role-based navigation
@@ -81,12 +102,12 @@ export const AuthModal: React.FC = () => {
     e.preventDefault();
     if (submitting) return;
     if (!loginIdentifier.trim() || !loginPassword.trim()) {
-      setError('Please enter your email/username and password');
+      setFormError('Please enter your email/username and password');
       return;
     }
 
     if (loginIdentifier.includes('@') && !isValidEmail(loginIdentifier)) {
-      setError('Please enter a valid email address (e.g., name@example.com).');
+      setFormError('Please enter a valid email address (e.g., name@example.com).');
       return;
     }
 
@@ -110,10 +131,10 @@ export const AuthModal: React.FC = () => {
         resetForm();
         navigateByRole(data.user.role);
       } else {
-        setError(data.message || 'Invalid email or password.');
+        setFormError(data.message || 'Invalid email or password.');
       }
     } catch (err: any) {
-      setError('Unable to sign in right now. Please check your connection and try again.');
+      setFormError('Unable to sign in right now. Please check your connection and try again.');
     } finally {
       setSubmitting(false);
     }
@@ -123,33 +144,33 @@ export const AuthModal: React.FC = () => {
     e.preventDefault();
     if (submitting) return;
     if (!name.trim() || !email.trim() || !phone.trim() || !password.trim()) {
-      setError('Please fill out all registration fields.');
+      setFormError('Please fill out all registration fields.');
       return;
     }
 
     if (!isValidName(name)) {
-      setError('Please enter a valid full name (letters only, no numbers).');
+      setFormError('Please enter a valid full name (letters only, no numbers).');
       return;
     }
 
     if (!isValidPhone(phone)) {
-      setError('Please enter a valid 10-digit mobile phone number.');
+      setFormError('Please enter a valid 10-digit mobile phone number.');
       return;
     }
 
     if (!isValidEmail(email)) {
-      setError('Please enter a valid email address (e.g., name@example.com).');
+      setFormError('Please enter a valid email address (e.g., name@example.com).');
       return;
     }
 
     const passwordError = getPasswordValidationMessage(password);
     if (passwordError) {
-      setError(passwordError);
+      setFormError(passwordError);
       return;
     }
 
     if (password !== confirmPassword) {
-      setError('Passwords do not match. Please re-enter matching passwords.');
+      setFormError('Passwords do not match. Please re-enter matching passwords.');
       return;
     }
 
@@ -178,10 +199,10 @@ export const AuthModal: React.FC = () => {
         resetForm();
         navigateByRole(data.user.role);
       } else {
-        setError(data.message || 'Registration failed.');
+        setFormError(data.message || 'Registration failed.');
       }
     } catch (err: any) {
-      setError('Unable to create your account right now. Please check your connection and try again.');
+      setFormError('Unable to create your account right now. Please check your connection and try again.');
     } finally {
       setSubmitting(false);
     }
@@ -207,7 +228,10 @@ export const AuthModal: React.FC = () => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative w-full max-w-md bg-[#0a110d] rounded-3xl shadow-2xl overflow-hidden border border-emerald-900/80 p-6 sm:p-8 text-gray-100 max-h-[92vh] overflow-y-auto">
+      <div 
+        ref={modalScrollRef}
+        className="relative w-full max-w-md bg-[#0a110d] rounded-3xl shadow-2xl overflow-hidden border border-emerald-900/80 p-6 sm:p-8 text-gray-100 max-h-[92vh] overflow-y-auto scroll-smooth"
+      >
         {/* Close Button */}
         <button
           onClick={closeAuthModal}
@@ -300,8 +324,13 @@ export const AuthModal: React.FC = () => {
             </div>
 
             {error && (
-              <div className="mb-5 p-3 bg-[#1a0809] border border-rose-900/60 text-rose-300 text-xs rounded-xl text-center font-semibold">
-                {error}
+              <div
+                ref={errorBannerRef}
+                tabIndex={-1}
+                className="mb-5 p-3.5 bg-[#1f090b] border border-rose-800/80 text-rose-300 text-xs rounded-2xl text-center font-bold flex items-center justify-center gap-2 shadow-lg animate-in fade-in zoom-in-95 duration-200"
+              >
+                <AlertCircle size={16} className="shrink-0 text-rose-400" />
+                <span>{error}</span>
               </div>
             )}
 
@@ -352,6 +381,13 @@ export const AuthModal: React.FC = () => {
                     </button>
                   </div>
                 </div>
+
+                {error && (
+                  <div className="p-3 bg-[#1f090b] border border-rose-800/80 text-rose-300 text-xs rounded-xl text-center font-bold flex items-center justify-center gap-1.5 shadow animate-pulse">
+                    <AlertCircle size={14} className="shrink-0 text-rose-400" />
+                    <span>{error}</span>
+                  </div>
+                )}
 
                 <button
                   type="submit"
@@ -634,6 +670,13 @@ export const AuthModal: React.FC = () => {
                     </div>
                   )}
                 </div>
+
+                {error && (
+                  <div className="p-3 bg-[#1f090b] border border-rose-800/80 text-rose-300 text-xs rounded-xl text-center font-bold flex items-center justify-center gap-1.5 shadow animate-pulse">
+                    <AlertCircle size={14} className="shrink-0 text-rose-400" />
+                    <span>{error}</span>
+                  </div>
+                )}
 
                 <button
                   type="submit"

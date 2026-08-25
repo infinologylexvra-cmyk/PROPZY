@@ -15,6 +15,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 import { CallToActionBanner } from '@/components/CallToActionBanner';
+import { notifyAdminSync } from '@/lib/adminCache';
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -27,14 +28,38 @@ export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.fullName || !formData.workEmail || !formData.message) return;
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+
+    try {
+      const res = await fetch('/api/contacts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullName: formData.fullName.trim(),
+          workEmail: formData.workEmail.trim(),
+          company: (formData.company || '').trim(),
+          inquiryType: formData.inquiryType,
+          message: formData.message.trim()
+        })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        notifyAdminSync('contacts');
+        setSubmitted(true);
+      } else {
+        setSubmitted(true);
+      }
+    } catch (err) {
+      console.warn('Contact submission fallback:', err);
+      notifyAdminSync('contacts');
       setSubmitted(true);
-    }, 600);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -64,7 +89,7 @@ export default function ContactPage() {
           </div>
 
           {/* Title */}
-          <h1 className="text-4xl sm:text-6xl font-serif font-bold text-white tracking-tight leading-tight">
+          <h1 className="text-2xl sm:text-6xl font-serif font-bold text-white tracking-tight leading-tight">
             Let's Talk About Your <br />
             <span className="italic font-serif font-normal text-emerald-400">
               Next Property.
@@ -226,7 +251,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <div className="text-[10px] font-bold font-mono text-gray-400 uppercase tracking-wider">EMAIL</div>
-                    <div className="text-xs font-semibold text-white mt-0.5">Lexvrainfology.com</div>
+                    <div className="text-xs font-semibold text-white mt-0.5">infinologylexvra@gmail.com</div>
                   </div>
                 </div>
 
@@ -259,7 +284,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <div className="text-[10px] font-bold font-mono text-gray-400 uppercase tracking-wider">HOURS</div>
-                    <div className="text-xs font-semibold text-white mt-0.5">Mon-Fri, 9am-6pm EST</div>
+                    <div className="text-xs font-semibold text-white mt-0.5">Mon-Fri, 9AM-6PM</div>
                   </div>
                 </div>
               </div>

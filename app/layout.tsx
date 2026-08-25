@@ -26,6 +26,11 @@ const jakarta = Plus_Jakarta_Sans({
 export const metadata: Metadata = {
   title: 'Flats, Houses, PGs & Rooms for Rent, Buy & Sale | 0% Brokerage - Propzy',
   description: 'Search verified flats, PGs, houses & rooms for rent, buy & sale with Propzy. Explore real estate properties in Chandigarh, Mohali, Kharar, Zirakpur, Panchkula & more at 0% brokerage.',
+  icons: {
+    icon: '/icon.svg',
+    shortcut: '/icon.svg',
+    apple: '/icon.svg',
+  },
 };
 
 export default function RootLayout({
@@ -36,6 +41,8 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${playfair.variable} ${jakarta.variable}`} suppressHydrationWarning>
       <head>
+        <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/icon.svg" />
         <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://images.unsplash.com" />
         <script

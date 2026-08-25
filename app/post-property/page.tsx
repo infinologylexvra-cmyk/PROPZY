@@ -49,12 +49,18 @@ export default function PostPropertyPage() {
   const [images, setImages] = useState<string[]>([]);
   const [uploadQueue, setUploadQueue] = useState<UploadQueueItem[]>([]);
   const [urlInput, setUrlInput] = useState('');
+  const [isAddingUrl, setIsAddingUrl] = useState(false);
   const [uploadTab, setUploadTab] = useState<'file' | 'url'>('file');
 
   const isUploadingImages = uploadQueue.some(item => item.status === 'uploading');
 
-  const [ownerName, setOwnerName] = useState(user ? user.name : '');
-  const [ownerPhone, setOwnerPhone] = useState(user ? user.phone : '');
+  const [ownerName, setOwnerName] = useState(user?.name || '');
+  const [ownerPhone, setOwnerPhone] = useState(user?.phone || '');
+
+  React.useEffect(() => {
+    if (user?.name && !ownerName) setOwnerName(user.name);
+    if (user?.phone && !ownerPhone) setOwnerPhone(user.phone);
+  }, [user?.name, user?.phone]);
 
   const postPropertyChannelRef = React.useRef<BroadcastChannel | null>(null);
   const draftSyncLockedRef = React.useRef(false);
@@ -126,22 +132,22 @@ export default function PostPropertyPage() {
     if (typeof draft.step === 'number') setStep(draft.step);
     if (draft.category) setCategory(draft.category);
     if (draft.type) setType(draft.type);
-    if (typeof draft.title === 'string') setTitle(draft.title);
-    if (typeof draft.city === 'string') setCity(draft.city);
-    if (typeof draft.locality === 'string') setLocality(draft.locality);
-    if (typeof draft.address === 'string') setAddress(draft.address);
-    if (typeof draft.price !== 'undefined') setPrice(draft.price);
-    if (typeof draft.deposit !== 'undefined') setDeposit(draft.deposit);
-    if (typeof draft.bedrooms === 'number') setBedrooms(draft.bedrooms);
-    if (typeof draft.bathrooms === 'number') setBathrooms(draft.bathrooms);
-    if (typeof draft.areaSqFt === 'number') setAreaSqFt(draft.areaSqFt);
+    if (typeof draft.title === 'string') setTitle(draft.title || '');
+    if (typeof draft.city === 'string') setCity(draft.city || 'Mohali');
+    if (typeof draft.locality === 'string') setLocality(draft.locality || '');
+    if (typeof draft.address === 'string') setAddress(draft.address || '');
+    if (typeof draft.price !== 'undefined') setPrice(draft.price ?? 12000);
+    if (typeof draft.deposit !== 'undefined') setDeposit(draft.deposit ?? 12000);
+    if (typeof draft.bedrooms === 'number') setBedrooms(draft.bedrooms || 2);
+    if (typeof draft.bathrooms === 'number') setBathrooms(draft.bathrooms || 2);
+    if (typeof draft.areaSqFt === 'number') setAreaSqFt(draft.areaSqFt || 1000);
     if (draft.furnishing) setFurnishing(draft.furnishing);
-    if (typeof draft.description === 'string') setDescription(draft.description);
+    if (typeof draft.description === 'string') setDescription(draft.description || '');
     if (Array.isArray(draft.selectedAmenities)) setSelectedAmenities(draft.selectedAmenities);
-    if (typeof draft.urlInput === 'string') setUrlInput(draft.urlInput);
+    if (typeof draft.urlInput === 'string') setUrlInput(draft.urlInput || '');
     if (draft.uploadTab) setUploadTab(draft.uploadTab);
-    if (typeof draft.ownerName === 'string') setOwnerName(draft.ownerName);
-    if (typeof draft.ownerPhone === 'string') setOwnerPhone(draft.ownerPhone);
+    if (typeof draft.ownerName === 'string') setOwnerName(draft.ownerName || '');
+    if (typeof draft.ownerPhone === 'string') setOwnerPhone(draft.ownerPhone || '');
   };
 
   const readImageDraft = () => images;
@@ -194,11 +200,94 @@ export default function PostPropertyPage() {
   const maxSellImages = 10;
   const maxImagesReached = images.length >= maxSellImages;
 
-  const validateImageSource = (src: string) => {
+  const normalizeImageUrl = (input: string): string => {
+    let url = input.trim();
+    if (!url) return '';
+    if (url.startsWith('//')) url = 'https:' + url;
+
+    // Unsplash web page URL -> direct download / CDN URL
+    if (url.includes('unsplash.com/photos/')) {
+      try {
+        const urlObj = new URL(url);
+        const pathSegments = urlObj.pathname.split('/').filter(Boolean);
+        const lastSeg = pathSegments[pathSegments.length - 1];
+        if (lastSeg) {
+          const tokens = lastSeg.split('-');
+          const photoId = tokens[tokens.length - 1] || lastSeg;
+          const cleanId = photoId.replace(/^photo-/, '');
+          return `https://images.unsplash.com/photo-${cleanId}?auto=format&fit=crop&w=1200&q=80`;
+        }
+      } catch {}
+    }
+
+    // Google Drive & Google Usercontent
+    if (
+      url.includes('drive.google.com') ||
+      url.includes('drive.usercontent.google.com') ||
+      url.includes('googleusercontent.com')
+    ) {
+      const idMatch =
+        url.match(/[?&]id=([a-zA-Z0-9_-]+)/) ||
+        url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) ||
+        url.match(/\/d\/([a-zA-Z0-9_-]+)/);
+      if (idMatch && idMatch[1]) {
+        return `https://lh3.googleusercontent.com/d/${idMatch[1]}`;
+      }
+    }
+
+    // Dropbox
+    if (url.includes('dropbox.com') && url.includes('dl=0')) {
+      return url.replace('dl=0', 'raw=1');
+    }
+
+    return url;
+  };
+
+  const validateImageSource = (src: string): Promise<boolean> => {
     return new Promise<boolean>((resolve) => {
+      if (!src || (!src.startsWith('http://') && !src.startsWith('https://') && !src.startsWith('data:image/'))) {
+        resolve(false);
+        return;
+      }
+
+      const isKnownImageHost =
+        src.includes('images.unsplash.com') ||
+        src.includes('res.cloudinary.com') ||
+        src.includes('googleusercontent.com') ||
+        src.includes('drive.usercontent.google.com') ||
+        src.includes('i.imgur.com') ||
+        src.includes('images.pexels.com');
+
       const img = new window.Image();
-      img.onload = () => resolve(true);
-      img.onerror = () => resolve(false);
+      let finished = false;
+
+      const timer = setTimeout(() => {
+        if (!finished) {
+          finished = true;
+          resolve(isKnownImageHost || /\.(jpg|jpeg|png|webp|avif|gif)(\?.*)?$/i.test(src));
+        }
+      }, 3500);
+
+      img.onload = () => {
+        if (!finished) {
+          finished = true;
+          clearTimeout(timer);
+          resolve(true);
+        }
+      };
+
+      img.onerror = () => {
+        if (!finished) {
+          finished = true;
+          clearTimeout(timer);
+          if (isKnownImageHost || /\.(jpg|jpeg|png|webp|avif|gif)(\?.*)?$/i.test(src)) {
+            resolve(true);
+          } else {
+            resolve(false);
+          }
+        }
+      };
+
       img.src = src;
     });
   };
@@ -208,8 +297,9 @@ export default function PostPropertyPage() {
       if (prev.length >= maxSellImages) {
         return prev;
       }
-
-
+      if (prev.includes(imageSrc)) {
+        return prev;
+      }
       return [...prev, imageSrc].slice(0, maxSellImages);
     });
   };
@@ -441,20 +531,18 @@ export default function PostPropertyPage() {
   };
 
   const handleAddUrl = async () => {
-    if (!urlInput.trim()) {
+    if (isAddingUrl) return;
+    const rawUrl = urlInput.trim();
+    if (!rawUrl) {
       showToast('Please enter an image URL');
       return;
     }
 
-    if (images.length >= maxSellImages) {
-      showToast(`Listings can have at most ${maxSellImages} photos`);
-      return;
-    }
+    const imageUrl = normalizeImageUrl(rawUrl);
 
-    const imageUrl = urlInput.trim();
-    const isValid = await validateImageSource(imageUrl);
-    if (!isValid) {
-      showToast('That image URL could not be loaded');
+    if (images.includes(imageUrl)) {
+      showToast('This image URL has already been added');
+      setUrlInput('');
       return;
     }
 
@@ -463,9 +551,33 @@ export default function PostPropertyPage() {
       return;
     }
 
-    appendImage(imageUrl);
-    setUrlInput('');
-    showToast('Image URL added!');
+    setIsAddingUrl(true);
+    try {
+      const isValid = await validateImageSource(imageUrl);
+      if (!isValid) {
+        showToast('Could not load image. Please provide a direct image link or image CDN URL');
+        return;
+      }
+
+      if (images.includes(imageUrl)) {
+        showToast('This image URL has already been added');
+        setUrlInput('');
+        return;
+      }
+
+      if (images.length >= maxSellImages) {
+        showToast(`Listings can have at most ${maxSellImages} photos`);
+        return;
+      }
+
+      appendImage(imageUrl);
+      setUrlInput('');
+      showToast('Image added successfully!');
+    } catch {
+      showToast('Failed to validate image URL');
+    } finally {
+      setIsAddingUrl(false);
+    }
   };
 
   const toggleAmenity = (amenity: string) => {
@@ -636,24 +748,24 @@ export default function PostPropertyPage() {
   }
 
   return (
-    <div className="bg-[#050806] text-gray-100 min-h-screen py-10">
+    <div className="bg-[#050806] text-gray-100 min-h-screen py-6 sm:py-10">
 
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+      <div className="max-w-3xl mx-auto px-3.5 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
         {/* Header */}
         <div className="text-center space-y-2">
-          <div className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full bg-[#0a2618] border border-emerald-800/60 text-emerald-400 text-xs font-bold uppercase tracking-wider">
-            <PlusCircle size={14} />
-            <span>0% Commission • Free Property Listing</span>
+          <div className="inline-flex items-center space-x-1.5 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full bg-[#0a2618] border border-emerald-800/60 text-emerald-400 text-[10px] sm:text-xs font-bold uppercase tracking-wider max-w-full">
+            <PlusCircle size={13} className="shrink-0" />
+            <span className="truncate">0% Commission • Free Property Listing</span>
           </div>
-          <h1 className="text-3xl font-extrabold text-white">Post Your Property For Free</h1>
-          <p className="text-xs text-gray-400">Connect directly with thousands of verified tenants & buyers in Chandigarh Tricity</p>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-white">Post Your Property For Free</h1>
+          <p className="text-xs text-gray-400 max-w-md mx-auto">Connect directly with thousands of verified tenants & buyers in Chandigarh Tricity</p>
         </div>
 
         {/* Form Wizard Container */}
-        <div className="bg-[#0a110d] rounded-3xl border border-emerald-950/90 p-6 sm:p-8 shadow-xl">
+        <div className="bg-[#0a110d] rounded-2xl sm:rounded-3xl border border-emerald-950/90 p-4 sm:p-8 shadow-xl">
           {/* VERIFICATION BLOCK NOTICE FOR UNVERIFIED OWNERS */}
           {!isVerifiedOwner && step !== 4 ? (
-            <div className="bg-[#121609] border border-amber-800/80 rounded-2xl p-6 text-center space-y-4 my-2">
+            <div className="bg-[#121609] border border-amber-800/80 rounded-2xl p-5 sm:p-6 text-center space-y-4 my-2">
               <div className="w-12 h-12 rounded-2xl bg-amber-900/40 text-amber-400 flex items-center justify-center mx-auto border border-amber-700/60 shadow-lg">
                 <ShieldCheck size={24} />
               </div>
@@ -675,7 +787,7 @@ export default function PostPropertyPage() {
               <div className="pt-2 flex items-center justify-center">
                 <Link
                   href="/dashboard?tab=account"
-                  className="px-6 py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs rounded-full shadow-lg transition-all uppercase tracking-wider cursor-pointer"
+                  className="w-full sm:w-auto px-6 py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs rounded-full shadow-lg transition-all uppercase tracking-wider cursor-pointer text-center"
                 >
                   {user.verificationStatus === 'pending' ? 'Check Status in Profile' : 'Upload Electricity Bill in Profile'}
                 </Link>
@@ -686,20 +798,22 @@ export default function PostPropertyPage() {
             <>
               {/* Progress Indicator Bar */}
               {step < 4 && (
-                <div className="flex items-center justify-between mb-8 pb-6 border-b border-emerald-950 text-xs font-semibold">
-                  <div className={`flex items-center space-x-2 ${step >= 1 ? 'text-emerald-400 font-bold' : 'text-gray-500'}`}>
-                    <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${step >= 1 ? 'bg-emerald-500 text-black font-extrabold' : 'bg-gray-800 text-gray-400'}`}>1</span>
-                    <span>Basic Details</span>
-                  </div>
-                  <div className="h-0.5 w-12 bg-emerald-950" />
-                  <div className={`flex items-center space-x-2 ${step >= 2 ? 'text-emerald-400 font-bold' : 'text-gray-500'}`}>
-                    <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${step >= 2 ? 'bg-emerald-500 text-black font-extrabold' : 'bg-gray-800 text-gray-400'}`}>2</span>
-                    <span>Specs & Amenities</span>
-                  </div>
-                  <div className="h-0.5 w-12 bg-emerald-950" />
-                  <div className={`flex items-center space-x-2 ${step >= 3 ? 'text-emerald-400 font-bold' : 'text-gray-500'}`}>
-                    <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${step >= 3 ? 'bg-emerald-500 text-black font-extrabold' : 'bg-gray-800 text-gray-400'}`}>3</span>
-                    <span>Photos & Contact</span>
+                <div className="mb-6 sm:mb-8 pb-4 sm:pb-6 border-b border-emerald-950">
+                  <div className="flex items-center justify-between text-xs font-semibold">
+                    <div className={`flex items-center space-x-1.5 sm:space-x-2 ${step >= 1 ? 'text-emerald-400 font-bold' : 'text-gray-500'}`}>
+                      <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] sm:text-xs shrink-0 ${step >= 1 ? 'bg-emerald-500 text-black font-extrabold' : 'bg-gray-800 text-gray-400'}`}>1</span>
+                      <span className="text-[11px] sm:text-xs">Basic<span className="hidden sm:inline"> Details</span></span>
+                    </div>
+                    <div className={`h-0.5 flex-1 mx-2 sm:mx-4 ${step >= 2 ? 'bg-emerald-500/60' : 'bg-emerald-950'}`} />
+                    <div className={`flex items-center space-x-1.5 sm:space-x-2 ${step >= 2 ? 'text-emerald-400 font-bold' : 'text-gray-500'}`}>
+                      <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] sm:text-xs shrink-0 ${step >= 2 ? 'bg-emerald-500 text-black font-extrabold' : 'bg-gray-800 text-gray-400'}`}>2</span>
+                      <span className="text-[11px] sm:text-xs">Specs<span className="hidden sm:inline"> & Amenities</span></span>
+                    </div>
+                    <div className={`h-0.5 flex-1 mx-2 sm:mx-4 ${step >= 3 ? 'bg-emerald-500/60' : 'bg-emerald-950'}`} />
+                    <div className={`flex items-center space-x-1.5 sm:space-x-2 ${step >= 3 ? 'text-emerald-400 font-bold' : 'text-gray-500'}`}>
+                      <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] sm:text-xs shrink-0 ${step >= 3 ? 'bg-emerald-500 text-black font-extrabold' : 'bg-gray-800 text-gray-400'}`}>3</span>
+                      <span className="text-[11px] sm:text-xs">Photos<span className="hidden sm:inline"> & Contact</span></span>
+                    </div>
                   </div>
                 </div>
               )}
@@ -708,10 +822,10 @@ export default function PostPropertyPage() {
 
           {/* STEP 1: Basic Info */}
           {step === 1 && (
-            <div className="space-y-6 text-xs">
+            <div className="space-y-5 sm:space-y-6 text-xs">
               <div>
                 <label className="block text-gray-300 font-semibold mb-2">Purpose / Category</label>
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {(['rent', 'sell', 'pg', 'commercial'] as const).map((cat) => (
                     <button
                       key={cat}
@@ -730,7 +844,7 @@ export default function PostPropertyPage() {
 
               <div>
                 <label className="block text-gray-300 font-semibold mb-2">Property Type</label>
-                <div className="grid grid-cols-4 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {(['flat', 'house', 'pg', 'commercial'] as const).map((t) => (
                     <button
                       key={t}
@@ -752,20 +866,20 @@ export default function PostPropertyPage() {
                 <input
                   type="text"
                   required
-                  value={title}
+                  value={title ?? ''}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="e.g. Spacious 2BHK Apartment with Balcony in Sector 70"
-                  className="w-full px-4 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white focus:border-emerald-500 focus:outline-none"
+                  className="w-full px-3.5 sm:px-4 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white focus:border-emerald-500 focus:outline-none"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <label className="block text-gray-300 font-semibold mb-1">City *</label>
                   <select
-                    value={city}
+                    value={city ?? 'Mohali'}
                     onChange={(e) => setCity(e.target.value)}
-                    className="w-full px-4 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white focus:border-emerald-500 focus:outline-none"
+                    className="w-full px-3.5 sm:px-4 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white focus:border-emerald-500 focus:outline-none cursor-pointer"
                   >
                     <option value="Mohali" className="bg-[#0a110d] text-white">Mohali</option>
                     <option value="Chandigarh" className="bg-[#0a110d] text-white">Chandigarh</option>
@@ -780,15 +894,15 @@ export default function PostPropertyPage() {
                   <input
                     type="text"
                     required
-                    value={locality}
+                    value={locality ?? ''}
                     onChange={(e) => setLocality(e.target.value)}
                     placeholder="e.g. Sector 70 or Aerocity"
-                    className="w-full px-4 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white focus:border-emerald-500 focus:outline-none"
+                    className="w-full px-3.5 sm:px-4 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white focus:border-emerald-500 focus:outline-none"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <label className="block text-gray-300 font-semibold mb-1">
                     {category === 'sell' || category === 'buy' ? 'Expected Sale Price (₹) *' : 'Monthly Rent (₹) *'}
@@ -796,9 +910,9 @@ export default function PostPropertyPage() {
                   <input
                     type="number"
                     required
-                    value={price}
+                    value={price ?? ''}
                     onChange={(e) => setPrice(e.target.value ? Number(e.target.value) : '')}
-                    className="w-full px-4 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white font-mono focus:border-emerald-500 focus:outline-none font-bold"
+                    className="w-full px-3.5 sm:px-4 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white font-mono focus:border-emerald-500 focus:outline-none font-bold"
                   />
                 </div>
 
@@ -806,9 +920,9 @@ export default function PostPropertyPage() {
                   <label className="block text-gray-300 font-semibold mb-1">Security Deposit (₹)</label>
                   <input
                     type="number"
-                    value={deposit}
+                    value={deposit ?? ''}
                     onChange={(e) => setDeposit(e.target.value ? Number(e.target.value) : '')}
-                    className="w-full px-4 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white font-mono focus:border-emerald-500 focus:outline-none font-bold"
+                    className="w-full px-3.5 sm:px-4 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white font-mono focus:border-emerald-500 focus:outline-none font-bold"
                   />
                 </div>
               </div>
@@ -822,7 +936,7 @@ export default function PostPropertyPage() {
                   }
                   setStep(2);
                 }}
-                className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs rounded-full shadow-lg shadow-emerald-500/20 uppercase tracking-wider transition-all cursor-pointer"
+                className="w-full py-3.5 sm:py-4 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs sm:text-sm rounded-xl sm:rounded-full shadow-lg shadow-emerald-500/20 uppercase tracking-wider transition-all cursor-pointer text-center"
               >
                 Next Step: Specifications →
               </button>
@@ -831,14 +945,14 @@ export default function PostPropertyPage() {
 
           {/* STEP 2: Specs & Amenities */}
           {step === 2 && (
-            <div className="space-y-6 text-xs">
-              <div className="grid grid-cols-3 gap-4">
+            <div className="space-y-5 sm:space-y-6 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                 <div>
                   <label className="block text-gray-300 font-semibold mb-1">Bedrooms (BHK)</label>
                   <select
                     value={bedrooms}
                     onChange={(e) => setBedrooms(Number(e.target.value))}
-                    className="w-full px-3 py-2.5 bg-[#050806] border border-emerald-900/80 rounded-xl text-white focus:border-emerald-500 focus:outline-none"
+                    className="w-full px-3.5 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white focus:border-emerald-500 focus:outline-none cursor-pointer"
                   >
                     <option value={1}>1 BHK</option>
                     <option value={2}>2 BHK</option>
@@ -852,7 +966,7 @@ export default function PostPropertyPage() {
                   <select
                     value={bathrooms}
                     onChange={(e) => setBathrooms(Number(e.target.value))}
-                    className="w-full px-3 py-2.5 bg-[#050806] border border-emerald-900/80 rounded-xl text-white focus:border-emerald-500 focus:outline-none"
+                    className="w-full px-3.5 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white focus:border-emerald-500 focus:outline-none cursor-pointer"
                   >
                     <option value={1}>1 Bath</option>
                     <option value={2}>2 Baths</option>
@@ -867,7 +981,7 @@ export default function PostPropertyPage() {
 
                   <input
                     type="number"
-                    value={areaSqFt}
+                    value={areaSqFt ?? ''}
                     onChange={(e) => {
                       const value = e.target.value;
 
@@ -875,7 +989,8 @@ export default function PostPropertyPage() {
                         setAreaSqFt(Number(value));
                       }
                     }}
-                    className="w-full px-3 py-2.5 bg-[#050806] border border-emerald-900/80 rounded-xl text-white font-mono focus:border-emerald-500 focus:outline-none"
+                    placeholder="e.g. 1100"
+                    className="w-full px-3.5 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white font-mono focus:border-emerald-500 focus:outline-none font-bold"
                   />
                 </div>
               </div>
@@ -888,8 +1003,8 @@ export default function PostPropertyPage() {
                       key={f}
                       type="button"
                       onClick={() => setFurnishing(f)}
-                      className={`py-2 rounded-xl text-xs font-bold capitalize transition-all border ${furnishing === f
-                        ? 'bg-emerald-500 text-black border-emerald-500'
+                      className={`py-2.5 rounded-xl text-xs font-bold capitalize transition-all border text-center ${furnishing === f
+                        ? 'bg-emerald-500 text-black border-emerald-500 shadow-md'
                         : 'bg-[#050806] text-gray-400 border-emerald-950 hover:text-white'
                         }`}
                     >
@@ -907,30 +1022,30 @@ export default function PostPropertyPage() {
                       key={amenity}
                       type="button"
                       onClick={() => toggleAmenity(amenity)}
-                      className={`p-2.5 rounded-xl text-xs font-semibold text-left flex items-center justify-between border transition-all ${selectedAmenities.includes(amenity)
+                      className={`p-2.5 rounded-xl text-xs font-semibold text-left flex items-center justify-between border transition-all cursor-pointer ${selectedAmenities.includes(amenity)
                         ? 'bg-[#0e261a] text-emerald-400 border-emerald-700/80'
                         : 'bg-[#050806] text-gray-400 border-emerald-950 hover:text-white'
                         }`}
                     >
-                      <span>{amenity}</span>
+                      <span className="truncate pr-1">{amenity}</span>
                       {selectedAmenities.includes(amenity) && <Check size={14} className="text-emerald-400 shrink-0" />}
                     </button>
                   ))}
                 </div>
               </div>
 
-              <div className="flex items-center space-x-3 pt-2">
+              <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center gap-3 pt-2">
                 <button
                   type="button"
                   onClick={() => setStep(1)}
-                  className="w-1/3 py-3 bg-[#050806] text-gray-300 border border-emerald-950 rounded-full font-bold text-xs"
+                  className="w-full sm:w-1/3 py-3.5 bg-[#050806] hover:bg-[#09140d] text-gray-300 border border-emerald-950 rounded-xl sm:rounded-full font-bold text-xs transition-colors cursor-pointer text-center"
                 >
-                  ← Back
+                  ← Back to Details
                 </button>
                 <button
                   type="button"
                   onClick={() => setStep(3)}
-                  className="w-2/3 py-3.5 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs rounded-full shadow-lg shadow-emerald-500/20 uppercase tracking-wider transition-all cursor-pointer"
+                  className="w-full sm:w-2/3 py-3.5 sm:py-4 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs sm:text-sm rounded-xl sm:rounded-full shadow-lg shadow-emerald-500/20 uppercase tracking-wider transition-all cursor-pointer text-center"
                 >
                   Next Step: Contact Info →
                 </button>
@@ -940,10 +1055,10 @@ export default function PostPropertyPage() {
 
           {/* STEP 3: Contact & Submit */}
           {step === 3 && (
-            <form onSubmit={handleSubmit} className="space-y-5 text-xs">
+            <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6 text-xs">
               {/* Property Photos & Upload Section */}
-              <div className="bg-[#050806] border border-emerald-950 rounded-2xl p-4 sm:p-5 space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-emerald-950 pb-3">
+              <div className="bg-[#050806] border border-emerald-950 rounded-2xl p-3.5 sm:p-5 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-emerald-950 pb-3">
                   <div>
                     <label className="block text-white font-bold text-xs">
                       Property Photos <span className="text-rose-400">*</span> ({images.length} / {maxSellImages})
@@ -952,27 +1067,27 @@ export default function PostPropertyPage() {
                   </div>
 
                   {/* Mode Selector Tabs */}
-                  <div className="flex items-center space-x-1 bg-[#0a110d] p-1 rounded-xl border border-emerald-950 text-[11px]">
+                  <div className="flex items-center space-x-1 bg-[#0a110d] p-1 rounded-xl border border-emerald-950 text-[11px] w-full sm:w-auto">
                     <button
                       type="button"
                       onClick={() => setUploadTab('file')}
-                      className={`px-3 py-1 rounded-lg font-bold transition-all flex items-center space-x-1.5 ${uploadTab === 'file'
+                      className={`flex-1 sm:flex-initial px-3 py-1.5 rounded-lg font-bold transition-all flex items-center justify-center space-x-1.5 cursor-pointer ${uploadTab === 'file'
                         ? 'bg-emerald-500 text-black shadow'
                         : 'text-gray-400 hover:text-white'
                         }`}
                     >
-                      <Upload size={12} />
+                      <Upload size={12} className="shrink-0" />
                       <span>Upload Files</span>
                     </button>
                     <button
                       type="button"
                       onClick={() => setUploadTab('url')}
-                      className={`px-3 py-1 rounded-lg font-bold transition-all flex items-center space-x-1.5 ${uploadTab === 'url'
+                      className={`flex-1 sm:flex-initial px-3 py-1.5 rounded-lg font-bold transition-all flex items-center justify-center space-x-1.5 cursor-pointer ${uploadTab === 'url'
                         ? 'bg-emerald-500 text-black shadow'
                         : 'text-gray-400 hover:text-white'
                         }`}
                     >
-                      <ImageIcon size={12} />
+                      <ImageIcon size={12} className="shrink-0" />
                       <span>Paste Image URL</span>
                     </button>
                   </div>
@@ -980,7 +1095,7 @@ export default function PostPropertyPage() {
 
                 {uploadTab === 'file' ? (
                   /* File Drag & Drop Upload Zone */
-                  <div className="relative border-2 border-dashed border-emerald-900/80 hover:border-emerald-500/80 transition-colors bg-[#080d0a] rounded-xl p-6 text-center group cursor-pointer">
+                  <div className="relative border-2 border-dashed border-emerald-900/80 hover:border-emerald-500/80 transition-colors bg-[#080d0a] rounded-xl p-4 sm:p-6 text-center group cursor-pointer">
                     <input
                       type="file"
                       accept="image/*"
@@ -989,8 +1104,8 @@ export default function PostPropertyPage() {
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                     />
                     <div className="flex flex-col items-center space-y-2">
-                      <div className="w-12 h-12 rounded-full bg-[#0e261a] border border-emerald-800/80 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform">
-                        <Upload size={22} />
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[#0e261a] border border-emerald-800/80 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform">
+                        <Upload size={20} className="sm:w-[22px] sm:h-[22px]" />
                       </div>
                       <span className="text-xs font-bold text-gray-200 group-hover:text-emerald-400 transition-colors">
                         Click to browse or drag & drop property photos
@@ -1005,150 +1120,168 @@ export default function PostPropertyPage() {
                   <div className="flex items-center space-x-2">
                     <input
                       type="url"
-                      value={urlInput}
+                      value={urlInput ?? ''}
                       onChange={(e) => setUrlInput(e.target.value)}
-                      placeholder="Paste image web link (e.g. https://images.unsplash.com/...)"
-                      className="flex-1 px-4 py-2.5 bg-[#080d0a] border border-emerald-900/80 rounded-xl text-white font-mono focus:border-emerald-500 focus:outline-none text-xs"
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAddUrl();
+                        }
+                      }}
+                      disabled={isAddingUrl}
+                      placeholder="Paste image web link (e.g. https://...)"
+                      className="flex-1 min-w-0 px-3 sm:px-4 py-2.5 bg-[#080d0a] border border-emerald-900/80 rounded-xl text-white font-mono focus:border-emerald-500 focus:outline-none text-xs disabled:opacity-50"
                     />
                     <button
                       type="button"
                       onClick={handleAddUrl}
-                      className="px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold rounded-xl transition-colors text-xs flex items-center space-x-1"
+                      disabled={isAddingUrl || !urlInput.trim()}
+                      className="px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed text-black font-extrabold rounded-xl transition-colors text-xs flex items-center space-x-1 cursor-pointer shrink-0"
                     >
-                      <Plus size={14} />
-                      <span>Add</span>
+                      {isAddingUrl ? (
+                        <>
+                          <Loader2 size={14} className="animate-spin" />
+                          <span>Adding...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Plus size={14} />
+                          <span>Add</span>
+                        </>
+                      )}
                     </button>
                   </div>
                 )}
 
                 {/* Uploaded & In-Progress Photos Thumbnails Grid */}
                 {images.length === 0 && uploadQueue.length === 0 ? (
-                  <div className="flex items-center space-x-2 text-[11px] text-amber-300/90 bg-[#1c1407] px-3.5 py-2.5 rounded-xl border border-amber-800/60">
-                    <AlertTriangle size={14} className="text-amber-400 shrink-0" />
+                  <div className="flex items-start sm:items-center space-x-2 text-[11px] text-amber-300/90 bg-[#1c1407] p-3 sm:px-3.5 sm:py-2.5 rounded-xl border border-amber-800/60">
+                    <AlertTriangle size={14} className="text-amber-400 shrink-0 mt-0.5 sm:mt-0" />
                     <span>
                       <strong className="text-amber-400">Photo Required:</strong> Please upload at least 1 real photo of your property to submit the listing.
                     </span>
                   </div>
                 ) : (
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-semibold text-gray-400">
-                      Your Photos ({images.length} / {maxSellImages} uploaded):
-                    </span>
-                    {isUploadingImages && (
-                      <span className="inline-flex items-center space-x-1.5 text-xs text-emerald-400 font-bold bg-emerald-950/80 border border-emerald-800 px-2.5 py-0.5 rounded-full animate-pulse">
-                        <Loader2 size={12} className="animate-spin" />
-                        <span>Uploading photos...</span>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-semibold text-gray-400">
+                        Your Photos ({images.length} / {maxSellImages} uploaded):
                       </span>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
-                    {/* 1. Already Uploaded Photos */}
-                    {images.map((img, idx) => (
-                      <div key={`img-${idx}`} className="relative group rounded-xl overflow-hidden border border-emerald-900/80 aspect-video bg-black/40 shadow-md">
-                        <LazyImage src={img} alt={`Upload ${idx + 1}`} className="w-full h-full object-cover" />
-
-                        {idx === 0 && (
-                          <span className="absolute top-1 left-1 bg-emerald-500 text-black text-[9px] font-extrabold px-1.5 py-0.5 rounded shadow">
-                            Cover
-                          </span>
-                        )}
-
-                        <span className="absolute bottom-1 left-1 bg-black/75 backdrop-blur-xs text-emerald-400 text-[8px] font-bold px-1.5 py-0.5 rounded border border-emerald-800/60 flex items-center space-x-0.5">
-                          <Check size={9} />
-                          <span>{img.startsWith('data:') ? 'Ready' : 'Uploaded'}</span>
+                      {isUploadingImages && (
+                        <span className="inline-flex items-center space-x-1.5 text-xs text-emerald-400 font-bold bg-emerald-950/80 border border-emerald-800 px-2.5 py-0.5 rounded-full animate-pulse">
+                          <Loader2 size={12} className="animate-spin" />
+                          <span>Uploading photos...</span>
                         </span>
+                      )}
+                    </div>
 
-                        <button
-                          type="button"
-                          onClick={() => handleRemoveImage(idx)}
-                          className="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-600/90 hover:bg-red-500 text-white flex items-center justify-center transition-all opacity-90 sm:opacity-0 sm:group-hover:opacity-100 shadow-md cursor-pointer"
-                          title="Remove photo"
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 sm:gap-3">
+                      {/* 1. Already Uploaded Photos */}
+                      {images.map((img, idx) => (
+                        <div key={`img-${idx}`} className="relative group rounded-xl overflow-hidden border border-emerald-900/80 aspect-video bg-black/40 shadow-md">
+                          <LazyImage src={img} alt={`Upload ${idx + 1}`} className="w-full h-full object-cover" />
+
+                          {idx === 0 && (
+                            <span className="absolute top-1 left-1 bg-emerald-500 text-black text-[9px] font-extrabold px-1.5 py-0.5 rounded shadow">
+                              Cover
+                            </span>
+                          )}
+
+                          <span className="absolute bottom-1 left-1 bg-black/75 backdrop-blur-xs text-emerald-400 text-[8px] font-bold px-1.5 py-0.5 rounded border border-emerald-800/60 flex items-center space-x-0.5">
+                            <Check size={9} />
+                            <span>{img.startsWith('data:') ? 'Ready' : 'Uploaded'}</span>
+                          </span>
+
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveImage(idx)}
+                            className="absolute top-1 right-1 w-6 h-6 rounded-full bg-red-600/90 hover:bg-red-500 text-white flex items-center justify-center transition-all shadow-md cursor-pointer"
+                            title="Remove photo"
+                          >
+                            <X size={12} />
+                          </button>
+                        </div>
+                      ))}
+
+                      {/* 2. In-Progress & Failed Upload Queue Items */}
+                      {uploadQueue.map((item) => (
+                        <div
+                          key={item.id}
+                          className={`relative rounded-xl overflow-hidden aspect-video bg-black/70 flex flex-col items-center justify-center border p-1 ${item.status === 'error' ? 'border-red-600 bg-red-950/40' : 'border-emerald-500/80'
+                            }`}
                         >
-                          <X size={12} />
-                        </button>
-                      </div>
-                    ))}
+                          <img src={item.previewUrl} alt={item.name} className="absolute inset-0 w-full h-full object-cover opacity-30" />
 
-                    {/* 2. In-Progress & Failed Upload Queue Items */}
-                    {uploadQueue.map((item) => (
-                      <div
-                        key={item.id}
-                        className={`relative rounded-xl overflow-hidden aspect-video bg-black/70 flex flex-col items-center justify-center border p-1 ${item.status === 'error' ? 'border-red-600 bg-red-950/40' : 'border-emerald-500/80'
-                          }`}
-                      >
-                        <img src={item.previewUrl} alt={item.name} className="absolute inset-0 w-full h-full object-cover opacity-30" />
-
-                        {item.status === 'uploading' && (
-                          <div className="relative z-10 flex flex-col items-center space-y-1 text-center px-1">
-                            <Loader2 size={18} className="text-emerald-400 animate-spin" />
-                            <span className="text-[10px] font-bold text-white font-mono">{item.progress}%</span>
-                            <span className="text-[8px] text-emerald-300 font-semibold truncate max-w-[80px]">Uploading...</span>
-                          </div>
-                        )}
-
-                        {item.status === 'error' && (
-                          <div className="relative z-10 flex flex-col items-center space-y-1 text-center px-1">
-                            <span className="text-[9px] font-extrabold text-red-400">Failed</span>
-                            <div className="flex items-center space-x-1">
-                              <button
-                                type="button"
-                                onClick={() => handleRetryUpload(item)}
-                                className="p-1 rounded bg-emerald-600 hover:bg-emerald-500 text-white text-[9px] font-bold flex items-center space-x-0.5"
-                                title="Retry Upload"
-                              >
-                                <RotateCw size={10} />
-                                <span>Retry</span>
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleRemoveQueueItem(item.id)}
-                                className="p-1 rounded bg-gray-800 hover:bg-gray-700 text-gray-300"
-                                title="Dismiss"
-                              >
-                                <X size={10} />
-                              </button>
+                          {item.status === 'uploading' && (
+                            <div className="relative z-10 flex flex-col items-center space-y-1 text-center px-1">
+                              <Loader2 size={16} className="text-emerald-400 animate-spin" />
+                              <span className="text-[10px] font-bold text-white font-mono">{item.progress}%</span>
+                              <span className="text-[8px] text-emerald-300 font-semibold truncate max-w-[80px]">Uploading...</span>
                             </div>
-                          </div>
-                        )}
-                      </div>
-                    ))}
+                          )}
 
-                    {/* 3. Add More button inside grid */}
-                    <label className={`relative flex flex-col items-center justify-center border-2 border-dashed rounded-xl aspect-video bg-[#080d0a] transition-colors text-emerald-400 hover:text-emerald-300 ${maxImagesReached || isUploadingImages
-                      ? 'border-gray-800 opacity-50 cursor-not-allowed pointer-events-none'
-                      : 'border-emerald-900/60 hover:border-emerald-500 cursor-pointer'
-                      }`}>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        multiple
-                        onChange={handleFileUpload}
-                        disabled={maxImagesReached || isUploadingImages}
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
-                      />
-                      <Plus size={20} />
-                      <span className="text-[10px] font-bold mt-1">
-                        {maxImagesReached ? 'Limit Reached' : 'Add More'}
-                      </span>
-                    </label>
+                          {item.status === 'error' && (
+                            <div className="relative z-10 flex flex-col items-center space-y-1 text-center px-1">
+                              <span className="text-[9px] font-extrabold text-red-400">Failed</span>
+                              <div className="flex items-center space-x-1">
+                                <button
+                                  type="button"
+                                  onClick={() => handleRetryUpload(item)}
+                                  className="p-1 rounded bg-emerald-600 hover:bg-emerald-500 text-white text-[9px] font-bold flex items-center space-x-0.5"
+                                  title="Retry Upload"
+                                >
+                                  <RotateCw size={10} />
+                                  <span>Retry</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveQueueItem(item.id)}
+                                  className="p-1 rounded bg-gray-800 hover:bg-gray-700 text-gray-300"
+                                  title="Dismiss"
+                                >
+                                  <X size={10} />
+                                </button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+
+                      {/* 3. Add More button inside grid */}
+                      <label className={`relative flex flex-col items-center justify-center border-2 border-dashed rounded-xl aspect-video bg-[#080d0a] transition-colors text-emerald-400 hover:text-emerald-300 ${maxImagesReached || isUploadingImages
+                        ? 'border-gray-800 opacity-50 cursor-not-allowed pointer-events-none'
+                        : 'border-emerald-900/60 hover:border-emerald-500 cursor-pointer'
+                        }`}>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          onChange={handleFileUpload}
+                          disabled={maxImagesReached || isUploadingImages}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                        />
+                        <Plus size={18} />
+                        <span className="text-[10px] font-bold mt-1">
+                          {maxImagesReached ? 'Limit Reached' : 'Add More'}
+                        </span>
+                      </label>
+                    </div>
                   </div>
-                </div>
                 )}
 
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              {/* Owner Details - 1 column on mobile, 2 columns on desktop */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <label className="block text-gray-300 font-semibold mb-1">Owner / Agent Name *</label>
                   <input
                     type="text"
                     required
                     maxLength={50}
-                    value={ownerName}
+                    value={ownerName ?? ''}
                     onChange={(e) => setOwnerName(sanitizeName(e.target.value))}
-                    className="w-full px-4 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white focus:border-emerald-500 focus:outline-none"
+                    className="w-full px-3.5 sm:px-4 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white focus:border-emerald-500 focus:outline-none"
                   />
                 </div>
 
@@ -1158,9 +1291,9 @@ export default function PostPropertyPage() {
                     type="tel"
                     required
                     maxLength={10}
-                    value={ownerPhone}
+                    value={ownerPhone ?? ''}
                     onChange={(e) => setOwnerPhone(sanitizePhone(e.target.value))}
-                    className="w-full px-4 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl font-mono focus:border-emerald-500 focus:outline-none font-bold text-emerald-400"
+                    className="w-full px-3.5 sm:px-4 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl font-mono focus:border-emerald-500 focus:outline-none font-bold text-emerald-400 text-sm tracking-wide"
                   />
                 </div>
 
@@ -1170,25 +1303,25 @@ export default function PostPropertyPage() {
                 <label className="block text-gray-300 font-semibold mb-1">Detailed Property Description</label>
                 <textarea
                   rows={3}
-                  value={description}
+                  value={description ?? ''}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Describe your property, nearest landmarks, metro access, power backup details..."
-                  className="w-full px-4 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white focus:border-emerald-500 focus:outline-none"
+                  className="w-full px-3.5 sm:px-4 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white focus:border-emerald-500 focus:outline-none"
                 />
               </div>
 
-              <div className="flex items-center space-x-3 pt-2">
+              <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center gap-3 pt-2">
                 <button
                   type="button"
                   onClick={() => setStep(2)}
-                  className="w-1/3 py-3 bg-[#050806] text-gray-300 border border-emerald-950 rounded-full font-bold text-xs"
+                  className="w-full sm:w-1/3 py-3.5 bg-[#050806] hover:bg-[#09140d] text-gray-300 border border-emerald-950 rounded-xl sm:rounded-full font-bold text-xs transition-colors cursor-pointer text-center"
                 >
-                  ← Back
+                  ← Back to Specs
                 </button>
                 <button
                   type="submit"
                   disabled={submitting || isUploadingImages}
-                  className="w-2/3 py-3.5 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs rounded-full shadow-lg shadow-emerald-500/20 uppercase tracking-wider transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                  className="w-full sm:w-2/3 py-3.5 sm:py-4 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs sm:text-sm rounded-xl sm:rounded-full shadow-lg shadow-emerald-500/20 uppercase tracking-wider transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2 text-center"
                 >
                   {submitting ? (
                     <>

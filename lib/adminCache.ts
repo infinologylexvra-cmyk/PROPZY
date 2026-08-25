@@ -3,13 +3,14 @@ import { PropertyItem } from './seedData';
 const CACHE_KEY = 'propzy_admin_data_v2';
 const CHANNEL_NAME = 'propzy_admin_sync_channel';
 
-export type AdminDataType = 'properties' | 'inquiries' | 'users' | 'verifications';
+export type AdminDataType = 'properties' | 'inquiries' | 'users' | 'verifications' | 'contacts';
 
 interface AdminCacheStore {
   properties: PropertyItem[] | null;
   inquiries: any[] | null;
   users: any[] | null;
   verifications: any[] | null;
+  contacts: any[] | null;
 }
 
 let syncChannel: BroadcastChannel | null = null;
@@ -23,13 +24,13 @@ if (typeof window !== 'undefined' && typeof BroadcastChannel !== 'undefined') {
 
 const getStore = (): AdminCacheStore => {
   if (typeof window === 'undefined') {
-    return { properties: null, inquiries: null, users: null, verifications: null };
+    return { properties: null, inquiries: null, users: null, verifications: null, contacts: null };
   }
   try {
     const raw = localStorage.getItem(CACHE_KEY);
     if (raw) return JSON.parse(raw);
   } catch (e) {}
-  return { properties: null, inquiries: null, users: null, verifications: null };
+  return { properties: null, inquiries: null, users: null, verifications: null, contacts: null };
 };
 
 const saveStore = (data: Partial<AdminCacheStore>) => {
@@ -67,6 +68,7 @@ export const subscribeAdminSync = (callback: (type: AdminDataType) => void): (()
       callback('verifications');
       callback('inquiries');
       callback('users');
+      callback('contacts');
     }
   };
   window.addEventListener('storage', handleStorageEvent);
@@ -114,6 +116,12 @@ export const setCachedVerifications = (data: any[], notify = true): void => {
   if (notify) notifyAdminSync('verifications');
 };
 
+export const getCachedContacts = (): any[] | null => getStore().contacts;
+export const setCachedContacts = (data: any[], notify = true): void => {
+  saveStore({ contacts: data });
+  if (notify) notifyAdminSync('contacts');
+};
+
 export const clearAdminCache = (): void => {
   if (typeof window !== 'undefined') {
     try {
@@ -122,6 +130,7 @@ export const clearAdminCache = (): void => {
       notifyAdminSync('verifications');
       notifyAdminSync('inquiries');
       notifyAdminSync('users');
+      notifyAdminSync('contacts');
     } catch (e) {}
   }
 };

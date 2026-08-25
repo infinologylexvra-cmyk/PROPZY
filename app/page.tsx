@@ -205,7 +205,7 @@ export default function HomePage() {
             </div>
 
             {/* Main Headline */}
-            <h1 className="text-3xl sm:text-6xl lg:text-7xl font-extrabold text-white tracking-tight leading-[1.15]">
+            <h1 className="text-2xl sm:text-6xl lg:text-7xl font-extrabold text-white tracking-tight leading-[1.15]">
               Verified properties for <br />
               <span className="font-serif italic text-emerald-500 bg-clip-text font-normal">
                 Rent Buy Sale
@@ -323,7 +323,7 @@ export default function HomePage() {
             <span>EXPLORE BY LOCATION</span>
           </div>
 
-          <h2 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight max-w-xl mx-auto">
+          <h2 className="text-xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight max-w-xl mx-auto">
             Where would you like to <br className="sm:hidden" />
             <span className="block sm:inline font-serif italic text-emerald-400 font-normal">live?</span>
           </h2>
@@ -432,7 +432,7 @@ export default function HomePage() {
               <span>HAND PICKED AND VERIFIED</span>
             </div>
 
-            <h2 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
+            <h2 className="text-xl sm:text-5xl font-extrabold text-white tracking-tight">
               Homes worth <br className="hidden sm:inline" />
               <span className="font-serif italic text-emerald-400 font-normal">discovering.</span>
             </h2>
@@ -539,72 +539,72 @@ export default function HomePage() {
           </div>
 
           {/* Section Title */}
-          <div className="max-w-2xl space-y-3 mb-10">
-            <h2 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight">
+          <div className="max-w-2xl space-y-2.5 sm:space-y-3 mb-6 sm:mb-10">
+            <h2 className="text-xl sm:text-5xl font-extrabold text-white tracking-tight leading-snug sm:leading-tight">
               Your personal manager <br className="sm:hidden" />
               finds your perfect home, <br className="sm:hidden" />
               <span className="font-serif italic text-emerald-400 font-normal">10× faster.</span>
             </h2>
-            <p className="text-xs sm:text-sm text-gray-400">
+            <p className="text-[11px] sm:text-sm text-gray-400">
               From understanding your needs to finalizing the perfect property – we handle it all, end to end.
             </p>
           </div>
           
 
           {/* 4 Step Cards Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-10">
             {/* Step 01 */}
-            <div className="bg-[#050806] border border-emerald-950/90 rounded-2xl p-5 space-y-3 relative group hover:border-emerald-800/60 transition-colors">
+            <div className="bg-[#050806] border border-emerald-950/90 rounded-2xl p-3.5 sm:p-5 space-y-2 sm:space-y-3 relative group hover:border-emerald-800/60 transition-colors">
               <div className="flex items-center justify-between">
-                <div className="w-10 h-10 rounded-xl bg-emerald-950/80 border border-emerald-900/60 flex items-center justify-center text-emerald-400">
-                  <FileText size={18} />
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-emerald-950/80 border border-emerald-900/60 flex items-center justify-center text-emerald-400">
+                  <FileText size={15} className="sm:w-4.5 sm:h-4.5" />
                 </div>
-                <span className="text-xs font-mono font-bold text-gray-500">01</span>
+                <span className="text-[10px] sm:text-xs font-mono font-bold text-gray-500">01</span>
               </div>
-              <h3 className="text-sm font-bold text-white">Understand</h3>
-              <p className="text-xs text-gray-400 leading-relaxed">
+              <h3 className="text-xs sm:text-sm font-bold text-white">Understand</h3>
+              <p className="text-[11px] sm:text-xs text-gray-400 leading-relaxed">
                 We understand your needs, budget & preferences to short-list the best options for you.
               </p>
             </div>
 
             {/* Step 02 */}
-            <div className="bg-[#050806] border border-emerald-950/90 rounded-2xl p-5 space-y-3 relative group hover:border-emerald-800/60 transition-colors">
+            <div className="bg-[#050806] border border-emerald-950/90 rounded-2xl p-3.5 sm:p-5 space-y-2 sm:space-y-3 relative group hover:border-emerald-800/60 transition-colors">
               <div className="flex items-center justify-between">
-                <div className="w-10 h-10 rounded-xl bg-emerald-950/80 border border-emerald-900/60 flex items-center justify-center text-emerald-400">
-                  <UserCheck size={18} />
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-emerald-950/80 border border-emerald-900/60 flex items-center justify-center text-emerald-400">
+                  <UserCheck size={15} className="sm:w-4.5 sm:h-4.5" />
                 </div>
-                <span className="text-xs font-mono font-bold text-gray-500">02</span>
+                <span className="text-[10px] sm:text-xs font-mono font-bold text-gray-500">02</span>
               </div>
-              <h3 className="text-sm font-bold text-white">Personalize</h3>
-              <p className="text-xs text-gray-400 leading-relaxed">
+              <h3 className="text-xs sm:text-sm font-bold text-white">Personalize</h3>
+              <p className="text-[11px] sm:text-xs text-gray-400 leading-relaxed">
                 We curate a personalized plan with the best properties that match your lifestyle.
               </p>
             </div>
 
             {/* Step 03 */}
-            <div className="bg-[#050806] border border-emerald-950/90 rounded-2xl p-5 space-y-3 relative group hover:border-emerald-800/60 transition-colors">
+            <div className="bg-[#050806] border border-emerald-950/90 rounded-2xl p-3.5 sm:p-5 space-y-2 sm:space-y-3 relative group hover:border-emerald-800/60 transition-colors">
               <div className="flex items-center justify-between">
-                <div className="w-10 h-10 rounded-xl bg-emerald-950/80 border border-emerald-900/60 flex items-center justify-center text-emerald-400">
-                  <Bell size={18} />
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-emerald-950/80 border border-emerald-900/60 flex items-center justify-center text-emerald-400">
+                  <Bell size={15} className="sm:w-4.5 sm:h-4.5" />
                 </div>
-                <span className="text-xs font-mono font-bold text-gray-500">03</span>
+                <span className="text-[10px] sm:text-xs font-mono font-bold text-gray-500">03</span>
               </div>
-              <h3 className="text-sm font-bold text-white">Stay Updated</h3>
-              <p className="text-xs text-gray-400 leading-relaxed">
+              <h3 className="text-xs sm:text-sm font-bold text-white">Stay Updated</h3>
+              <p className="text-[11px] sm:text-xs text-gray-400 leading-relaxed">
                 Your Relationship Manager keeps you updated on new listings & price changes.
               </p>
             </div>
 
             {/* Step 04 */}
-            <div className="bg-[#050806] border border-emerald-950/90 rounded-2xl p-5 space-y-3 relative group hover:border-emerald-800/60 transition-colors">
+            <div className="bg-[#050806] border border-emerald-950/90 rounded-2xl p-3.5 sm:p-5 space-y-2 sm:space-y-3 relative group hover:border-emerald-800/60 transition-colors">
               <div className="flex items-center justify-between">
-                <div className="w-10 h-10 rounded-xl bg-emerald-950/80 border border-emerald-900/60 flex items-center justify-center text-emerald-400">
-                  <HeartHandshake size={18} />
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-emerald-950/80 border border-emerald-900/60 flex items-center justify-center text-emerald-400">
+                  <HeartHandshake size={15} className="sm:w-4.5 sm:h-4.5" />
                 </div>
-                <span className="text-xs font-mono font-bold text-gray-500">04</span>
+                <span className="text-[10px] sm:text-xs font-mono font-bold text-gray-500">04</span>
               </div>
-              <h3 className="text-sm font-bold text-white">Get Results</h3>
-              <p className="text-xs text-gray-400 leading-relaxed">
+              <h3 className="text-xs sm:text-sm font-bold text-white">Get Results</h3>
+              <p className="text-[11px] sm:text-xs text-gray-400 leading-relaxed">
                 We negotiate, finalize & help you move in with 100% transparency.
               </p>
             </div>
@@ -638,7 +638,7 @@ export default function HomePage() {
             <span>EXPLORE</span>
           </div>
 
-          <h2 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight">
+          <h2 className="text-xl sm:text-5xl font-extrabold text-white tracking-tight">
             Spaces that fit <br className="hidden sm:inline" />
             <span className="font-serif italic text-emerald-400 font-normal">your life</span>
           </h2>
@@ -711,7 +711,7 @@ export default function HomePage() {
               <span>WE HAVE GOT YOU</span>
             </div>
 
-            <h2 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight">
+            <h2 className="text-xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight">
               Everything <br />
               handled, <br />
               <span className="font-serif italic text-emerald-400 font-normal">hassle free.</span>

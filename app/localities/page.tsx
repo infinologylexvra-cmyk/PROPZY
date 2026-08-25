@@ -8,12 +8,14 @@ import { MapPin, ArrowRight, ArrowLeft } from 'lucide-react';
 export default function LocalitiesPage() {
   const router = useRouter();
   const localities = [
-    { city: 'Mohali', name: 'Sector 71', desc: 'Prime residential hub near Fortis Hospital & IT Park.', count: '450+ verified homes' },
-    { city: 'Mohali', name: 'Phase 3B2', desc: 'Famous for bustling market, cafes, and luxury builder floors.', count: '380+ verified homes' },
-    { city: 'Chandigarh', name: 'Sector 35', desc: 'Heart of Chandigarh with top educational coaching & food street.', count: '520+ verified homes' },
-    { city: 'Zirakpur', name: 'VIP Road', desc: 'High-rise modern apartments with 24/7 security and shopping malls.', count: '610+ verified homes' },
-    { city: 'Kharar', name: 'CU Highway', desc: 'Ideal student & bachelor hub near Chandigarh University.', count: '750+ PG & flats' },
-    { city: 'Panchkula', name: 'Sector 20', desc: 'Peaceful, green villa neighborhood with great connectivity.', count: '290+ verified homes' },
+    { city: 'Mohali', name: 'Sector 70', query: 'Sector 70', desc: 'Prime residential hub near Homeland Heights, PCA Stadium & IT City.', count: '6+ verified homes' },
+    { city: 'Zirakpur', name: 'VIP Road', query: 'VIP Road', desc: 'High-rise modern apartments with 24/7 security, shopping malls & easy airport connectivity.', count: '5+ verified homes' },
+    { city: 'Kharar', name: 'Sunny Enclave', query: 'Sunny Enclave', desc: 'Gated residential colony on Kharar-Chandigarh Highway near VR Punjab Mall.', count: '3+ verified homes' },
+    { city: 'Chandigarh', name: 'Sector 35', query: 'Sector 35', desc: 'Heart of Chandigarh with top educational coaching, markets & luxury floors.', count: '2+ verified homes' },
+    { city: 'Mohali', name: 'Sector 71', query: 'Sector 71', desc: 'Prime residential hub near Fortis Hospital, Phase 7 market & IT Park.', count: 'Verified homes' },
+    { city: 'Panchkula', name: 'Sector 20', query: 'Sector 20', desc: 'Peaceful, green villa neighborhood with great connectivity to Zirakpur & Chandigarh.', count: 'Verified homes' },
+    { city: 'Kharar', name: 'Highway & University Area', query: 'Highway', desc: 'Ideal student & bachelor hub near Chandigarh University with verified PGs & flats.', count: 'Verified PGs & Flats' },
+    { city: 'Chandigarh', name: 'Sector 22 & PGI Corridor', query: 'Sector 22', desc: 'Central shopping, hospitality and medical hub near PGI and Panjab University.', count: 'Verified homes' },
   ];
 
   return (
@@ -40,24 +42,26 @@ export default function LocalitiesPage() {
         <p className="text-xs text-gray-500">Discover top neighborhood profiles across Chandigarh Tricity</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {localities.map((loc) => (
           <Link
             key={loc.name}
-            href={`/properties?city=${loc.city}&locality=${loc.name}`}
-            className="p-6 bg-emerald-800/20 rounded-3xl border border-emerald-400/40 shadow-xs hover:shadow-xl transition-all group"
+            href={`/properties?city=${loc.city}&locality=${encodeURIComponent(loc.query)}`}
+            className="p-6 bg-[#080d0a] hover:bg-[#0c1610] rounded-3xl border border-emerald-950/90 hover:border-emerald-500/60 shadow-lg hover:shadow-2xl transition-all group flex flex-col justify-between"
           >
-            <div className="flex items-center space-x-2 text-xs text-emerald-500 font-bold mb-2">
-              <MapPin size={16} />
-              <span>{loc.city} • {loc.name}</span>
+            <div>
+              <div className="flex items-center space-x-2 text-xs text-emerald-400 font-bold mb-2">
+                <MapPin size={16} className="text-emerald-400 shrink-0" />
+                <span>{loc.city} • {loc.name}</span>
+              </div>
+              <h3 className="text-base font-bold text-white group-hover:text-emerald-400 transition-colors mb-2">{loc.name}</h3>
+              <p className="text-xs text-gray-400 leading-relaxed mb-4">{loc.desc}</p>
             </div>
-            <h3 className="text-base font-bold text-white hover:text-emerald-500-group  mb-2">{loc.name}</h3>
-            <p className="text-xs text-gray-500 mb-4">{loc.desc}</p>
-            <div className="flex items-center justify-between text-xs font-semibold pt-3 border-t border-gray-700">
-              <span className="text-gray-500">{loc.count}</span>
-              <span className="text-emerald-500 flex items-center space-x-1 group-hover:underline">
+            <div className="flex items-center justify-between text-xs font-semibold pt-3 border-t border-emerald-950/80">
+              <span className="text-gray-400">{loc.count}</span>
+              <span className="text-emerald-400 font-bold flex items-center space-x-1 group-hover:underline">
                 <span>View Listings</span>
-                <ArrowRight size={14} />
+                <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
               </span>
             </div>
           </Link>

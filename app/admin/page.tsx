@@ -173,132 +173,132 @@ export default function AdminOverviewPage() {
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4 sm:space-y-8">
       {/* Page Title & Status Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-emerald-950/80 pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 border-b border-emerald-950/80 pb-3.5 sm:pb-6">
         <div>
-          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-[#0a2618] border border-emerald-800/60 text-emerald-400 text-xs font-semibold mb-2">
-            <Sparkles size={13} />
+          <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-[#0a2618] border border-emerald-800/60 text-emerald-400 text-[10px] sm:text-xs font-semibold mb-1 sm:mb-2">
+            <Sparkles size={11} />
             <span>Propzy Administrative Portal</span>
           </div>
-          <h1 className="text-3xl font-extrabold text-white tracking-tight">
+          <h1 className="text-xl sm:text-3xl font-extrabold text-white tracking-tight">
             Dashboard Overview
           </h1>
-          <p className="text-xs text-gray-400 mt-1">
+          <p className="text-[11px] sm:text-xs text-gray-400 mt-0.5 sm:mt-1">
             Real-time platform statistics, property moderation queue & tenant lead tracker.
           </p>
         </div>
 
-        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:space-x-3 w-full sm:w-auto">
+        <div className="flex flex-row items-center gap-2 sm:gap-3 sm:space-x-3 w-full sm:w-auto">
           <button
             onClick={handleRefresh}
             disabled={refreshing}
-            className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-bold flex items-center justify-center space-x-2 shadow-lg shadow-emerald-500/20 transition-all cursor-pointer disabled:opacity-50 w-full sm:w-auto"
+            className="flex-1 sm:flex-none px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-[11px] sm:text-xs font-bold flex items-center justify-center space-x-1.5 shadow-md shadow-emerald-500/20 transition-all cursor-pointer disabled:opacity-50"
           >
-            <RefreshCw size={14} className={refreshing ? 'animate-spin' : ''} />
+            <RefreshCw size={12} className={refreshing ? 'animate-spin' : ''} />
             <span>{refreshing ? 'Refreshing...' : 'Refresh Data'}</span>
           </button>
 
           <Link
             href="/admin/properties"
-            className="px-4 py-2 rounded-xl bg-[#0a1810] border border-emerald-900/80 text-emerald-400 hover:bg-emerald-950 text-xs font-semibold flex items-center justify-center space-x-1.5 transition-colors w-full sm:w-auto"
+            className="flex-1 sm:flex-none px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl bg-[#0a1810] border border-emerald-900/80 text-emerald-400 hover:bg-emerald-950 text-[11px] sm:text-xs font-semibold flex items-center justify-center space-x-1.5 transition-colors whitespace-nowrap"
           >
-            <Building size={14} />
-            <span>Manage All Listings ({totalListings})</span>
+            <Building size={12} />
+            <span>Manage All ({totalListings})</span>
           </Link>
         </div>
       </div>
 
       {/* 4 KPI Metrics Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-5">
         {/* Metric 1 */}
-        <div className="bg-[#0a110d] p-5 rounded-3xl border border-emerald-950/90 shadow-xl space-y-3 relative overflow-hidden group">
+        <div className="bg-[#0a110d] p-3 sm:p-5 rounded-2xl sm:rounded-3xl border border-emerald-950/90 shadow-md space-y-2 sm:space-y-3 relative overflow-hidden group">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-gray-400">Total Listings</span>
-            <div className="w-10 h-10 rounded-2xl bg-[#0e2216] border border-emerald-800/60 text-emerald-400 flex items-center justify-center">
-              <Building size={20} />
+            <span className="text-[10px] sm:text-xs font-bold text-gray-400">Total Listings</span>
+            <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-[#0e2216] border border-emerald-800/60 text-emerald-400 flex items-center justify-center">
+              <Building size={14} className="sm:w-5 sm:h-5" />
             </div>
           </div>
           <div>
-            <div className="text-3xl font-extrabold text-white tracking-tight">{totalListings}</div>
-            <div className="text-[11px] text-emerald-400 font-semibold mt-1 flex items-center space-x-1">
+            <div className="text-xl sm:text-3xl font-extrabold text-white tracking-tight">{totalListings}</div>
+            <div className="text-[9px] sm:text-[11px] text-emerald-400 font-semibold mt-0.5 sm:mt-1 flex items-center space-x-1">
               <span>{verifiedListings} Verified Listings</span>
             </div>
           </div>
         </div>
 
         {/* Metric 2 */}
-        <div className="bg-[#0a110d] p-5 rounded-3xl border border-emerald-950/90 shadow-xl space-y-3 relative overflow-hidden group">
+        <div className="bg-[#0a110d] p-3 sm:p-5 rounded-2xl sm:rounded-3xl border border-emerald-950/90 shadow-md space-y-2 sm:space-y-3 relative overflow-hidden group">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-gray-400">Pending Review</span>
-            <div className="w-10 h-10 rounded-2xl bg-[#261c0a] border border-amber-800/60 text-amber-400 flex items-center justify-center">
-              <Clock size={20} />
+            <span className="text-[10px] sm:text-xs font-bold text-gray-400">Pending Review</span>
+            <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-[#261c0a] border border-amber-800/60 text-amber-400 flex items-center justify-center">
+              <Clock size={14} className="sm:w-5 sm:h-5" />
             </div>
           </div>
           <div>
-            <div className="text-3xl font-extrabold text-white tracking-tight">{pendingVerification}</div>
-            <div className="text-[11px] text-amber-400 font-semibold mt-1 flex items-center space-x-1">
-              <span>Awaiting Admin Moderation</span>
+            <div className="text-xl sm:text-3xl font-extrabold text-white tracking-tight">{pendingVerification}</div>
+            <div className="text-[9px] sm:text-[11px] text-amber-400 font-semibold mt-0.5 sm:mt-1 flex items-center space-x-1">
+              <span>Awaiting Moderation</span>
             </div>
           </div>
         </div>
 
         {/* Metric 3 */}
-        <div className="bg-[#0a110d] p-5 rounded-3xl border border-emerald-950/90 shadow-xl space-y-3 relative overflow-hidden group">
+        <div className="bg-[#0a110d] p-3 sm:p-5 rounded-2xl sm:rounded-3xl border border-emerald-950/90 shadow-md space-y-2 sm:space-y-3 relative overflow-hidden group">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-gray-400">Tenant Leads</span>
-            <div className="w-10 h-10 rounded-2xl bg-[#0d2426] border border-cyan-800/60 text-cyan-400 flex items-center justify-center">
-              <MessageSquare size={20} />
+            <span className="text-[10px] sm:text-xs font-bold text-gray-400">Tenant Leads</span>
+            <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-[#0d2426] border border-cyan-800/60 text-cyan-400 flex items-center justify-center">
+              <MessageSquare size={14} className="sm:w-5 sm:h-5" />
             </div>
           </div>
           <div>
-            <div className="text-3xl font-extrabold text-white tracking-tight">{inquiries.length || 12}</div>
-            <div className="text-[11px] text-cyan-400 font-semibold mt-1 flex items-center space-x-1">
+            <div className="text-xl sm:text-3xl font-extrabold text-white tracking-tight">{inquiries.length || 12}</div>
+            <div className="text-[9px] sm:text-[11px] text-cyan-400 font-semibold mt-0.5 sm:mt-1 flex items-center space-x-1">
               <span>Active Inquiries & Visits</span>
             </div>
           </div>
         </div>
 
         {/* Metric 4 */}
-        <div className="bg-[#0a110d] p-5 rounded-3xl border border-emerald-950/90 shadow-xl space-y-3 relative overflow-hidden group">
+        <div className="bg-[#0a110d] p-3 sm:p-5 rounded-2xl sm:rounded-3xl border border-emerald-950/90 shadow-md space-y-2 sm:space-y-3 relative overflow-hidden group">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-gray-400">Featured Homes</span>
-            <div className="w-10 h-10 rounded-2xl bg-[#1d0e26] border border-purple-800/60 text-purple-400 flex items-center justify-center">
-              <ShieldCheck size={20} />
+            <span className="text-[10px] sm:text-xs font-bold text-gray-400">Featured</span>
+            <div className="w-7 h-7 sm:w-10 sm:h-10 rounded-xl sm:rounded-2xl bg-[#1d0e26] border border-purple-800/60 text-purple-400 flex items-center justify-center">
+              <ShieldCheck size={14} className="sm:w-5 sm:h-5" />
             </div>
           </div>
           <div>
-            <div className="text-3xl font-extrabold text-white tracking-tight">{featuredListings}</div>
-            <div className="text-[11px] text-purple-400 font-semibold mt-1 flex items-center space-x-1">
-              <span>Promoted on Homepage</span>
+            <div className="text-xl sm:text-3xl font-extrabold text-white tracking-tight">{featuredListings}</div>
+            <div className="text-[9px] sm:text-[11px] text-purple-400 font-semibold mt-0.5 sm:mt-1 flex items-center space-x-1">
+              <span>Promoted on Home</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* Middle Section: City Breakdown & Quick Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-8">
         {/* City Breakdown Stats */}
-        <div className="lg:col-span-2 bg-[#0a110d] p-6 rounded-3xl border border-emerald-950/90 shadow-xl space-y-5">
-          <div className="flex items-center justify-between border-b border-emerald-950 pb-3">
-            <h3 className="text-sm font-extrabold text-white tracking-wide">
+        <div className="lg:col-span-2 bg-[#0a110d] p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl border border-emerald-950/90 shadow-md space-y-3 sm:space-y-5">
+          <div className="flex items-center justify-between border-b border-emerald-950 pb-2 sm:pb-3 gap-2">
+            <h3 className="text-xs sm:text-sm font-extrabold text-white tracking-wide truncate">
               City-Wise Property Distribution
             </h3>
-            <span className="text-[10px] text-emerald-400 font-bold bg-[#0a2014] border border-emerald-800/60 px-2.5 py-0.5 rounded-full">
+            <span className="text-[9px] sm:text-[10px] text-emerald-400 font-bold bg-[#0a2014] border border-emerald-800/60 px-2 py-0.5 rounded-full whitespace-nowrap shrink-0">
               Tricity Region
             </span>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-2 sm:space-y-3">
             {citiesSummary.map((item) => {
               const percentage = Math.round((item.count / (totalListings || 1)) * 100);
               return (
                 <div key={item.city} className="space-y-1">
-                  <div className="flex justify-between text-xs font-bold">
+                  <div className="flex justify-between text-[11px] sm:text-xs font-semibold">
                     <span className="text-gray-200">{item.city}</span>
-                    <span className="text-emerald-400">{item.count} properties ({percentage}%)</span>
+                    <span className="text-emerald-400 text-[10px] sm:text-xs">{item.count} properties ({percentage}%)</span>
                   </div>
-                  <div className="h-2 w-full bg-[#050806] rounded-full overflow-hidden border border-emerald-950">
+                  <div className="h-1.5 sm:h-2 w-full bg-[#050806] rounded-full overflow-hidden border border-emerald-950">
                     <div
                       className="h-full bg-emerald-500 rounded-full transition-all duration-500"
                       style={{ width: `${Math.max(percentage, 8)}%` }}
@@ -311,63 +311,117 @@ export default function AdminOverviewPage() {
         </div>
 
         {/* Quick Admin Actions */}
-        <div className="bg-[#0a110d] p-6 rounded-3xl border border-emerald-950/90 shadow-xl space-y-4 flex flex-col justify-between">
+        <div className="bg-[#0a110d] p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl border border-emerald-950/90 shadow-md space-y-3 sm:space-y-4 flex flex-col justify-between">
           <div>
-            <h3 className="text-sm font-extrabold text-white tracking-wide border-b border-emerald-950 pb-3 mb-4">
+            <h3 className="text-xs sm:text-sm font-extrabold text-white tracking-wide border-b border-emerald-950 pb-2 sm:pb-3 mb-2.5 sm:mb-4">
               Quick Admin Actions
             </h3>
-            <div className="space-y-2.5">
+            <div className="space-y-2 sm:space-y-2.5">
               <Link
                 href="/admin/properties"
-                className="w-full p-3 rounded-2xl bg-[#07140c] border border-emerald-900/60 hover:border-emerald-500 flex items-center justify-between text-xs font-bold text-gray-200 hover:text-emerald-400 transition-all group"
+                className="w-full p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-[#07140c] border border-emerald-900/60 hover:border-emerald-500 flex items-center justify-between text-[11px] sm:text-xs font-bold text-gray-200 hover:text-emerald-400 transition-all group"
               >
-                <div className="flex items-center space-x-3">
-                  <ShieldCheck size={18} className="text-emerald-400" />
+                <div className="flex items-center space-x-2.5 sm:space-x-3">
+                  <ShieldCheck size={14} className="text-emerald-400 sm:w-4 sm:h-4" />
                   <span>Moderate & Verify Listings</span>
                 </div>
-                <ArrowUpRight size={16} className="text-gray-500 group-hover:text-emerald-400" />
+                <ArrowUpRight size={13} className="text-gray-500 group-hover:text-emerald-400" />
               </Link>
 
               <Link
                 href="/admin/inquiries"
-                className="w-full p-3 rounded-2xl bg-[#07140c] border border-emerald-900/60 hover:border-emerald-500 flex items-center justify-between text-xs font-bold text-gray-200 hover:text-emerald-400 transition-all group"
+                className="w-full p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-[#07140c] border border-emerald-900/60 hover:border-emerald-500 flex items-center justify-between text-[11px] sm:text-xs font-bold text-gray-200 hover:text-emerald-400 transition-all group"
               >
-                <div className="flex items-center space-x-3">
-                  <MessageSquare size={18} className="text-emerald-400" />
+                <div className="flex items-center space-x-2.5 sm:space-x-3">
+                  <MessageSquare size={14} className="text-emerald-400 sm:w-4 sm:h-4" />
                   <span>Manage Tenant Leads</span>
                 </div>
-                <ArrowUpRight size={16} className="text-gray-500 group-hover:text-emerald-400" />
+                <ArrowUpRight size={13} className="text-gray-500 group-hover:text-emerald-400" />
               </Link>
             </div>
           </div>
 
-          <div className="p-3.5 rounded-2xl bg-emerald-950/40 border border-emerald-800/60 text-emerald-400 text-xs font-medium text-center">
+          <div className="p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl bg-emerald-950/40 border border-emerald-800/60 text-emerald-400 text-[10px] sm:text-xs font-medium text-center">
             0% Brokerage verification system active.
           </div>
         </div>
       </div>
 
-      {/* Property Moderation Queue Table */}
-      <div className="bg-[#0a110d] p-6 rounded-3xl border border-emerald-950/90 shadow-xl space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-emerald-950 pb-4">
+      {/* Property Moderation Queue Table & Mobile Cards */}
+      <div className="bg-[#0a110d] p-3.5 sm:p-6 rounded-2xl sm:rounded-3xl border border-emerald-950/90 shadow-md space-y-3 sm:space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-2 border-b border-emerald-950 pb-2.5 sm:pb-4">
           <div>
-            <h3 className="text-base font-extrabold text-white tracking-wide">
+            <h3 className="text-xs sm:text-base font-extrabold text-white tracking-wide">
               Property Verification Queue
             </h3>
-            <p className="text-xs text-gray-400 mt-0.5">
+            <p className="text-[10px] sm:text-xs text-gray-400 mt-0.5">
               Review and verify direct owner listings with 1-click status toggles.
             </p>
           </div>
 
           <Link
             href="/admin/properties"
-            className="text-xs font-bold text-emerald-400 hover:text-emerald-300 self-start sm:self-auto"
+            className="text-[11px] sm:text-xs font-bold text-emerald-400 hover:text-emerald-300 self-start sm:self-auto"
           >
             View All Properties →
           </Link>
         </div>
 
-        <div className="overflow-x-auto">
+        {/* Mobile View: Dedicated Distinct Compact Queue Cards (sm:hidden) */}
+        <div className="block sm:hidden p-1 space-y-2 bg-[#050806] rounded-xl">
+          {properties.length === 0 ? (
+            <div className="p-4 text-center text-gray-400 text-xs">Loading queue...</div>
+          ) : (
+            properties.slice(0, 5).map((item) => {
+              const targetId = item.pid || item._id || item.id;
+              return (
+                <div key={`queue-m-${targetId}`} className="p-2.5 space-y-2 bg-[#08120c] border border-emerald-900/70 rounded-xl">
+                  <div className="flex items-center justify-between gap-1">
+                    <span className="font-mono text-emerald-400 font-bold text-[10px] bg-emerald-950 px-1.5 py-0.2 rounded border border-emerald-900">
+                      {item.pid}
+                    </span>
+                    <span className="text-[11px] font-bold text-emerald-400">
+                      ₹{(item.price || 0).toLocaleString('en-IN')}
+                    </span>
+                  </div>
+
+                  <div>
+                    <div className="font-bold text-white text-xs line-clamp-1">{item.title}</div>
+                    <div className="text-[10px] text-gray-400 mt-0.5">{item.locality}, {item.city}</div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-1 border-t border-emerald-950/70 gap-2">
+                    <span className="text-[10px] font-mono text-gray-400">{item.ownerPhone || '+91 98765 43210'}</span>
+                    <div className="flex items-center space-x-1.5">
+                      <button
+                        disabled={Boolean(actionPendingId)}
+                        onClick={() => handleVerifyToggle(targetId, !!item.verified)}
+                        className={`h-6 px-2 rounded-md text-[9px] font-bold transition-all cursor-pointer whitespace-nowrap ${
+                          item.verified
+                            ? 'bg-[#180d10] text-rose-300 border border-rose-900/80'
+                            : 'bg-emerald-500 text-black font-extrabold'
+                        }`}
+                      >
+                        {item.verified ? 'Unverify' : 'Verify'}
+                      </button>
+                      <button
+                        disabled={Boolean(actionPendingId)}
+                        onClick={() => setPropertyPendingDeletion(item)}
+                        className="h-6 w-6 flex items-center justify-center rounded-md bg-[#180a0a] text-rose-400 border border-rose-950"
+                        title="Delete Property"
+                      >
+                        <Trash2 size={11} />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+
+        {/* Desktop / Tablet Table View (hidden sm:block) */}
+        <div className="hidden sm:block overflow-x-auto">
           <table className="w-full text-left text-xs text-gray-300">
             <thead className="bg-[#050806] text-gray-400 font-extrabold uppercase tracking-wider text-[10px] border-b border-emerald-950">
               <tr>
