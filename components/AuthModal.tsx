@@ -339,7 +339,7 @@ export const AuthModal: React.FC = () => {
               <form onSubmit={handleLoginSubmit} className="space-y-4">
                 {/* Email / Identifier */}
                 <div>
-                  <label className="block text-xs font-semibold text-gray-300 mb-1">Email Address or Mobile Number</label>
+                  <label className="block text-xs font-semibold text-gray-300 mb-1">Email Address</label>
                   <div className="flex items-center border border-emerald-900/80 bg-[#050806] rounded-xl overflow-hidden focus-within:border-emerald-500 transition-all">
                     <span className="px-3 text-emerald-400">
                       <Mail size={16} />
@@ -348,7 +348,7 @@ export const AuthModal: React.FC = () => {
                       type="text"
                       value={loginIdentifier}
                       onChange={(e) => setLoginIdentifier(e.target.value)}
-                      placeholder="aman@example.com or 9876543210"
+                      placeholder="abc@gmail.com"
                       className="w-full py-3 pr-3 text-xs text-white placeholder-gray-600 bg-transparent focus:outline-none"
                       required
                       autoFocus

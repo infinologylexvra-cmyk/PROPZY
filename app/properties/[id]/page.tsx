@@ -355,18 +355,18 @@ export default function PropertyDetailPage() {
           onClick={() => setIsLightboxOpen(false)}
         >
           {/* Modal Header */}
-          <div className="flex items-center justify-between border-b border-gray-800 pb-3" onClick={(e) => e.stopPropagation()}>
-            <div>
-              <h3 className="text-base font-extrabold text-white truncate max-w-md">{property.title}</h3>
-              <p className="text-xs text-emerald-400 font-mono">Photo {currentImgIndex + 1} of {images.length}</p>
+          <div className="flex items-center justify-between border-b border-gray-800 pb-3 gap-3" onClick={(e) => e.stopPropagation()}>
+            <div className="flex-1 min-w-0">
+              <h3 className="text-sm sm:text-base font-extrabold text-white leading-snug break-words">{property.title}</h3>
+              <p className="text-[11px] sm:text-xs text-emerald-400 font-mono mt-0.5">Photo {currentImgIndex + 1} of {images.length}</p>
             </div>
 
             <button
               type="button"
               onClick={() => setIsLightboxOpen(false)}
-              className="p-2.5 rounded-full bg-gray-900 hover:bg-gray-800 border border-gray-700 text-gray-300 hover:text-white transition-all cursor-pointer"
+              className="p-2 sm:p-2.5 rounded-full bg-gray-900 hover:bg-gray-800 border border-gray-700 text-gray-300 hover:text-white transition-all cursor-pointer shrink-0"
             >
-              <X size={20} />
+              <X size={18} />
             </button>
           </div>
 
