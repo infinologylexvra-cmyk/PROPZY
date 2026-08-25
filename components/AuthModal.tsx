@@ -52,7 +52,6 @@ export const AuthModal: React.FC = () => {
 
   const setFormError = (errMsg: string) => {
     setError(errMsg);
-    showToast(errMsg);
   };
 
   // Automatically scroll to the error notification whenever an error occurs
@@ -382,13 +381,6 @@ export const AuthModal: React.FC = () => {
                   </div>
                 </div>
 
-                {error && (
-                  <div className="p-3 bg-[#1f090b] border border-rose-800/80 text-rose-300 text-xs rounded-xl text-center font-bold flex items-center justify-center gap-1.5 shadow animate-pulse">
-                    <AlertCircle size={14} className="shrink-0 text-rose-400" />
-                    <span>{error}</span>
-                  </div>
-                )}
-
                 <button
                   type="submit"
                   disabled={submitting}
@@ -480,7 +472,7 @@ export const AuthModal: React.FC = () => {
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="aman@example.com"
+                      placeholder="abc@example.com"
                       className="w-full py-3 pr-3 text-xs text-white placeholder-gray-600 bg-transparent focus:outline-none"
                       required
                     />
@@ -670,13 +662,6 @@ export const AuthModal: React.FC = () => {
                     </div>
                   )}
                 </div>
-
-                {error && (
-                  <div className="p-3 bg-[#1f090b] border border-rose-800/80 text-rose-300 text-xs rounded-xl text-center font-bold flex items-center justify-center gap-1.5 shadow animate-pulse">
-                    <AlertCircle size={14} className="shrink-0 text-rose-400" />
-                    <span>{error}</span>
-                  </div>
-                )}
 
                 <button
                   type="submit"
