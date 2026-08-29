@@ -1121,11 +1121,9 @@ function DashboardContent() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
               <div className="bg-[#050806] border border-emerald-900/60 rounded-3xl p-6 space-y-4">
-                <span className="text-[10px] font-extrabold uppercase bg-[#092618] text-emerald-400 px-3 py-1 rounded-full border border-emerald-800">
-                  Most Popular for Tenants
-                </span>
+                
                 <h4 className="text-xl font-bold text-white">Relax Plan (Relationship Manager)</h4>
-                <div className="text-2xl font-extrabold text-emerald-400">₹1,499 <span className="text-xs text-gray-400 font-normal">/ one-time</span></div>
+                <div className="text-2xl font-extrabold text-emerald-400">₹1,499 <span className="text-xs text-gray-400 font-normal">/ 30 days</span></div>
                 <ul className="space-y-2 text-xs text-gray-300">
                   <li className="flex items-center space-x-2"><Check size={14} className="text-emerald-400" /><span>Dedicated Personal Relationship Manager</span></li>
                   <li className="flex items-center space-x-2"><Check size={14} className="text-emerald-400" /><span>Hand-picked verified owner property contacts</span></li>
@@ -1140,9 +1138,7 @@ function DashboardContent() {
               </div>
 
               <div className="bg-[#050806] border border-emerald-950 rounded-3xl p-6 space-y-4">
-                <span className="text-[10px] font-extrabold uppercase bg-gray-800 text-gray-300 px-3 py-1 rounded-full">
-                  For Owners & Agents
-                </span>
+              
                 <h4 className="text-xl font-bold text-white">Property Booster Plan</h4>
                 <div className="text-2xl font-extrabold text-white">₹999 <span className="text-xs text-gray-400 font-normal">/ 30 days</span></div>
                 <ul className="space-y-2 text-xs text-gray-300">
@@ -1151,9 +1147,9 @@ function DashboardContent() {
                 </ul>
                 <button
                   onClick={() => showToast('Redirecting to payment gateway...')}
-                  className="w-full py-3 bg-[#0a1b12] text-emerald-400 border border-emerald-800 rounded-full font-extrabold text-xs"
+                  className="w-full py-3 bg-emerald-500 text-black font-extrabold text-xs rounded-full shadow-l"
                 >
-                  Boost My Listing
+                 Subscribe Now
                 </button>
               </div>
             </div>
