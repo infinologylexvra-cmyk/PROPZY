@@ -259,7 +259,7 @@ export default function AdminContactsPage() {
 
       {/* Messages List */}
       {loading ? (
-        <TableSkeletonLoader rows={5} columns={4} />
+        <TableSkeletonLoader rows={5} cols={4} />
       ) : displayedContacts.length === 0 ? (
         <div className="bg-[#09110c] border border-emerald-950/90 rounded-2xl p-8 sm:p-12 text-center space-y-3">
           <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-full bg-emerald-950/60 border border-emerald-800 text-emerald-400 flex items-center justify-center mx-auto">

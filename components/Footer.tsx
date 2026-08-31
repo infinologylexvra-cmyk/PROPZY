@@ -87,8 +87,8 @@ export const Footer: React.FC = () => {
               <li><Link href="/properties?category=rent" className="hover:text-emerald-400 transition-colors">Rent</Link></li>
               <li><Link href="/properties?category=buy" className="hover:text-emerald-400 transition-colors">Buy</Link></li>
               <li><Link href="/properties?category=pg" className="hover:text-emerald-400 transition-colors">PG</Link></li>
+              <li><Link href="/properties?category=commercial" className="hover:text-emerald-400 transition-colors">Commercial</Link></li>
               <li><Link href="/properties" className="hover:text-emerald-400 transition-colors">All Properties</Link></li>
-              <li><Link href="/properties?category=commercial" className="hover:text-emerald-400 transition-colors">New Projects</Link></li>
             </ul>
           </div>
 
@@ -96,11 +96,11 @@ export const Footer: React.FC = () => {
           <div className="lg:col-span-2 space-y-3">
             <h4 className="text-xs font-extrabold uppercase text-white tracking-widest">COMPANY</h4>
             <ul className="space-y-2 text-xs text-gray-400">
-              <li><Link href="/tenant/relaxplan" className="hover:text-emerald-400 transition-colors">About Us</Link></li>
-              <li><Link href="/tenant/relaxplan" className="hover:text-emerald-400 transition-colors">How It Works</Link></li>
-              <li><Link href="/tenant/relaxplan" className="hover:text-emerald-400 transition-colors">Careers</Link></li>
-              <li><Link href="/localities" className="hover:text-emerald-400 transition-colors">Blog</Link></li>
-              <li><Link href="/tenant/relaxplan" className="hover:text-emerald-400 transition-colors">Contact Us</Link></li>
+              <li><Link href="/about" className="hover:text-emerald-400 transition-colors">About Us</Link></li>
+              <li><Link href="/how-it-works" className="hover:text-emerald-400 transition-colors">How It Works</Link></li>
+              <li><Link href="/blog" className="hover:text-emerald-400 transition-colors">Blog</Link></li>
+              <li><Link href="/contact" className="hover:text-emerald-400 transition-colors">Contact Us</Link></li>
+              <li><Link href="/plans" className="hover:text-emerald-400 transition-colors">Explore Plans</Link></li>
             </ul>
           </div>
 

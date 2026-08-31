@@ -504,13 +504,14 @@ export default function PropertyDetailPage() {
 
             <div className="space-y-3">
               <button
+                type="button"
                 onClick={() => {
                   if (!user) {
-                    showToast('Please login to get owner contact details');
+                    showToast('Please login to view tenant contact plans');
                     openAuthModal();
                     return;
                   }
-                  setShowInquiryModal(true);
+                  router.push('/dashboard?tab=explore-plans');
                 }}
                 className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold text-xs shadow-lg transition-all flex items-center justify-center space-x-2 cursor-pointer"
               >

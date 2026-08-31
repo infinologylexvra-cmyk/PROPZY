@@ -35,14 +35,18 @@ function NavbarContent() {
   useEffect(() => {
     if (pathname === '/post-property') {
       setActiveItem('sell');
-    } else if (pathname === '/tenant/relaxplan') {
+    } else if (pathname === '/about') {
       setActiveItem('about');
+    } else if (pathname === '/contact') {
+      setActiveItem('contact');
     } else if (pathname === '/properties') {
       if (categoryParam === 'buy') setActiveItem('buy');
       else if (categoryParam === 'rent') setActiveItem('rent');
       else setActiveItem('properties');
     } else if (pathname === '/') {
       setActiveItem('home');
+    } else {
+      setActiveItem('');
     }
   }, [pathname, categoryParam]);
 

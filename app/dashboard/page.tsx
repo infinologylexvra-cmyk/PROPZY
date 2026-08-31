@@ -579,16 +579,18 @@ function DashboardContent() {
             <span>Billing History</span>
           </button>
 
-          <button
-            onClick={() => handleTabChange('explore-plans')}
-            className={`pb-3.5 border-b-2 cursor-pointer flex items-center space-x-2 whitespace-nowrap transition-all ${activeTab === 'explore-plans'
-                ? 'border-emerald-400 text-emerald-400 font-bold'
-                : 'border-transparent text-gray-400 hover:text-white'
-              }`}
-          >
-            <Sparkles size={16} />
-            <span>Explore Plans</span>
-          </button>
+          {user?.role !== 'owner' && (
+            <button
+              onClick={() => handleTabChange('explore-plans')}
+              className={`pb-3.5 border-b-2 cursor-pointer flex items-center space-x-2 whitespace-nowrap transition-all ${activeTab === 'explore-plans'
+                  ? 'border-emerald-400 text-emerald-400 font-bold'
+                  : 'border-transparent text-gray-400 hover:text-white'
+                }`}
+            >
+              <Sparkles size={16} />
+              <span>Explore Plans</span>
+            </button>
+          )}
 
           <button
             onClick={() => handleTabChange('inquiries')}
@@ -1111,45 +1113,129 @@ function DashboardContent() {
           </div>
         )}
 
-        {/* TAB 5: EXPLORE PLANS */}
+        {/* TAB 5: EXPLORE PLANS (TENANT ONLY) */}
         {activeTab === 'explore-plans' && (
           <div className="bg-[#0a110d] rounded-3xl border border-emerald-950/90 p-6 sm:p-8 shadow-xl space-y-6">
             <div className="text-center max-w-xl mx-auto space-y-2 mb-8">
-              <h3 className="text-2xl font-bold text-white">Tenant & Owner Plans</h3>
-              <p className="text-xs text-gray-400">Get a dedicated Relationship Manager to negotiate, shortlist & close properties 10x faster</p>
+              <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-[#081f13] border border-emerald-800/60 text-emerald-400 text-xs font-semibold">
+                <Sparkles size={13} />
+                <span>Exclusively for Tenants</span>
+              </div>
+              <h3 className="text-2xl font-bold text-white">Tenant Contact Plans</h3>
+              <p className="text-xs text-gray-400">Directly connect with verified property owners & unlock direct phone numbers with 0% brokerage.</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-              <div className="bg-[#050806] border border-emerald-900/60 rounded-3xl p-6 space-y-4">
-                
-                <h4 className="text-xl font-bold text-white">Relax Plan (Relationship Manager)</h4>
-                <div className="text-2xl font-extrabold text-emerald-400">₹1,499 <span className="text-xs text-gray-400 font-normal">/ 30 days</span></div>
-                <ul className="space-y-2 text-xs text-gray-300">
-                  <li className="flex items-center space-x-2"><Check size={14} className="text-emerald-400" /><span>Dedicated Personal Relationship Manager</span></li>
-                  <li className="flex items-center space-x-2"><Check size={14} className="text-emerald-400" /><span>Hand-picked verified owner property contacts</span></li>
-                  <li className="flex items-center space-x-2"><Check size={14} className="text-emerald-400" /><span>Price negotiation assistance on your behalf</span></li>
-                </ul>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto items-stretch">
+              {/* Plan 1: ₹399 - 20 Owner Contacts */}
+              <div className="bg-[#050806] border border-emerald-900/60 hover:border-emerald-700/80 transition-all rounded-3xl p-6 sm:p-8 space-y-6 flex flex-col justify-between shadow-lg">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-[#0a1f14] text-emerald-400 border border-emerald-800/60">
+                      Standard Plan
+                    </span>
+                    <span className="text-xs font-bold text-gray-400">30 Days Validity</span>
+                  </div>
+
+                  <h4 className="text-xl font-bold text-white">20 Owner Contacts</h4>
+                  <div className="text-3xl font-extrabold text-white">
+                    ₹399 <span className="text-xs text-gray-400 font-normal">/ 30 days</span>
+                  </div>
+
+                  <p className="text-xs text-gray-400">
+                    Ideal for tenants looking to connect with up to 20 verified property owners in Tricity.
+                  </p>
+
+                  <ul className="space-y-2.5 text-xs text-gray-300 pt-2 border-t border-emerald-950">
+                    <li className="flex items-center space-x-2">
+                      <Check size={15} className="text-emerald-400 shrink-0 stroke-[2.5]" />
+                      <span className="font-semibold text-white">20 Verified Owner Contacts</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <Check size={15} className="text-emerald-400 shrink-0 stroke-[2.5]" />
+                      <span>Direct Phone Number & WhatsApp Access</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <Check size={15} className="text-emerald-400 shrink-0 stroke-[2.5]" />
+                      <span>0% Brokerage Guarantee</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <Check size={15} className="text-emerald-400 shrink-0 stroke-[2.5]" />
+                      <span>Instant Property ID (PID) Unlock</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <Check size={15} className="text-emerald-400 shrink-0 stroke-[2.5]" />
+                      <span>Standard Support Assistance</span>
+                    </li>
+                  </ul>
+                </div>
+
                 <button
-                  onClick={() => showToast('Redirecting to payment gateway...')}
-                  className="w-full py-3 bg-emerald-500 text-black font-extrabold text-xs rounded-full shadow-lg"
+                  type="button"
+                  onClick={() => showToast('Redirecting to payment gateway for ₹399 plan...')}
+                  className="w-full py-3.5 bg-[#0e2417] hover:bg-emerald-500 hover:text-black border border-emerald-700/60 text-emerald-400 font-extrabold text-xs rounded-2xl shadow-lg transition-all active:scale-95 cursor-pointer"
                 >
-                  Subscribe Now
+                  Subscribe Now • ₹399
                 </button>
               </div>
 
-              <div className="bg-[#050806] border border-emerald-950 rounded-3xl p-6 space-y-4">
-              
-                <h4 className="text-xl font-bold text-white">Property Booster Plan</h4>
-                <div className="text-2xl font-extrabold text-white">₹999 <span className="text-xs text-gray-400 font-normal">/ 30 days</span></div>
-                <ul className="space-y-2 text-xs text-gray-300">
-                  <li className="flex items-center space-x-2"><Check size={14} className="text-emerald-400" /><span>Top homepage placement for 3x higher inquiries</span></li>
-                  <li className="flex items-center space-x-2"><Check size={14} className="text-emerald-400" /><span>Verified Owner badge on property listing</span></li>
-                </ul>
+              {/* Plan 2: ₹999 - Unlimited Owner Contacts */}
+              <div className="bg-[#06140c] border-2 border-emerald-500/80 hover:border-emerald-400 transition-all rounded-3xl p-6 sm:p-8 space-y-6 flex flex-col justify-between shadow-2xl shadow-emerald-950/50 relative">
+                {/* Popular Badge */}
+                <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-emerald-500 text-black text-[10px] font-extrabold uppercase px-4 py-1 rounded-full shadow-md tracking-wider">
+                  ★ Most Popular • Unlimited Access
+                </div>
+
+                <div className="space-y-4 pt-1">
+                  <div className="flex items-center justify-between">
+                    <span className="px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-950 text-emerald-400 border border-emerald-800">
+                      Unlimited Plan
+                    </span>
+                    <span className="text-xs font-bold text-emerald-400">30 Days Validity</span>
+                  </div>
+
+                  <h4 className="text-xl font-bold text-white">Unlimited Owner Contacts</h4>
+                  <div className="text-3xl font-extrabold text-emerald-400">
+                    ₹999 <span className="text-xs text-gray-400 font-normal">/ 30 days</span>
+                  </div>
+
+                  <p className="text-xs text-gray-300">
+                    Complete freedom with unlimited verified owner contacts & dedicated Relationship Manager assistance.
+                  </p>
+
+                  <ul className="space-y-2.5 text-xs text-gray-200 pt-2 border-t border-emerald-900/60">
+                    <li className="flex items-center space-x-2">
+                      <Check size={15} className="text-emerald-400 shrink-0 stroke-[2.5]" />
+                      <span className="font-bold text-emerald-400">Unlimited Verified Owner Contacts</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <Check size={15} className="text-emerald-400 shrink-0 stroke-[2.5]" />
+                      <span className="font-semibold text-white">Direct Phone & WhatsApp Unlock</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <Check size={15} className="text-emerald-400 shrink-0 stroke-[2.5]" />
+                      <span>Dedicated Relationship Manager (RM)</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <Check size={15} className="text-emerald-400 shrink-0 stroke-[2.5]" />
+                      <span>Priority Alerts on Fresh Verified Listings</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <Check size={15} className="text-emerald-400 shrink-0 stroke-[2.5]" />
+                      <span>Price Negotiation Guidance on Your Behalf</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <Check size={15} className="text-emerald-400 shrink-0 stroke-[2.5]" />
+                      <span>100% Zero Brokerage Guarantee</span>
+                    </li>
+                  </ul>
+                </div>
+
                 <button
-                  onClick={() => showToast('Redirecting to payment gateway...')}
-                  className="w-full py-3 bg-emerald-500 text-black font-extrabold text-xs rounded-full shadow-l"
+                  type="button"
+                  onClick={() => showToast('Redirecting to payment gateway for ₹999 plan...')}
+                  className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs rounded-2xl shadow-xl shadow-emerald-500/25 transition-all active:scale-95 cursor-pointer"
                 >
-                 Subscribe Now
+                  Subscribe Now • ₹999
                 </button>
               </div>
             </div>
