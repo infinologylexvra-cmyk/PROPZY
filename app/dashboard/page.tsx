@@ -1121,12 +1121,12 @@ function DashboardContent() {
                 <Sparkles size={13} />
                 <span>Exclusively for Tenants</span>
               </div>
-              <h3 className="text-2xl font-bold text-white">Tenant Contact Plans</h3>
-              <p className="text-xs text-gray-400">Directly connect with verified property owners & unlock direct phone numbers with 0% brokerage.</p>
+              <h3 className="text-2xl font-bold text-white">Tenant Contact Credit Plans</h3>
+              <p className="text-xs text-gray-400">Unlock direct phone numbers and WhatsApp contacts of verified property owners using credits with 0% brokerage.</p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto items-stretch">
-              {/* Plan 1: ₹399 - 20 Owner Contacts */}
+              {/* Plan 1: ₹399 - 20 Contact Credits */}
               <div className="bg-[#050806] border border-emerald-900/60 hover:border-emerald-700/80 transition-all rounded-3xl p-6 sm:p-8 space-y-6 flex flex-col justify-between shadow-lg">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
@@ -1136,19 +1136,19 @@ function DashboardContent() {
                     <span className="text-xs font-bold text-gray-400">30 Days Validity</span>
                   </div>
 
-                  <h4 className="text-xl font-bold text-white">20 Owner Contacts</h4>
+                  <h4 className="text-xl font-bold text-white">20 Credits</h4>
                   <div className="text-3xl font-extrabold text-white">
                     ₹399 <span className="text-xs text-gray-400 font-normal">/ 30 days</span>
                   </div>
 
                   <p className="text-xs text-gray-400">
-                    Ideal for tenants looking to connect with up to 20 verified property owners in Tricity.
+                    Ideal for tenants looking to unlock up to 20 verified owner contact details in Tricity.
                   </p>
 
                   <ul className="space-y-2.5 text-xs text-gray-300 pt-2 border-t border-emerald-950">
                     <li className="flex items-center space-x-2">
                       <Check size={15} className="text-emerald-400 shrink-0 stroke-[2.5]" />
-                      <span className="font-semibold text-white">20 Verified Owner Contacts</span>
+                      <span className="font-semibold text-white">20 Credits</span>
                     </li>
                     <li className="flex items-center space-x-2">
                       <Check size={15} className="text-emerald-400 shrink-0 stroke-[2.5]" />
@@ -1178,38 +1178,42 @@ function DashboardContent() {
                 </button>
               </div>
 
-              {/* Plan 2: ₹999 - Unlimited Owner Contacts */}
+              {/* Plan 2: ₹999 - 100 Contact Credits / 90 Days */}
               <div className="bg-[#06140c] border-2 border-emerald-500/80 hover:border-emerald-400 transition-all rounded-3xl p-6 sm:p-8 space-y-6 flex flex-col justify-between shadow-2xl shadow-emerald-950/50 relative">
                 {/* Popular Badge */}
                 <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-emerald-500 text-black text-[10px] font-extrabold uppercase px-4 py-1 rounded-full shadow-md tracking-wider">
-                  ★ Most Popular • Unlimited Access
+                  ★ Most Popular • Best Value
                 </div>
 
                 <div className="space-y-4 pt-1">
                   <div className="flex items-center justify-between">
                     <span className="px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-950 text-emerald-400 border border-emerald-800">
-                      Unlimited Plan
+                      Premium Plan
                     </span>
-                    <span className="text-xs font-bold text-emerald-400">30 Days Validity</span>
+                    <span className="text-xs font-bold text-emerald-400">90 Days Validity</span>
                   </div>
 
-                  <h4 className="text-xl font-bold text-white">Unlimited Owner Contacts</h4>
+                  <h4 className="text-xl font-bold text-white">100 Credits</h4>
                   <div className="text-3xl font-extrabold text-emerald-400">
-                    ₹999 <span className="text-xs text-gray-400 font-normal">/ 30 days</span>
+                    ₹999 <span className="text-xs text-gray-400 font-normal">/ 90 days</span>
                   </div>
 
                   <p className="text-xs text-gray-300">
-                    Complete freedom with unlimited verified owner contacts & dedicated Relationship Manager assistance.
+                    Get 100 credits with 90 days validity & dedicated Relationship Manager assistance.
                   </p>
 
                   <ul className="space-y-2.5 text-xs text-gray-200 pt-2 border-t border-emerald-900/60">
                     <li className="flex items-center space-x-2">
                       <Check size={15} className="text-emerald-400 shrink-0 stroke-[2.5]" />
-                      <span className="font-bold text-emerald-400">Unlimited Verified Owner Contacts</span>
+                      <span className="font-bold text-emerald-400">100 Credits</span>
                     </li>
                     <li className="flex items-center space-x-2">
                       <Check size={15} className="text-emerald-400 shrink-0 stroke-[2.5]" />
                       <span className="font-semibold text-white">Direct Phone & WhatsApp Unlock</span>
+                    </li>
+                    <li className="flex items-center space-x-2">
+                      <Check size={15} className="text-emerald-400 shrink-0 stroke-[2.5]" />
+                      <span className="font-semibold text-white">90 Days Extended Validity</span>
                     </li>
                     <li className="flex items-center space-x-2">
                       <Check size={15} className="text-emerald-400 shrink-0 stroke-[2.5]" />

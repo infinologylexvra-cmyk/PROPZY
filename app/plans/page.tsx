@@ -67,11 +67,11 @@ export default function ExplorePlansPage() {
             </div>
 
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-serif font-bold text-white tracking-tight leading-tight">
-              Tenant <span className="text-emerald-400 font-sans italic">Contact Plans</span>
+              Tenant <span className="text-emerald-400 font-sans italic">Credit Plans</span>
             </h1>
 
             <p className="text-gray-300 text-sm sm:text-base max-w-2xl mx-auto font-normal leading-relaxed">
-              Directly connect with verified property owners across Chandigarh, Mohali, Zirakpur, Panchkula & Kharar. Zero middleman fees, 100% verified numbers.
+              Directly connect with verified property owners across Chandigarh, Mohali, Zirakpur, Panchkula & Kharar. Zero middleman fees, unlock direct owner contacts using credits.
             </p>
           </div>
         </div>
@@ -83,7 +83,7 @@ export default function ExplorePlansPage() {
       <section className="py-16 sm:py-24 border-b border-emerald-950/60 bg-[#030604]">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
-            {/* PLAN 1: ₹399 - 20 Owner Contacts */}
+            {/* PLAN 1: ₹399 - 20 Contact Credits */}
             <div className="bg-[#06120b] border border-emerald-950 hover:border-emerald-700/60 transition-all rounded-3xl p-6 sm:p-8 space-y-6 flex flex-col justify-between shadow-xl">
               <div className="space-y-5">
                 <div className="flex items-center justify-between">
@@ -97,9 +97,9 @@ export default function ExplorePlansPage() {
                 </div>
 
                 <div>
-                  <h3 className="text-2xl font-bold text-white">20 Owner Contacts</h3>
+                  <h3 className="text-2xl font-bold text-white">20 Credits</h3>
                   <p className="text-xs text-gray-400 mt-1">
-                    Perfect for renters looking to quickly find a verified home in specific localities.
+                    Perfect for renters looking to unlock up to 20 verified owner contacts in specific localities.
                   </p>
                 </div>
 
@@ -114,7 +114,7 @@ export default function ExplorePlansPage() {
                     <div className="w-5 h-5 rounded-full bg-emerald-950/80 border border-emerald-800/80 flex items-center justify-center text-emerald-400 shrink-0">
                       <Check size={13} className="stroke-[3]" />
                     </div>
-                    <span className="font-semibold text-white">20 Verified Owner Contacts</span>
+                    <span className="font-semibold text-white">20 Credits</span>
                   </li>
                   <li className="flex items-center space-x-2.5">
                     <div className="w-5 h-5 rounded-full bg-emerald-950/80 border border-emerald-800/80 flex items-center justify-center text-emerald-400 shrink-0">
@@ -145,42 +145,42 @@ export default function ExplorePlansPage() {
 
               <button
                 type="button"
-                onClick={() => handleSubscribe('Standard Plan', 399)}
+                onClick={() => handleSubscribe('Standard Plan (20 Credits)', 399)}
                 className="w-full py-4 bg-[#0b2416] hover:bg-emerald-500 hover:text-black border border-emerald-700/60 text-emerald-400 font-extrabold text-xs sm:text-sm rounded-2xl shadow-lg transition-all active:scale-95 cursor-pointer"
               >
                 Subscribe Now • ₹399
               </button>
             </div>
 
-            {/* PLAN 2: ₹999 - Unlimited Owner Contacts */}
+            {/* PLAN 2: ₹999 - 100 Credits / 90 Days */}
             <div className="bg-[#06150d] border-2 border-emerald-500 hover:border-emerald-400 transition-all rounded-3xl p-6 sm:p-8 space-y-6 flex flex-col justify-between shadow-2xl shadow-emerald-950/80 relative">
               {/* Popular Ribbon */}
               <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-emerald-500 text-black text-[11px] font-extrabold uppercase px-4 py-1 rounded-full shadow-lg tracking-wider flex items-center space-x-1">
                 <Star size={12} className="fill-black stroke-black" />
-                <span>Most Popular • Unlimited</span>
+                <span>Most Popular • Best Value</span>
               </div>
 
               <div className="space-y-5 pt-1">
                 <div className="flex items-center justify-between">
                   <span className="px-3.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-950 text-emerald-400 border border-emerald-800">
-                    Unlimited Plan
+                    Premium Plan
                   </span>
                   <span className="text-xs font-bold text-emerald-400 flex items-center space-x-1">
                     <Clock size={13} className="text-emerald-400" />
-                    <span>30 Days Validity</span>
+                    <span>90 Days Validity</span>
                   </span>
                 </div>
 
                 <div>
-                  <h3 className="text-2xl font-bold text-white">Unlimited Owner Contacts</h3>
+                  <h3 className="text-2xl font-bold text-white">100 Credits</h3>
                   <p className="text-xs text-gray-300 mt-1">
-                    Total freedom to contact as many owners as you want with dedicated relationship manager support.
+                    Get 100 credits with 90 days validity & dedicated Relationship Manager support.
                   </p>
                 </div>
 
                 <div className="py-2 border-y border-emerald-900/60">
                   <div className="text-4xl font-extrabold text-emerald-400 font-mono">
-                    ₹999 <span className="text-xs text-gray-400 font-sans font-normal">/ 30 days</span>
+                    ₹999 <span className="text-xs text-gray-400 font-sans font-normal">/ 90 days</span>
                   </div>
                 </div>
 
@@ -189,13 +189,19 @@ export default function ExplorePlansPage() {
                     <div className="w-5 h-5 rounded-full bg-emerald-500 text-black flex items-center justify-center shrink-0 shadow-sm">
                       <Check size={13} className="stroke-[3]" />
                     </div>
-                    <span className="font-bold text-emerald-400">Unlimited Verified Owner Contacts</span>
+                    <span className="font-bold text-emerald-400">100 Credits</span>
                   </li>
                   <li className="flex items-center space-x-2.5">
                     <div className="w-5 h-5 rounded-full bg-emerald-500 text-black flex items-center justify-center shrink-0 shadow-sm">
                       <Check size={13} className="stroke-[3]" />
                     </div>
                     <span className="font-semibold text-white">Direct Phone Call & WhatsApp Unlock</span>
+                  </li>
+                  <li className="flex items-center space-x-2.5">
+                    <div className="w-5 h-5 rounded-full bg-emerald-500 text-black flex items-center justify-center shrink-0 shadow-sm">
+                      <Check size={13} className="stroke-[3]" />
+                    </div>
+                    <span className="font-semibold text-white">90 Days Extended Validity</span>
                   </li>
                   <li className="flex items-center space-x-2.5">
                     <div className="w-5 h-5 rounded-full bg-emerald-500 text-black flex items-center justify-center shrink-0 shadow-sm">
@@ -226,7 +232,7 @@ export default function ExplorePlansPage() {
 
               <button
                 type="button"
-                onClick={() => handleSubscribe('Unlimited Plan', 999)}
+                onClick={() => handleSubscribe('Premium Plan (100 Credits)', 999)}
                 className="w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs sm:text-sm rounded-2xl shadow-xl shadow-emerald-500/25 transition-all active:scale-95 cursor-pointer"
               >
                 Subscribe Now • ₹999
