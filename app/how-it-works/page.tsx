@@ -143,7 +143,11 @@ export default function HowItWorksPage() {
             </div>
 
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-serif font-bold text-white tracking-tight leading-tight">
-              How <span className="text-emerald-400 font-sans italic">PROPZY</span> Works
+              How{' '}
+              <span className="text-emerald-400 font-sans italic ml-2 mr-3.5 sm:mr-5 inline-block">
+                PROPZY
+              </span>
+              Works
             </h1>
 
             <p className="text-gray-300 text-sm sm:text-base max-w-2xl mx-auto font-normal leading-relaxed">

@@ -1,11 +1,10 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
   Building2, 
   Users, 
-  Handshake, 
   MapPin, 
   ShieldCheck, 
   CheckCircle2, 
@@ -13,8 +12,54 @@ import {
   Headphones 
 } from 'lucide-react';
 import { CallToActionBanner } from '@/components/CallToActionBanner';
+import { INITIAL_PROPERTIES } from '@/lib/seedData';
+import { getClientPropertiesCache, setClientPropertiesCache } from '@/lib/clientPropertiesCache';
 
 export default function AboutPage() {
+  const [totalPropertiesCount, setTotalPropertiesCount] = useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      const cached = getClientPropertiesCache('home_featured');
+      if (typeof cached?.pagination?.total === 'number') {
+        return cached.pagination.total;
+      }
+      if (cached?.data?.length) {
+        return cached.data.length;
+      }
+    }
+    return INITIAL_PROPERTIES.length;
+  });
+
+  const getRoundedDisplayCount = (count: number): string => {
+    if (count <= 0) return '0+';
+    if (count < 10) return `${count}+`;
+    const rounded = Math.floor(count / 10) * 10;
+    return `${rounded}+`;
+  };
+
+  useEffect(() => {
+    async function fetchCount() {
+      const cached = getClientPropertiesCache('home_featured');
+      if (cached && typeof cached.pagination?.total === 'number') {
+        setTotalPropertiesCount(cached.pagination.total);
+      }
+
+      try {
+        const res = await fetch('/api/properties?includeTotal=true');
+        const data = await res.json();
+        if (data.success) {
+          const total = typeof data.pagination?.total === 'number' ? data.pagination.total : (data.data?.length || INITIAL_PROPERTIES.length);
+          setTotalPropertiesCount(total);
+          if (data.data) {
+            setClientPropertiesCache('home_featured', data.data, data.pagination);
+          }
+        }
+      } catch (e) {
+        console.warn('About page properties count fetch error:', e);
+      }
+    }
+    fetchCount();
+  }, []);
+
   return (
     <div className="min-h-screen bg-[#040806] text-white">
       {/* SECTION 1: HERO SECTION (SCREENSHOT 1) */}
@@ -63,37 +108,34 @@ export default function AboutPage() {
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="p-8 rounded-3xl bg-[#06120b] border border-emerald-950 hover:border-emerald-700/60 transition-all flex flex-col items-center justify-center space-y-4 group">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {/* Card 1: Dynamic Verified Properties */}
+            <div className="p-8 rounded-3xl bg-[#06120b] border border-emerald-950 hover:border-emerald-700/60 transition-all flex flex-col items-center justify-center space-y-4 group shadow-xl shadow-emerald-950/20">
               <div className="w-12 h-12 rounded-2xl bg-emerald-950/80 border border-emerald-800/60 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform">
                 <Building2 size={24} />
               </div>
-              <div className="text-3xl sm:text-4xl font-extrabold font-mono text-white">10,000+</div>
+              <div className="text-3xl sm:text-4xl font-extrabold font-mono text-white">
+                {getRoundedDisplayCount(totalPropertiesCount)}
+              </div>
               <div className="text-xs text-gray-400 font-medium">Verified Properties</div>
             </div>
 
-            <div className="p-8 rounded-3xl bg-[#06120b] border border-emerald-950 hover:border-emerald-700/60 transition-all flex flex-col items-center justify-center space-y-4 group">
+            {/* Card 2: 20+ Happy Clients */}
+            <div className="p-8 rounded-3xl bg-[#06120b] border border-emerald-950 hover:border-emerald-700/60 transition-all flex flex-col items-center justify-center space-y-4 group shadow-xl shadow-emerald-950/20">
               <div className="w-12 h-12 rounded-2xl bg-emerald-950/80 border border-emerald-800/60 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform">
                 <Users size={24} />
               </div>
-              <div className="text-3xl sm:text-4xl font-extrabold font-mono text-white">5,000+</div>
+              <div className="text-3xl sm:text-4xl font-extrabold font-mono text-white">20+</div>
               <div className="text-xs text-gray-400 font-medium">Happy Clients</div>
             </div>
 
-            <div className="p-8 rounded-3xl bg-[#06120b] border border-emerald-950 hover:border-emerald-700/60 transition-all flex flex-col items-center justify-center space-y-4 group">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-950/80 border border-emerald-800/60 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform">
-                <Handshake size={24} />
-              </div>
-              <div className="text-3xl sm:text-4xl font-extrabold font-mono text-white">15,000+</div>
-              <div className="text-xs text-gray-400 font-medium">Deals Facilitated</div>
-            </div>
-
-            <div className="p-8 rounded-3xl bg-[#06120b] border border-emerald-950 hover:border-emerald-700/60 transition-all flex flex-col items-center justify-center space-y-4 group">
+            {/* Card 3: 5 Cities */}
+            <div className="p-8 rounded-3xl bg-[#06120b] border border-emerald-950 hover:border-emerald-700/60 transition-all flex flex-col items-center justify-center space-y-4 group shadow-xl shadow-emerald-950/20">
               <div className="w-12 h-12 rounded-2xl bg-emerald-950/80 border border-emerald-800/60 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform">
                 <MapPin size={24} />
               </div>
-              <div className="text-3xl sm:text-4xl font-extrabold font-mono text-white">50+</div>
-              <div className="text-xs text-gray-400 font-medium">Cities Covered</div>
+              <div className="text-3xl sm:text-4xl font-extrabold font-mono text-white">5 Cities</div>
+              <div className="text-xs text-gray-400 font-medium">Active Tricity</div>
             </div>
           </div>
         </div>
