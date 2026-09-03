@@ -179,7 +179,16 @@ function DashboardContent() {
     if (tabParam) {
       setActiveTab(tabParam);
     }
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    }
   }, [tabParam]);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    }
+  }, [activeTab]);
 
   useEffect(() => {
     if (user && user.role === 'admin') {

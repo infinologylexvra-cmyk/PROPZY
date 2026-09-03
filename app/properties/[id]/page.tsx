@@ -3,8 +3,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter, notFound } from 'next/navigation';
 import Link from 'next/link';
-import { 
-  ShieldCheck, MapPin, Bed, Bath, Maximize, Heart, PhoneCall, 
+import {
+  ShieldCheck, MapPin, Bed, Bath, Maximize, Heart, PhoneCall,
   ChevronLeft, ChevronRight, Check, User, Copy, Grid, X, Camera, Image as ImageIcon
 } from 'lucide-react';
 import { PropertyItem, INITIAL_PROPERTIES } from '@/lib/seedData';
@@ -163,9 +163,8 @@ export default function PropertyDetailPage() {
 
           <button
             onClick={() => toggleWishlist(property.id || property.pid)}
-            className={`p-2 cursor-pointer rounded-xl transition-all ${
-              wish ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
+            className={`p-2 cursor-pointer rounded-xl transition-all ${wish ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
           >
             <Heart size={16} fill={wish ? 'currentColor' : 'none'} />
           </button>
@@ -203,7 +202,7 @@ export default function PropertyDetailPage() {
       <div className="relative rounded-3xl overflow-hidden bg-[#070d0a] border border-emerald-950/80 shadow-2xl">
         <div className="h-[360px] sm:h-[440px] lg:h-[460px] grid grid-cols-1 lg:grid-cols-2 gap-2.5 p-2.5 bg-[#050806]">
           {/* Main Left Featured Frame (Balanced 50% width on Desktop) */}
-          <div 
+          <div
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
@@ -212,12 +211,11 @@ export default function PropertyDetailPage() {
                 setIsLightboxOpen(true);
               }
             }}
-            className={`relative h-full rounded-2xl overflow-hidden group bg-[#07110a] cursor-pointer select-none ${
-              images.length === 1 ? 'lg:col-span-2' : 'lg:col-span-1'
-            }`}
+            className={`relative h-full rounded-2xl overflow-hidden group bg-[#07110a] cursor-pointer select-none ${images.length === 1 ? 'lg:col-span-2' : 'lg:col-span-1'
+              }`}
           >
             {/* Sliding Track for smooth transitions */}
-            <div 
+            <div
               className="flex w-full h-full transition-transform duration-300 ease-out"
               style={{ transform: `translateX(-${currentImgIndex * 100}%)` }}
             >
@@ -272,11 +270,10 @@ export default function PropertyDetailPage() {
                 {images.slice(0, 6).map((_, idx) => (
                   <span
                     key={idx}
-                    className={`h-1.5 rounded-full transition-all duration-300 ${
-                      idx === currentImgIndex
+                    className={`h-1.5 rounded-full transition-all duration-300 ${idx === currentImgIndex
                         ? 'w-3.5 bg-emerald-400'
                         : 'w-1.5 bg-white/40'
-                    }`}
+                      }`}
                   />
                 ))}
                 {images.length > 6 && (
@@ -295,9 +292,8 @@ export default function PropertyDetailPage() {
                   setCurrentImgIndex(1);
                   setIsLightboxOpen(true);
                 }}
-                className={`relative w-full h-full rounded-2xl overflow-hidden border-2 transition-all cursor-pointer group bg-[#07110a] ${
-                  currentImgIndex === 1 ? 'border-emerald-500 ring-2 ring-emerald-500/40' : 'border-transparent opacity-90 hover:opacity-100'
-                }`}
+                className={`relative w-full h-full rounded-2xl overflow-hidden border-2 transition-all cursor-pointer group bg-[#07110a] ${currentImgIndex === 1 ? 'border-emerald-500 ring-2 ring-emerald-500/40' : 'border-transparent opacity-90 hover:opacity-100'
+                  }`}
               >
                 <LazyImage src={images[1]} alt="Photo 2" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
               </button>
@@ -315,14 +311,13 @@ export default function PropertyDetailPage() {
                     setCurrentImgIndex(actualIndex);
                     setIsLightboxOpen(true);
                   }}
-                  className={`relative w-full h-full rounded-2xl overflow-hidden border-2 transition-all cursor-pointer group bg-[#07110a] ${
-                    currentImgIndex === actualIndex ? 'border-emerald-500 ring-2 ring-emerald-500/40' : 'border-transparent opacity-90 hover:opacity-100'
-                  }`}
+                  className={`relative w-full h-full rounded-2xl overflow-hidden border-2 transition-all cursor-pointer group bg-[#07110a] ${currentImgIndex === actualIndex ? 'border-emerald-500 ring-2 ring-emerald-500/40' : 'border-transparent opacity-90 hover:opacity-100'
+                    }`}
                 >
-                  <LazyImage 
-                    src={images[actualIndex]} 
-                    alt={`Photo ${actualIndex + 1}`} 
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" 
+                  <LazyImage
+                    src={images[actualIndex]}
+                    alt={`Photo ${actualIndex + 1}`}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                 </button>
               ))}
@@ -339,9 +334,8 @@ export default function PropertyDetailPage() {
                   setCurrentImgIndex(1);
                   setIsLightboxOpen(true);
                 }}
-                className={`col-span-2 row-span-1 relative w-full h-full rounded-2xl overflow-hidden border-2 transition-all cursor-pointer group bg-[#07110a] ${
-                  currentImgIndex === 1 ? 'border-emerald-500 ring-2 ring-emerald-500/40' : 'border-transparent opacity-90 hover:opacity-100'
-                }`}
+                className={`col-span-2 row-span-1 relative w-full h-full rounded-2xl overflow-hidden border-2 transition-all cursor-pointer group bg-[#07110a] ${currentImgIndex === 1 ? 'border-emerald-500 ring-2 ring-emerald-500/40' : 'border-transparent opacity-90 hover:opacity-100'
+                  }`}
               >
                 <LazyImage src={images[1]} alt="Photo 2" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
               </button>
@@ -353,9 +347,8 @@ export default function PropertyDetailPage() {
                   setCurrentImgIndex(2);
                   setIsLightboxOpen(true);
                 }}
-                className={`col-span-1 row-span-1 relative w-full h-full rounded-2xl overflow-hidden border-2 transition-all cursor-pointer group bg-[#07110a] ${
-                  currentImgIndex === 2 ? 'border-emerald-500 ring-2 ring-emerald-500/40' : 'border-transparent opacity-90 hover:opacity-100'
-                }`}
+                className={`col-span-1 row-span-1 relative w-full h-full rounded-2xl overflow-hidden border-2 transition-all cursor-pointer group bg-[#07110a] ${currentImgIndex === 2 ? 'border-emerald-500 ring-2 ring-emerald-500/40' : 'border-transparent opacity-90 hover:opacity-100'
+                  }`}
               >
                 <LazyImage src={images[2]} alt="Photo 3" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
               </button>
@@ -366,9 +359,8 @@ export default function PropertyDetailPage() {
                   setCurrentImgIndex(3);
                   setIsLightboxOpen(true);
                 }}
-                className={`col-span-1 row-span-1 relative w-full h-full rounded-2xl overflow-hidden border-2 transition-all cursor-pointer group bg-[#07110a] ${
-                  currentImgIndex === 3 ? 'border-emerald-500 ring-2 ring-emerald-500/40' : 'border-transparent opacity-90 hover:opacity-100'
-                }`}
+                className={`col-span-1 row-span-1 relative w-full h-full rounded-2xl overflow-hidden border-2 transition-all cursor-pointer group bg-[#07110a] ${currentImgIndex === 3 ? 'border-emerald-500 ring-2 ring-emerald-500/40' : 'border-transparent opacity-90 hover:opacity-100'
+                  }`}
               >
                 <LazyImage src={images[3]} alt="Photo 4" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
               </button>
@@ -389,12 +381,11 @@ export default function PropertyDetailPage() {
                       setCurrentImgIndex(actualIndex);
                       setIsLightboxOpen(true);
                     }}
-                    className={`relative w-full h-full rounded-2xl overflow-hidden border-2 transition-all cursor-pointer group bg-[#07110a] ${
-                      currentImgIndex === actualIndex ? 'border-emerald-500 ring-2 ring-emerald-500/40' : 'border-transparent opacity-90 hover:opacity-100'
-                    }`}
+                    className={`relative w-full h-full rounded-2xl overflow-hidden border-2 transition-all cursor-pointer group bg-[#07110a] ${currentImgIndex === actualIndex ? 'border-emerald-500 ring-2 ring-emerald-500/40' : 'border-transparent opacity-90 hover:opacity-100'
+                      }`}
                   >
                     <LazyImage src={images[actualIndex]} alt={`Photo ${actualIndex + 1}`} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-                    
+
                     {/* "+X More Photos" Overlay on 5th tile if images > 5 */}
                     {isLastTile && remainingCount > 0 && (
                       <div className="absolute inset-0 bg-black/70 backdrop-blur-[2px] flex flex-col items-center justify-center text-white transition-all hover:bg-black/60">
@@ -446,11 +437,11 @@ export default function PropertyDetailPage() {
           </div>
 
           {/* Main Active Image View - Medium Crisp Sizing */}
-          <div 
+          <div
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
             onTouchEnd={handleTouchEnd}
-            className="relative flex-1 min-h-0 w-full flex items-center justify-center py-2 overflow-hidden select-none" 
+            className="relative flex-1 min-h-0 w-full flex items-center justify-center py-2 overflow-hidden select-none"
             onClick={(e) => e.stopPropagation()}
           >
             <LazyImage
@@ -488,9 +479,8 @@ export default function PropertyDetailPage() {
                 key={idx}
                 type="button"
                 onClick={() => setCurrentImgIndex(idx)}
-                className={`relative w-14 h-11 sm:w-16 sm:h-12 rounded-lg sm:rounded-xl overflow-hidden border-2 shrink-0 transition-all cursor-pointer ${
-                  currentImgIndex === idx ? 'border-emerald-500 scale-105 shadow-md shadow-emerald-500/30' : 'border-transparent opacity-50 hover:opacity-100'
-                }`}
+                className={`relative w-14 h-11 sm:w-16 sm:h-12 rounded-lg sm:rounded-xl overflow-hidden border-2 shrink-0 transition-all cursor-pointer ${currentImgIndex === idx ? 'border-emerald-500 scale-105 shadow-md shadow-emerald-500/30' : 'border-transparent opacity-50 hover:opacity-100'
+                  }`}
               >
                 <LazyImage src={img} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
               </button>
@@ -589,12 +579,10 @@ export default function PropertyDetailPage() {
               <button
                 type="button"
                 onClick={() => {
-                  if (!user) {
-                    showToast('Please login to view tenant contact plans');
-                    openAuthModal();
-                    return;
+                  if (typeof window !== 'undefined') {
+                    window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
                   }
-                  router.push('/dashboard?tab=explore-plans');
+                  router.push('/plans');
                 }}
                 className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold text-xs shadow-lg transition-all flex items-center justify-center space-x-2 cursor-pointer"
               >

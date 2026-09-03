@@ -25,6 +25,12 @@ export default function ExplorePlansPage() {
   const router = useRouter();
   const { user, openAuthModal, showToast } = useApp();
 
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    }
+  }, []);
+
   const handleSubscribe = (planName: string, amount: number) => {
     if (!user) {
       showToast(`Please login to subscribe to the ${planName}`);

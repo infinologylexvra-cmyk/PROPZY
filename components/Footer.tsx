@@ -213,36 +213,12 @@ export const Footer: React.FC = () => {
         {/* ─────────────────────────────────────────────────────────────
             APP DOWNLOAD & SERVING MAJOR CITIES
         ───────────────────────────────────────────────────────────── */}
-        <div className="border-b border-dashed border-emerald-900/60 pb-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* App Store Buttons */}
-          <div className="lg:col-span-5 space-y-3">
-            <div className="text-[11px] font-extrabold uppercase text-emerald-400 tracking-wider leading-none">
-              GET THE PROPZY TRICITY APP
-            </div>
-            <p className="text-xs text-gray-400">
-              Find, shortlist & manage properties on the go.
-            </p>
-            <div className="flex flex-wrap items-center gap-3 pt-1">
-              <a
-                href="#"
-                className="px-4 py-2 bg-[#09110c] hover:bg-[#121c16] border border-emerald-950 rounded-2xl text-xs font-bold text-white flex items-center space-x-2 transition-colors"
-              >
-                <Smartphone size={16} className="text-emerald-400" />
-                <span>Get it on App Store</span>
-              </a>
-              <a
-                href="#"
-                className="px-4 py-2 bg-[#09110c] hover:bg-[#121c16] border border-emerald-950 rounded-2xl text-xs font-bold text-white flex items-center space-x-2 transition-colors"
-              >
-                <Smartphone size={16} className="text-emerald-400" />
-                <span>Get it on Google Play</span>
-              </a>
-            </div>
-          </div>
+        <div className="border-b border-dashed border-emerald-900/60 pb-8 flex justify-center items-center mx-auto">
+        
 
           {/* Serving Major Cities */}
-          <div className="lg:col-span-7 space-y-3">
-            <div className="text-[11px] font-extrabold uppercase text-emerald-400 tracking-wider leading-none">
+          <div className="lg:col-span-7 space-y-3 mx-auto">
+            <div className="text-[11px] font-extrabold uppercase text-emerald-400 tracking-wider text-center leading-none">
               SERVING MAJOR CITIES
             </div>
             <div className="flex flex-wrap justify-start gap-4">
