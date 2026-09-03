@@ -38,7 +38,7 @@ export default function SafetySecurityPage() {
         'Always inspect the property in person before transferring security deposits or token money.',
         'Ensure rent terms and maintenance charges are clearly written in the rent agreement.',
         'Never transfer funds to unauthorized third-party bank accounts claiming to represent brokers.',
-        'Report any user demanding brokerage fees on PROPZY verified listings.',
+        'Report any user demanding brokerage fees on PROPZY TRICITY verified listings.',
       ],
     },
     {
@@ -66,7 +66,7 @@ export default function SafetySecurityPage() {
             Safety & <span className="text-emerald-400">Security</span> Standards
           </h1>
           <p className="text-xs sm:text-sm text-gray-400 leading-relaxed">
-            Discover how PROPZY protects tenants and property owners through verified listings, document moderation, and secure 0% brokerage operations.
+            Discover how PROPZY TRICITY protects tenants and property owners through verified listings, document moderation, and secure 0% brokerage operations.
           </p>
         </div>
 

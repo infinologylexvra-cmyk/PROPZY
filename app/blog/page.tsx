@@ -226,7 +226,7 @@ export default function BlogPage() {
           <div className="text-center space-y-4 max-w-3xl mx-auto">
             <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-[#081f13] border border-emerald-800/60 text-emerald-400 text-xs font-semibold shadow-inner">
               <BookOpen size={14} />
-              <span>PROPZY Knowledge Hub</span>
+              <span>PROPZY TRICITY Knowledge Hub</span>
             </div>
 
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-serif font-bold text-white tracking-tight leading-tight">
@@ -738,7 +738,16 @@ export default function BlogPage() {
       {/* ─────────────────────────────────────────────────────────────
           CALL TO ACTION BANNER
       ───────────────────────────────────────────────────────────── */}
-      <CallToActionBanner />
+      <section className="py-12 max-w-6xl mx-auto px-4 sm:px-6 pb-24">
+        <CallToActionBanner
+          subTag="IS READY TO MOVE"
+          titleMain="Let's find your"
+          titleItalic="perfect space."
+          description="Verified homes. Zero brokerage. Hassle-free renting."
+          buttonText="Explore Properties"
+          buttonHref="/properties"
+        />
+      </section>
     </div>
   );
 }

@@ -15,8 +15,8 @@ export default function FAQPage() {
   const faqs = [
     {
       category: 'tenants',
-      question: 'Is PROPZY really 100% 0% Brokerage?',
-      answer: 'Yes! PROPZY connects tenants directly with verified property owners without middleman brokers. You schedule visits directly with property owners and pay zero commission fees.',
+      question: 'Is PROPZY TRICITY really 100% 0% Brokerage?',
+      answer: 'Yes! PROPZY TRICITY connects tenants directly with verified property owners without middleman brokers. You schedule visits directly with property owners and pay zero commission fees.',
     },
     {
       category: 'tenants',
@@ -25,12 +25,12 @@ export default function FAQPage() {
     },
     {
       category: 'tenants',
-      question: 'What is the PROPZY Relax Plan?',
+      question: 'What is the PROPZY TRICITY Relax Plan?',
       answer: 'The Relax Plan assigns a personal Relationship Manager (RM) who handpicks verified listings matching your budget, coordinates visits, and negotiates rent terms for you.',
     },
     {
       category: 'owners',
-      question: 'How do property owners list properties on PROPZY?',
+      question: 'How do property owners list properties on PROPZY TRICITY?',
       answer: 'Click "Post Property" in the top bar. Sign up with an Owner account and submit your property details along with your Electricity Bill for owner verification.',
     },
     {
@@ -41,7 +41,7 @@ export default function FAQPage() {
     {
       category: 'verification',
       question: 'How long does property moderation take?',
-      answer: 'Our admin team reviews submitted listings within 1 to 4 hours. Once verified, your listing goes live automatically on PROPZY.',
+      answer: 'Our admin team reviews submitted listings within 1 to 4 hours. Once verified, your listing goes live automatically on PROPZY TRICITY.',
     },
     {
       category: 'tenants',
@@ -73,7 +73,7 @@ export default function FAQPage() {
             Got Questions? <span className="text-emerald-400">We have Answers.</span>
           </h1>
           <p className="text-xs sm:text-sm text-gray-400 leading-relaxed">
-            Everything you need to know about renting, owner verifications, and 0% brokerage on PROPZY.
+            Everything you need to know about renting, owner verifications, and 0% brokerage on PROPZY TRICITY.
           </p>
 
           {/* Search Box */}

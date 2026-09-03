@@ -89,16 +89,16 @@ export default function HowItWorksPage() {
 
   const faqs = [
     {
-      q: 'Is PROPZY really 100% free with 0% brokerage?',
+      q: 'Is PROPZY TRICITY really 100% free with 0% brokerage?',
       a: 'Yes! We never charge brokerage fees from tenants or standard listing fees from owners. You connect directly with each other and finalize deals without commission markups.'
     },
     {
-      q: 'How does PROPZY verify properties?',
+      q: 'How does PROPZY TRICITY verify properties?',
       a: 'Our local field and verification team reviews ownership documentation, physically or digitally checks property photos, verifies amenities, and cross-checks location pins across Chandigarh, Mohali, Zirakpur, Panchkula, and Kharar.'
     },
     {
       q: 'What is a PID (Property ID) and how does it work?',
-      a: 'Each property listed on PROPZY receives a unique alphanumeric Property ID (PID). You can type this code into our global search bar or PID modal to immediately navigate directly to that exact verified listing.'
+      a: 'Each property listed on PROPZY TRICITY receives a unique alphanumeric Property ID (PID). You can type this code into our global search bar or PID modal to immediately navigate directly to that exact verified listing.'
     },
     {
       q: 'Can I schedule in-person visits before making a decision?',
@@ -145,13 +145,13 @@ export default function HowItWorksPage() {
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-serif font-bold text-white tracking-tight leading-tight">
               How{' '}
               <span className="text-emerald-400 font-sans italic ml-2 mr-3.5 sm:mr-5 inline-block">
-                PROPZY
+                PROPZY TRICITY
               </span>
               Works
             </h1>
 
             <p className="text-gray-300 text-sm sm:text-base max-w-2xl mx-auto font-normal leading-relaxed">
-              Say goodbye to fake listings, middlemen commissions, and endless broker calls. PROPZY connects genuine tenants directly with property owners in three simple steps.
+              Say goodbye to fake listings, middlemen commissions, and endless broker calls. PROPZY TRICITY connects genuine tenants directly with property owners in three simple steps.
             </p>
 
             {/* TAB SELECTOR */}
@@ -272,10 +272,10 @@ export default function HowItWorksPage() {
           <div className="text-center space-y-3">
             <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-[#081f13] border border-emerald-800/60 text-emerald-400 text-xs font-semibold">
               <Percent size={13} />
-              <span>The PROPZY Difference</span>
+              <span>The PROPZY TRICITY Difference</span>
             </div>
             <h2 className="text-2xl sm:text-4xl font-bold text-white tracking-tight">
-              Why PROPZY Beats Traditional Real Estate
+              Why PROPZY TRICITY Beats Traditional Real Estate
             </h2>
             <p className="text-xs sm:text-sm text-gray-400 max-w-xl mx-auto">
               Compare transparent, digital direct renting with outdated traditional broker networks.
@@ -288,7 +288,7 @@ export default function HowItWorksPage() {
                 <tr className="border-b border-emerald-950/80 bg-[#08190e]">
                   <th className="py-4 px-6 text-xs font-extrabold uppercase text-gray-400 tracking-wider">Features</th>
                   <th className="py-4 px-6 text-xs font-extrabold uppercase text-emerald-400 tracking-wider bg-emerald-950/40">
-                    PROPZY
+                    PROPZY TRICITY
                   </th>
                   <th className="py-4 px-6 text-xs font-extrabold uppercase text-gray-500 tracking-wider">
                     Traditional Brokers
@@ -331,7 +331,7 @@ export default function HowItWorksPage() {
               Frequently Asked Questions
             </h2>
             <p className="text-xs sm:text-sm text-gray-400">
-              Everything you need to know about navigating PROPZY.
+              Everything you need to know about navigating PROPZY TRICITY.
             </p>
           </div>
 
@@ -373,7 +373,16 @@ export default function HowItWorksPage() {
       {/* ─────────────────────────────────────────────────────────────
           CALL TO ACTION BANNER
       ───────────────────────────────────────────────────────────── */}
-      <CallToActionBanner />
+      <section className="py-12 max-w-6xl mx-auto px-4 sm:px-6 pb-24">
+        <CallToActionBanner
+          subTag="IS READY TO MOVE"
+          titleMain="Let's find your"
+          titleItalic="perfect space."
+          description="Verified homes. Zero brokerage. Hassle-free renting."
+          buttonText="Explore Properties"
+          buttonHref="/properties"
+        />
+      </section>
     </div>
   );
 }

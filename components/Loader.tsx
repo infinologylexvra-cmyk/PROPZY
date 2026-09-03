@@ -56,7 +56,7 @@ export const PageLoader: React.FC<{
   message?: string;
   subMessage?: string;
 }> = ({
-  message = 'Loading Propzy Platform...',
+  message = 'Loading PROPZY TRICITY...',
   subMessage = 'Fetching 0% brokerage verified properties & directory...'
 }) => {
     return (

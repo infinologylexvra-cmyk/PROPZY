@@ -73,7 +73,7 @@ export const AuthModal: React.FC = () => {
   // Google Auth Handlers
   const handleGoogleSuccess = (googleUser: UserProfile) => {
     setUser(googleUser);
-    showToast(`Welcome to Propzy, ${googleUser.name}!`);
+    showToast(`Welcome to PROPZY TRICITY, ${googleUser.name}!`);
     resetForm();
     navigateByRole(googleUser.role);
   };
@@ -278,7 +278,7 @@ export const AuthModal: React.FC = () => {
                 <ShieldCheck size={26} />
               </div>
               <h2 className="text-2xl font-extrabold text-white">
-                {mode === 'login' ? 'Sign In to Propzy' : 'Create Account'}
+                {mode === 'login' ? 'Sign In to PROPZY TRICITY' : 'Create Account'}
               </h2>
               <p className="text-xs text-gray-400 mt-1">Verified 0% Brokerage Property Portal</p>
             </div>

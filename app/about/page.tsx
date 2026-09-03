@@ -87,10 +87,8 @@ export default function AboutPage() {
             <span className="italic font-serif font-normal text-emerald-400">
               By Purpose
             </span>
-          </h1>
-
-          <p className="text-gray-300 text-sm sm:text-base max-w-2xl mx-auto font-normal leading-relaxed">
-            At Propzy, we believe finding a home should be simple, transparent, and stress-free. Every property is carefully verified so you can buy, rent, or sell with complete confidence.
+          </h1>          <p className="text-gray-300 text-sm sm:text-base max-w-2xl mx-auto font-normal leading-relaxed">
+            At PROPZY TRICITY, we believe finding a home should be simple, transparent, and stress-free. Every property is carefully verified so you can buy, rent, or sell with complete confidence.
           </p>
         </div>
       </section>
@@ -156,14 +154,13 @@ export default function AboutPage() {
                 not exhausting.
               </span>
             </h2>
-
+    
             <div className="space-y-4 text-xs sm:text-sm text-gray-300 leading-relaxed font-normal">
               <p>
                 Searching for a property shouldn't mean scrolling through fake listings, dealing with hidden charges, or making endless phone calls.
               </p>
               <p>
-                We created PROPZY to simplify the entire journey with verified properties, transparent information, and direct owner connections—so every decision is backed by trust, not uncertainty.
-
+                We created PROPZY TRICITY to simplify the entire journey with verified properties, transparent information, and direct owner connections—so every decision is backed by trust, not uncertainty.
               </p>
             </div>
           </div>

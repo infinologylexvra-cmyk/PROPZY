@@ -249,7 +249,7 @@ export default function ExplorePlansPage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
           <div className="text-center space-y-3">
             <h2 className="text-2xl sm:text-4xl font-bold text-white tracking-tight">
-              Why Tenants Choose PROPZY Contact Plans
+              Why Tenants Choose PROPZY TRICITY Contact Plans
             </h2>
             <p className="text-xs sm:text-sm text-gray-400 max-w-xl mx-auto">
               Save thousands on brokerage while getting direct access to genuine property owners.
@@ -295,7 +295,16 @@ export default function ExplorePlansPage() {
       {/* ─────────────────────────────────────────────────────────────
           CALL TO ACTION
       ───────────────────────────────────────────────────────────── */}
-      <CallToActionBanner />
+      <section className="py-12 max-w-6xl mx-auto px-4 sm:px-6 pb-24">
+        <CallToActionBanner
+          subTag="IS READY TO MOVE"
+          titleMain="Let's find your"
+          titleItalic="perfect space."
+          description="Verified homes. Zero brokerage. Hassle-free renting."
+          buttonText="Explore Properties"
+          buttonHref="/properties"
+        />
+      </section>
     </div>
   );
 }

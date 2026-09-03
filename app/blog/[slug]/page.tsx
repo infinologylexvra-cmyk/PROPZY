@@ -196,7 +196,16 @@ export default function SingleBlogPage() {
       </section>
 
       {/* CTA */}
-      <CallToActionBanner />
+      <section className="py-12 max-w-6xl mx-auto px-4 sm:px-6 pb-24">
+        <CallToActionBanner
+          subTag="IS READY TO MOVE"
+          titleMain="Let's find your"
+          titleItalic="perfect space."
+          description="Verified homes. Zero brokerage. Hassle-free renting."
+          buttonText="Explore Properties"
+          buttonHref="/properties"
+        />
+      </section>
     </div>
   );
 }

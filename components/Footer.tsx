@@ -217,7 +217,7 @@ export const Footer: React.FC = () => {
           {/* App Store Buttons */}
           <div className="lg:col-span-5 space-y-3">
             <div className="text-[11px] font-extrabold uppercase text-emerald-400 tracking-wider leading-none">
-              GET THE PROPZY APP
+              GET THE PROPZY TRICITY APP
             </div>
             <p className="text-xs text-gray-400">
               Find, shortlist & manage properties on the go.
@@ -270,7 +270,7 @@ export const Footer: React.FC = () => {
         <div className="flex flex-col md:flex-row items-center justify-between text-xs text-gray-500 gap-3 pt-3 text-center md:text-left">
           {/* Copyright text */}
           <p className="order-2 md:order-1 text-[11px] sm:text-xs">
-            © 2026 PROPZY. All rights reserved.
+            © 2026 PROPZY TRICITY. All rights reserved.
           </p>
 
           {/* Legal Links & Attribution */}

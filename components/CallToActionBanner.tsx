@@ -25,14 +25,14 @@ export const CallToActionBanner: React.FC<CallToActionBannerProps> = ({
 }) => {
   return (
     <div
-      className={`relative overflow-hidden rounded-[2rem] bg-linear-to-br from-[#06180e] via-[#0b2b1a] to-[#04120b] border border-emerald-800/40 p-5 sm:p-8 md:p-12 shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-6 ${className}`}
+      className={`relative overflow-hidden rounded-[2rem] bg-gradient-to-br from-[#06180e] via-[#0b2b1a] to-[#04120b] border border-emerald-800/40 p-6 sm:p-8 md:p-12 shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-6 ${className}`}
     >
       {/* Background Subtle Glows */}
       <div className="absolute -left-20 -top-20 w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -right-20 -bottom-20 w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
 
       {/* Left Content */}
-      <div className="flex flex-col items-center text-center md:flex-row md:items-start md:text-left gap-4 md:space-x-5 z-10 max-w-2xl w-full">
+      <div className="flex flex-col items-center text-center md:flex-row md:items-start md:text-left gap-4 md:gap-5 z-10 max-w-2xl w-full">
         <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-[#092214] border border-emerald-700/60 flex items-center justify-center text-emerald-400 shrink-0 shadow-inner">
           <Home size={26} />
         </div>

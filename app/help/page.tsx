@@ -26,7 +26,7 @@ export default function HelpCenterPage() {
     {
       icon: ShieldCheck,
       title: '0% Brokerage & Trust',
-      desc: 'Understanding PROPZY zero brokerage model and verified owner guarantees.',
+      desc: 'Understanding PROPZY TRICITY zero brokerage model and verified owner guarantees.',
       articles: 8,
     },
     {
@@ -39,10 +39,10 @@ export default function HelpCenterPage() {
 
   const popularArticles = [
     {
-      title: 'How does PROPZY guarantee 0% Brokerage?',
+      title: 'How does PROPZY TRICITY guarantee 0% Brokerage?',
       category: 'Trust & Safety',
       readTime: '2 min read',
-      content: 'PROPZY connects tenants directly with verified property owners without any middleman brokers or hidden commissions. Owners list properties directly, and tenants contact them with 100% transparency.',
+      content: 'PROPZY TRICITY connects tenants directly with verified property owners without any middleman brokers or hidden commissions. Owners list properties directly, and tenants contact them with 100% transparency.',
     },
     {
       title: 'What documents are needed for Owner Verification?',
@@ -57,7 +57,7 @@ export default function HelpCenterPage() {
       content: 'Click "Contact Owner" or "Schedule Visit" on any property listing page. You will get direct WhatsApp or phone access to coordinate visit times with the property owner.',
     },
     {
-      title: 'What is the PROPZY Relax Plan?',
+      title: 'What is the PROPZY TRICITY Relax Plan?',
       category: 'Tenant Support',
       readTime: '3 min read',
       content: 'The Relax Plan pairs you with a dedicated Relationship Manager (RM) who handpicks listings, schedules visits, and negotiates rent terms on your behalf.',
@@ -78,7 +78,7 @@ export default function HelpCenterPage() {
         <div className="text-center space-y-4 max-w-2xl mx-auto">
           <div className="inline-flex items-center space-x-2 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider">
             <HelpCircle size={14} />
-            <span>PROPZY Help Center</span>
+            <span>PROPZY TRICITY Help Center</span>
           </div>
           <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white">
             How can we <span className="text-emerald-400">help you</span> today?
@@ -118,10 +118,7 @@ export default function HelpCenterPage() {
                 <p className="text-xs text-gray-400 leading-relaxed">
                   {cat.desc}
                 </p>
-                <div className="pt-2 text-[11px] font-bold text-emerald-400 flex items-center space-x-1">
-                  <span>{cat.articles} articles</span>
-                  <ArrowRight size={12} />
-                </div>
+               
               </div>
             );
           })}

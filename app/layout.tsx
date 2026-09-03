@@ -24,8 +24,8 @@ const jakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: 'Flats, Houses, PGs & Rooms for Rent, Buy & Sale | 0% Brokerage - Propzy',
-  description: 'Search verified flats, PGs, houses & rooms for rent, buy & sale with Propzy. Explore real estate properties in Chandigarh, Mohali, Kharar, Zirakpur, Panchkula & more at 0% brokerage.',
+  title: 'Flats, Houses, PGs & Rooms for Rent, Buy & Sale | 0% Brokerage - PROPZY TRICITY',
+  description: 'Search verified flats, PGs, houses & rooms for rent, buy & sale with PROPZY TRICITY. Explore real estate properties in Chandigarh, Mohali, Kharar, Zirakpur, Panchkula & more at 0% brokerage.',
   icons: {
     icon: '/icon.svg',
     shortcut: '/icon.svg',

@@ -340,9 +340,8 @@ function PropertySearchContent() {
             className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-emerald-500 text-black text-xs font-extrabold shadow-md cursor-pointer"
           >
             <SlidersHorizontal size={16} />
-            <span>Filter Properties ({properties.length})</span>
+            <span>Filter Properties</span>
           </button>
-          <span className="text-xs text-gray-400 font-semibold">{properties.length} results</span>
         </div>
 
         {/* Mobile Slide-over Filters Drawer (Left-Aligned) */}
@@ -357,7 +356,6 @@ function PropertySearchContent() {
                   </div>
                   <div>
                     <h3 className="text-sm font-extrabold text-white">Filters</h3>
-                    <p className="text-[10px] text-gray-400">{properties.length} Listings Available</p>
                   </div>
                 </div>
                 <button
@@ -557,7 +555,7 @@ function PropertySearchContent() {
                   onClick={() => setIsMobileFilterOpen(false)}
                   className="flex-1 py-3 bg-emerald-500 hover:bg-emerald-400 text-black rounded-xl font-extrabold text-xs shadow-lg shadow-emerald-500/20 transition-all cursor-pointer text-center"
                 >
-                  Apply Filters ({properties.length})
+                  Apply Filters
                 </button>
               </div>
             </div>
@@ -571,9 +569,6 @@ function PropertySearchContent() {
               <span className="text-sm font-bold text-white flex items-center space-x-2">
                 <SlidersHorizontal size={16} className="text-emerald-400" />
                 <span>Filters</span>
-              </span>
-              <span className="text-[10px] bg-[#0d261a] text-emerald-400 border border-emerald-800/80 px-2.5 py-0.5 rounded-full font-bold">
-                {properties.length} Listings
               </span>
             </div>
 

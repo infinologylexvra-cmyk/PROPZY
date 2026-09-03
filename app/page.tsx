@@ -791,7 +791,7 @@ export default function HomePage() {
       {/* ─────────────────────────────────────────────────────────────
           SECTION 7: READY TO MOVE CTA BANNER 
       ───────────────────────────────────────────────────────────── */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="py-10 pb-20 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <CallToActionBanner
           subTag="IS READY TO MOVE"
           titleMain="Let's find your"
