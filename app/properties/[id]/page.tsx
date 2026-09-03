@@ -24,6 +24,9 @@ export default function PropertyDetailPage() {
   const [currentImgIndex, setCurrentImgIndex] = useState(0);
   const [showInquiryModal, setShowInquiryModal] = useState(false);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+  const [touchStartY, setTouchStartY] = useState<number | null>(null);
+  const [isSwiping, setIsSwiping] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -101,6 +104,42 @@ export default function PropertyDetailPage() {
     }
   };
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStartX(e.targetTouches[0].clientX);
+    setTouchStartY(e.targetTouches[0].clientY);
+    setIsSwiping(false);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (touchStartX === null || touchStartY === null) return;
+    const currentX = e.targetTouches[0].clientX;
+    const currentY = e.targetTouches[0].clientY;
+    const diffX = touchStartX - currentX;
+    const diffY = touchStartY - currentY;
+    if (Math.abs(diffX) > 10 && Math.abs(diffX) > Math.abs(diffY)) {
+      setIsSwiping(true);
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX === null || touchStartY === null) return;
+    const currentX = e.changedTouches[0].clientX;
+    const currentY = e.changedTouches[0].clientY;
+    const diffX = touchStartX - currentX;
+    const diffY = touchStartY - currentY;
+
+    if (Math.abs(diffX) > 35 && Math.abs(diffX) > Math.abs(diffY)) {
+      if (diffX > 0) {
+        setCurrentImgIndex((prev) => (prev + 1) % images.length);
+      } else {
+        setCurrentImgIndex((prev) => (prev - 1 + images.length) % images.length);
+      }
+    }
+    setTouchStartX(null);
+    setTouchStartY(null);
+    setTimeout(() => setIsSwiping(false), 50);
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       {/* Back Navigation & Share */}
@@ -165,20 +204,37 @@ export default function PropertyDetailPage() {
         <div className="h-[360px] sm:h-[440px] lg:h-[460px] grid grid-cols-1 lg:grid-cols-2 gap-2.5 p-2.5 bg-[#050806]">
           {/* Main Left Featured Frame (Balanced 50% width on Desktop) */}
           <div 
-            onClick={() => setIsLightboxOpen(true)}
-            className={`relative h-full rounded-2xl overflow-hidden group bg-[#07110a] cursor-pointer ${
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            onClick={() => {
+              if (!isSwiping) {
+                setIsLightboxOpen(true);
+              }
+            }}
+            className={`relative h-full rounded-2xl overflow-hidden group bg-[#07110a] cursor-pointer select-none ${
               images.length === 1 ? 'lg:col-span-2' : 'lg:col-span-1'
             }`}
           >
-            <LazyImage
-              src={images[currentImgIndex]}
-              alt={property.title}
-              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-            />
+            {/* Sliding Track for smooth transitions */}
+            <div 
+              className="flex w-full h-full transition-transform duration-300 ease-out"
+              style={{ transform: `translateX(-${currentImgIndex * 100}%)` }}
+            >
+              {images.map((img, idx) => (
+                <div key={idx} className="w-full h-full shrink-0 relative">
+                  <LazyImage
+                    src={img}
+                    alt={`${property.title} - Photo ${idx + 1}`}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                  />
+                </div>
+              ))}
+            </div>
 
-            {/* Main Tile Navigation Arrows - Vertically Centered */}
+            {/* Desktop Navigation Arrows (Hidden on mobile, visible on desktop) */}
             {images.length > 1 && (
-              <div className="absolute inset-0 z-20 pointer-events-none flex items-center justify-between px-3">
+              <div className="hidden sm:flex absolute inset-0 z-20 pointer-events-none items-center justify-between px-3">
                 <button
                   type="button"
                   onClick={(e) => {
@@ -209,6 +265,25 @@ export default function PropertyDetailPage() {
               <Camera size={13} className="text-emerald-400" />
               <span>Photo {currentImgIndex + 1} of {images.length}</span>
             </div>
+
+            {/* Mobile Swipe Pagination Dots */}
+            {images.length > 1 && (
+              <div className="sm:hidden absolute bottom-3.5 right-3.5 z-20 flex items-center space-x-1 bg-black/70 backdrop-blur-md px-2.5 py-1.5 rounded-full border border-white/10">
+                {images.slice(0, 6).map((_, idx) => (
+                  <span
+                    key={idx}
+                    className={`h-1.5 rounded-full transition-all duration-300 ${
+                      idx === currentImgIndex
+                        ? 'w-3.5 bg-emerald-400'
+                        : 'w-1.5 bg-white/40'
+                    }`}
+                  />
+                ))}
+                {images.length > 6 && (
+                  <span className="text-[9px] text-gray-400 font-mono leading-none">+</span>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Right Thumbnails Dynamic Grid Layout for 2 Images */}
@@ -371,7 +446,13 @@ export default function PropertyDetailPage() {
           </div>
 
           {/* Main Active Image View - Medium Crisp Sizing */}
-          <div className="relative flex-1 min-h-0 w-full flex items-center justify-center py-2 overflow-hidden" onClick={(e) => e.stopPropagation()}>
+          <div 
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            className="relative flex-1 min-h-0 w-full flex items-center justify-center py-2 overflow-hidden select-none" 
+            onClick={(e) => e.stopPropagation()}
+          >
             <LazyImage
               src={images[currentImgIndex]}
               alt={property.title}
@@ -383,14 +464,16 @@ export default function PropertyDetailPage() {
                 <button
                   type="button"
                   onClick={() => setCurrentImgIndex((prev) => (prev - 1 + images.length) % images.length)}
-                  className="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 p-2.5 sm:p-3 rounded-full bg-black/70 hover:bg-black border border-white/20 text-white shadow-xl transition-all cursor-pointer"
+                  className="hidden sm:flex absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 p-2.5 sm:p-3 rounded-full bg-black/70 hover:bg-black border border-white/20 text-white shadow-xl transition-all cursor-pointer items-center justify-center"
+                  aria-label="Previous image"
                 >
                   <ChevronLeft size={22} />
                 </button>
                 <button
                   type="button"
                   onClick={() => setCurrentImgIndex((prev) => (prev + 1) % images.length)}
-                  className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 p-2.5 sm:p-3 rounded-full bg-black/70 hover:bg-black border border-white/20 text-white shadow-xl transition-all cursor-pointer"
+                  className="hidden sm:flex absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 p-2.5 sm:p-3 rounded-full bg-black/70 hover:bg-black border border-white/20 text-white shadow-xl transition-all cursor-pointer items-center justify-center"
+                  aria-label="Next image"
                 >
                   <ChevronRight size={22} />
                 </button>

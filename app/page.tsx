@@ -10,7 +10,7 @@ import {
   FileText, Sparkle, Compass, UserCheck, HeartHandshake, Bell, Award,
   CircleDollarSign, User, ChevronLeft, ChevronRight
 } from 'lucide-react';
-import { PropertyItem } from '@/lib/seedData';
+import { PropertyItem, INITIAL_PROPERTIES } from '@/lib/seedData';
 import { PropertyCard } from '@/components/PropertyCard';
 import { InquiryModal } from '@/components/InquiryModal';
 import { useApp } from '@/context/AppContext';
@@ -38,6 +38,18 @@ export default function HomePage() {
     }
     return [];
   });
+  const [totalPropertiesCount, setTotalPropertiesCount] = useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      const cached = getClientPropertiesCache('home_featured');
+      if (typeof cached?.pagination?.total === 'number') {
+        return cached.pagination.total;
+      }
+      if (cached?.data?.length) {
+        return cached.data.length;
+      }
+    }
+    return INITIAL_PROPERTIES.length;
+  });
   const [loading, setLoading] = useState(() => {
     if (typeof window !== 'undefined') {
       const cached = getClientPropertiesCache('home_featured');
@@ -57,21 +69,36 @@ export default function HomePage() {
     }
   };
 
+  // Helper function to format round-down dynamic count with + (e.g. 43 -> 40+, 57 -> 50+)
+  const getRoundedDisplayCount = (count: number): string => {
+    if (count <= 0) return '0+';
+    if (count < 10) return `${count}+`;
+    const rounded = Math.floor(count / 10) * 10;
+    return `${rounded}+`;
+  };
+
   // Fetch properties from API
   useEffect(() => {
     async function fetchProperties() {
       const cached = getClientPropertiesCache('home_featured');
       if (cached && cached.data && cached.data.length > 0) {
         setProperties(cached.data);
+        if (typeof cached.pagination?.total === 'number') {
+          setTotalPropertiesCount(cached.pagination.total);
+        } else {
+          setTotalPropertiesCount(cached.data.length);
+        }
         setLoading(false);
       }
 
       try {
-        const res = await fetch('/api/properties');
+        const res = await fetch('/api/properties?includeTotal=true');
         const data = await res.json();
         if (data.success && data.data && data.data.length > 0) {
           setProperties(data.data);
-          setClientPropertiesCache('home_featured', data.data);
+          const total = typeof data.pagination?.total === 'number' ? data.pagination.total : data.data.length;
+          setTotalPropertiesCount(total);
+          setClientPropertiesCache('home_featured', data.data, data.pagination);
         }
       } catch (e) {
         console.warn('Properties fetch error:', e);
@@ -165,7 +192,7 @@ export default function HomePage() {
   const locationsList = [
     { name: 'Chandigarh', count: '7,110 Properties', img: '/Image (Chandigarh).png', featured: false },
     { name: 'Mohali', count: '2,777 Properties', img: '/Image (Mohali).png', featured: false },
-    { name: 'Zirakpur', count: '4,937 Properties', img: '/Image (Zirakpur).png', featured: true, badge: '★ 6.2K+ Properties' },
+    { name: 'Zirakpur', count: '4,937 Properties', img: '/Image (Zirakpur).png', featured: true},
     { name: 'Kharar', count: '7,92 Properties', img: '/Image (Kharar).png', featured: false },
     { name: 'Panchkula', count: '12,145 Properties', img: '/Image (Panchkula).png', featured: false }
   ];
@@ -339,7 +366,7 @@ export default function HomePage() {
                 <HomeIcon size={14} />
               </div>
               <div className="text-left">
-                <div className="text-sm font-extrabold text-white">50K+</div>
+                <div className="text-sm font-extrabold text-white">{getRoundedDisplayCount(totalPropertiesCount)}</div>
                 <div className="text-[10px] text-gray-400">Verified Listings</div>
               </div>
             </div>
@@ -349,8 +376,8 @@ export default function HomePage() {
                 <Compass size={14} />
               </div>
               <div className="text-left">
-                <div className="text-sm font-extrabold text-white">15 Cities</div>
-                <div className="text-[10px] text-gray-400">Active Tricity & All</div>
+                <div className="text-sm font-extrabold text-white">5 Cities</div>
+                <div className="text-[10px] text-gray-400">Active Tricity</div>
               </div>
             </div>
 
@@ -384,12 +411,7 @@ export default function HomePage() {
               />
               <div className="absolute inset-0 bg-linear-to-t from-black/90 via-black/40 to-transparent" />
 
-              {/* Featured Badge */}
-              {loc.badge && (
-                <div className="absolute top-3 left-3 bg-emerald-500 text-black text-[9px] font-extrabold px-2.5 py-0.5 rounded-full shadow-md">
-                  {loc.badge}
-                </div>
-              )}
+              
 
               {/* Card Footer Text */}
               <div className="absolute bottom-3 left-3 right-3 space-y-1">
