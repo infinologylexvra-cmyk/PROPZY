@@ -3,14 +3,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Users, ShieldCheck, UserCheck, Search, Filter, RefreshCw, Phone, Mail, Building } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
-import { getCachedUsers, setCachedUsers } from '@/lib/adminCache';
+import { getCachedUsers, setCachedUsers, hasCachedUsers } from '@/lib/adminCache';
 import { useAdminSync } from '@/hooks/useAdminSync';
 import { TableSkeletonLoader } from '@/components/Loader';
 
 export default function AdminUsersPage() {
   const { showToast } = useApp();
-  const [users, setUsers] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [users, setUsers] = useState<any[]>(() => getCachedUsers() || []);
+  const [loading, setLoading] = useState<boolean>(() => !hasCachedUsers());
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<'all' | 'owner' | 'tenant' | 'admin'>('all');
 
@@ -31,14 +31,21 @@ export default function AdminUsersPage() {
   }, []);
 
   useEffect(() => {
-    fetchUsers(false);
+    if (!hasCachedUsers()) {
+      fetchUsers(false);
+    }
   }, [fetchUsers]);
 
   // Real-time cross-tab sync
   useAdminSync({
     dataType: 'users',
     onSync: () => {
-      fetchUsers(true);
+      const latest = getCachedUsers();
+      if (latest && latest.length > 0) {
+        setUsers(latest);
+      } else {
+        fetchUsers(true);
+      }
     },
     enablePolling: false,
   });

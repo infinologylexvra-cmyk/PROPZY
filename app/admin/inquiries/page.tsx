@@ -8,14 +8,14 @@ import {
 } from 'lucide-react';
 import { INITIAL_INQUIRIES } from '@/lib/seedData';
 import { useApp } from '@/context/AppContext';
-import { getCachedInquiries, setCachedInquiries } from '@/lib/adminCache';
+import { getCachedInquiries, setCachedInquiries, hasCachedInquiries } from '@/lib/adminCache';
 import { useAdminSync } from '@/hooks/useAdminSync';
 import { TableSkeletonLoader } from '@/components/Loader';
 
 export default function AdminInquiriesPage() {
   const { showToast } = useApp();
-  const [inquiries, setInquiries] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [inquiries, setInquiries] = useState<any[]>(() => getCachedInquiries() || []);
+  const [loading, setLoading] = useState<boolean>(() => !hasCachedInquiries());
   const [statusFilter, setStatusFilter] = useState('New');
   const [searchQuery, setSearchQuery] = useState('');
   const [visibleCount, setVisibleCount] = useState(10);
@@ -36,10 +36,8 @@ export default function AdminInquiriesPage() {
     }
   }, []);
 
-  const initializedRef = React.useRef(false);
   useEffect(() => {
-    if (!initializedRef.current) {
-      initializedRef.current = true;
+    if (!hasCachedInquiries()) {
       fetchInquiries(false);
     }
   }, [fetchInquiries]);
@@ -53,7 +51,12 @@ export default function AdminInquiriesPage() {
   useAdminSync({
     dataType: 'inquiries',
     onSync: () => {
-      fetchInquiries(true);
+      const latest = getCachedInquiries();
+      if (latest && latest.length > 0) {
+        setInquiries(latest);
+      } else {
+        fetchInquiries(true);
+      }
     },
     enablePolling: false,
   });

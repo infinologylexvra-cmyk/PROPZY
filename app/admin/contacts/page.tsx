@@ -7,7 +7,7 @@ import {
   Tag, Check, Archive, Inbox, AlertCircle
 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
-import { getCachedContacts, setCachedContacts } from '@/lib/adminCache';
+import { getCachedContacts, setCachedContacts, hasCachedContacts } from '@/lib/adminCache';
 import { useAdminSync } from '@/hooks/useAdminSync';
 import { TableSkeletonLoader } from '@/components/Loader';
 
@@ -25,8 +25,8 @@ interface ContactItem {
 
 export default function AdminContactsPage() {
   const { showToast } = useApp();
-  const [contacts, setContacts] = useState<ContactItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [contacts, setContacts] = useState<ContactItem[]>(() => getCachedContacts() || []);
+  const [loading, setLoading] = useState<boolean>(() => !hasCachedContacts());
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'replied' | 'archived'>('all');
   const [inquiryTypeFilter, setInquiryTypeFilter] = useState('all');
@@ -49,10 +49,8 @@ export default function AdminContactsPage() {
     }
   }, []);
 
-  const initializedRef = React.useRef(false);
   useEffect(() => {
-    if (!initializedRef.current) {
-      initializedRef.current = true;
+    if (!hasCachedContacts()) {
       fetchContacts(false);
     }
   }, [fetchContacts]);

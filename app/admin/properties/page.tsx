@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import { PropertyItem, INITIAL_PROPERTIES } from '@/lib/seedData';
 import { useApp } from '@/context/AppContext';
-import { getCachedProperties, setCachedProperties } from '@/lib/adminCache';
+import { getCachedProperties, setCachedProperties, hasCachedProperties } from '@/lib/adminCache';
 import { useAdminSync } from '@/hooks/useAdminSync';
 import { TableSkeletonLoader, BrandSpinner } from '@/components/Loader';
 
@@ -17,8 +17,9 @@ function AdminPropertiesContent() {
   const urlPid = searchParams.get('pid') || '';
   const { showToast } = useApp();
 
-  const [properties, setProperties] = useState<PropertyItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [properties, setProperties] = useState<PropertyItem[]>(() => getCachedProperties() || []);
+  const [loading, setLoading] = useState<boolean>(() => !hasCachedProperties());
+  const [refreshing, setRefreshing] = useState(false);
   const [actionPendingId, setActionPendingId] = useState<string | null>(null);
 
   // Filters State
@@ -56,14 +57,22 @@ function AdminPropertiesContent() {
   }, []);
 
   useEffect(() => {
-    fetchProperties(false);
+    // Only fetch if client cache is empty
+    if (!hasCachedProperties()) {
+      fetchProperties(false);
+    }
   }, [fetchProperties]);
 
   // Sync across open admin tabs
   useAdminSync({
     dataType: 'properties',
     onSync: () => {
-      fetchProperties(true);
+      const latest = getCachedProperties();
+      if (latest && latest.length > 0) {
+        setProperties(latest);
+      } else {
+        fetchProperties(true);
+      }
     },
     enablePolling: false,
   });
@@ -248,18 +257,30 @@ function AdminPropertiesContent() {
 
         <div className="flex items-center space-x-2 sm:space-x-3 self-start sm:self-auto">
           <button
+            onClick={async () => {
+              setRefreshing(true);
+              await fetchProperties(true);
+              setRefreshing(false);
+              showToast('Properties refreshed from database!');
+            }}
+            disabled={refreshing || loading}
+            className="px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-lg sm:rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-[11px] sm:text-xs font-extrabold flex items-center space-x-1.5 transition-all shadow-md shadow-emerald-500/20 cursor-pointer disabled:opacity-50"
+          >
+            <RefreshCw size={12} className={refreshing ? 'animate-spin' : ''} />
+            <span>{refreshing ? 'Refreshing...' : 'Refresh Data'}</span>
+          </button>
+          <button
             onClick={() => {
               setSearchTerm('');
               setCityFilter('all');
               setStatusFilter('all');
               setCategoryFilter('all');
               setVisibleCount(10);
-              fetchProperties(false);
             }}
             className="px-2.5 py-1.5 sm:px-3.5 sm:py-2 rounded-lg sm:rounded-xl bg-[#0b140f] border border-emerald-900/80 text-emerald-400 text-[11px] sm:text-xs font-semibold flex items-center space-x-1.5 hover:bg-emerald-950 transition-colors cursor-pointer"
           >
-            <RefreshCw size={12} className={loading ? 'animate-spin' : ''} />
-            <span>Reset Search</span>
+            <RefreshCw size={12} />
+            <span>Reset Filters</span>
           </button>
         </div>
       </div>

@@ -9,15 +9,15 @@ import {
 } from 'lucide-react';
 import { PropertyItem, INITIAL_PROPERTIES, INITIAL_INQUIRIES } from '@/lib/seedData';
 import { useApp } from '@/context/AppContext';
-import { getCachedProperties, setCachedProperties, getCachedInquiries, setCachedInquiries } from '@/lib/adminCache';
+import { getCachedProperties, setCachedProperties, hasCachedProperties, getCachedInquiries, setCachedInquiries, hasCachedInquiries } from '@/lib/adminCache';
 import { useAdminSync } from '@/hooks/useAdminSync';
 import { TableSkeletonLoader } from '@/components/Loader';
 
 export default function AdminOverviewPage() {
   const { showToast } = useApp();
-  const [properties, setProperties] = useState<PropertyItem[]>([]);
-  const [inquiries, setInquiries] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [properties, setProperties] = useState<PropertyItem[]>(() => getCachedProperties() || []);
+  const [inquiries, setInquiries] = useState<any[]>(() => getCachedInquiries() || []);
+  const [loading, setLoading] = useState<boolean>(() => !hasCachedProperties());
   const [refreshing, setRefreshing] = useState(false);
   const [actionPendingId, setActionPendingId] = useState<string | null>(null);
   const [propertyPendingDeletion, setPropertyPendingDeletion] = useState<PropertyItem | null>(null);
@@ -52,14 +52,23 @@ export default function AdminOverviewPage() {
   }, []);
 
   useEffect(() => {
-    fetchData();
+    // Only fetch if client cache is missing properties or inquiries
+    if (!hasCachedProperties() || !hasCachedInquiries()) {
+      fetchData();
+    }
   }, [fetchData]);
 
   // Real-time cross-tab sync hook for Admin Dashboard Overview
   useAdminSync({
     dataType: 'all',
     onSync: () => {
-      fetchData();
+      const cachedProps = getCachedProperties();
+      const cachedInqs = getCachedInquiries();
+      if (cachedProps && cachedProps.length > 0) setProperties(cachedProps);
+      if (cachedInqs && cachedInqs.length > 0) setInquiries(cachedInqs);
+      if (!cachedProps || !cachedInqs) {
+        fetchData();
+      }
     },
     enablePolling: false,
   });

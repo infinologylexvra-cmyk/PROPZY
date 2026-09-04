@@ -3,14 +3,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { ShieldCheck, CheckCircle2, XCircle, Clock, FileText, Search, UserCheck, RefreshCw, ExternalLink } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
-import { getCachedVerifications, setCachedVerifications } from '@/lib/adminCache';
+import { getCachedVerifications, setCachedVerifications, hasCachedVerifications } from '@/lib/adminCache';
 import { useAdminSync } from '@/hooks/useAdminSync';
 import { BrandSpinner } from '@/components/Loader';
 
 export default function AdminVerificationsPage() {
   const { showToast } = useApp();
-  const [verifications, setVerifications] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [verifications, setVerifications] = useState<any[]>(() => getCachedVerifications() || []);
+  const [loading, setLoading] = useState<boolean>(() => !hasCachedVerifications());
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
@@ -32,14 +32,21 @@ export default function AdminVerificationsPage() {
   }, []);
 
   useEffect(() => {
-    fetchVerifications(false);
+    if (!hasCachedVerifications()) {
+      fetchVerifications(false);
+    }
   }, [fetchVerifications]);
 
   // Real-time cross-tab and cross-browser sync hook
   useAdminSync({
     dataType: 'verifications',
     onSync: () => {
-      fetchVerifications(true);
+      const latest = getCachedVerifications();
+      if (latest && latest.length > 0) {
+        setVerifications(latest);
+      } else {
+        fetchVerifications(true);
+      }
     },
     enablePolling: false,
   });
