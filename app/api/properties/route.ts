@@ -267,8 +267,8 @@ export async function GET(req: NextRequest) {
 
       return NextResponse.json(payload, {
         headers: {
-          'Cache-Control': 'public, s-maxage=45, stale-while-revalidate=60',
-          'X-Cache-Status': 'MISS',
+          'Cache-Control': isAdminQuery ? 'no-store, no-cache, must-revalidate, max-age=0' : 'public, s-maxage=45, stale-while-revalidate=60',
+          'X-Cache-Status': isAdminQuery ? 'ADMIN-BYPASS' : 'MISS',
           'Server-Timing': `auth;dur=${durAuth}, db_conn;dur=${timings.durConn}, db_query;dur=${timings.durQuery}, access;dur=${timings.durAccess}, total;dur=${tTotal}`
         }
       });

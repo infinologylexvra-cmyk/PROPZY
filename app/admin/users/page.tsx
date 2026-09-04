@@ -9,16 +9,15 @@ import { TableSkeletonLoader } from '@/components/Loader';
 
 export default function AdminUsersPage() {
   const { showToast } = useApp();
-  const cached = getCachedUsers();
-  const [users, setUsers] = useState<any[]>(cached || []);
-  const [loading, setLoading] = useState(!cached);
+  const [users, setUsers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<'all' | 'owner' | 'tenant' | 'admin'>('all');
 
   const fetchUsers = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
     try {
-      const res = await fetch('/api/users');
+      const res = await fetch('/api/users', { cache: 'no-store' });
       const data = await res.json();
       if (data.success && Array.isArray(data.data)) {
         setUsers(data.data);
@@ -32,19 +31,14 @@ export default function AdminUsersPage() {
   }, []);
 
   useEffect(() => {
-    if (!cached || cached.length === 0) {
-      fetchUsers();
-    }
-  }, [cached, fetchUsers]);
+    fetchUsers(false);
+  }, [fetchUsers]);
 
   // Real-time cross-tab sync
   useAdminSync({
     dataType: 'users',
     onSync: () => {
-      const latest = getCachedUsers();
-      if (latest && latest.length > 0) {
-        setUsers(latest);
-      }
+      fetchUsers(true);
     },
     enablePolling: false,
   });

@@ -23,7 +23,7 @@ export default function AdminInquiriesPage() {
   const fetchInquiries = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
     try {
-      const res = await fetch('/api/inquiries');
+      const res = await fetch('/api/inquiries', { cache: 'no-store' });
       const data = await res.json();
       if (data.success && Array.isArray(data.data)) {
         setInquiries(data.data);
@@ -53,12 +53,7 @@ export default function AdminInquiriesPage() {
   useAdminSync({
     dataType: 'inquiries',
     onSync: () => {
-      const latest = getCachedInquiries();
-      if (latest) {
-        setInquiries(latest);
-      } else {
-        fetchInquiries(true);
-      }
+      fetchInquiries(true);
     },
     enablePolling: false,
   });

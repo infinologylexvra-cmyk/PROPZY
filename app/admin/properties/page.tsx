@@ -42,40 +42,28 @@ function AdminPropertiesContent() {
   const fetchProperties = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
     try {
-      const res = await fetch('/api/properties?admin=true&limit=1000');
+      const res = await fetch('/api/properties?admin=true&limit=1000', { cache: 'no-store' });
       const data = await res.json();
       if (data.success && Array.isArray(data.data)) {
         setProperties(data.data);
         setCachedProperties(data.data, false);
       }
     } catch (e) {
-      console.warn('Using seeded properties fallback:', e);
+      console.warn('Failed to fetch admin properties:', e);
     } finally {
       if (!silent) setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    const localProps = getCachedProperties();
-    if (localProps && localProps.length > 0) {
-      setProperties(localProps);
-      setLoading(false);
-      // Background revalidate from MongoDB
-      fetchProperties(true);
-    } else {
-      setProperties([]);
-      fetchProperties(false);
-    }
+    fetchProperties(false);
   }, [fetchProperties]);
 
   // Sync across open admin tabs
   useAdminSync({
     dataType: 'properties',
     onSync: () => {
-      const latest = getCachedProperties();
-      if (latest) {
-        setProperties(latest);
-      }
+      fetchProperties(true);
     },
     enablePolling: false,
   });

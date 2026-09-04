@@ -9,9 +9,8 @@ import { BrandSpinner } from '@/components/Loader';
 
 export default function AdminVerificationsPage() {
   const { showToast } = useApp();
-  const cached = getCachedVerifications();
-  const [verifications, setVerifications] = useState<any[]>(cached || []);
-  const [loading, setLoading] = useState(!cached);
+  const [verifications, setVerifications] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
@@ -19,7 +18,7 @@ export default function AdminVerificationsPage() {
   const fetchVerifications = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
     try {
-      const res = await fetch('/api/admin/verifications');
+      const res = await fetch('/api/admin/verifications', { cache: 'no-store' });
       const data = await res.json();
       if (data.success && data.data) {
         setVerifications(data.data);
@@ -33,19 +32,14 @@ export default function AdminVerificationsPage() {
   }, []);
 
   useEffect(() => {
-    if (!cached) {
-      fetchVerifications();
-    }
-  }, [cached, fetchVerifications]);
+    fetchVerifications(false);
+  }, [fetchVerifications]);
 
   // Real-time cross-tab and cross-browser sync hook
   useAdminSync({
     dataType: 'verifications',
     onSync: () => {
-      const latest = getCachedVerifications();
-      if (latest) {
-        setVerifications(latest);
-      }
+      fetchVerifications(true);
     },
     enablePolling: false,
   });

@@ -1,6 +1,6 @@
 import { PropertyItem } from './seedData';
 
-const CACHE_KEY = 'propzy_admin_data_v2';
+const CACHE_KEY = 'propzy_admin_session_v3';
 const CHANNEL_NAME = 'propzy_admin_sync_channel';
 
 export type AdminDataType = 'properties' | 'inquiries' | 'users' | 'verifications' | 'contacts';
@@ -14,11 +14,19 @@ interface AdminCacheStore {
 }
 
 let syncChannel: BroadcastChannel | null = null;
-if (typeof window !== 'undefined' && typeof BroadcastChannel !== 'undefined') {
+if (typeof window !== 'undefined') {
   try {
-    syncChannel = new BroadcastChannel(CHANNEL_NAME);
-  } catch (e) {
-    console.warn('BroadcastChannel initialization failed:', e);
+    // Clear out any old legacy persistent localStorage keys from earlier builds
+    localStorage.removeItem('propzy_admin_data');
+    localStorage.removeItem('propzy_admin_data_v2');
+  } catch (e) {}
+
+  if (typeof BroadcastChannel !== 'undefined') {
+    try {
+      syncChannel = new BroadcastChannel(CHANNEL_NAME);
+    } catch (e) {
+      console.warn('BroadcastChannel initialization failed:', e);
+    }
   }
 }
 
@@ -27,7 +35,7 @@ const getStore = (): AdminCacheStore => {
     return { properties: null, inquiries: null, users: null, verifications: null, contacts: null };
   }
   try {
-    const raw = localStorage.getItem(CACHE_KEY);
+    const raw = sessionStorage.getItem(CACHE_KEY);
     if (raw) return JSON.parse(raw);
   } catch (e) { }
   return { properties: null, inquiries: null, users: null, verifications: null, contacts: null };
@@ -38,7 +46,7 @@ const saveStore = (data: Partial<AdminCacheStore>) => {
   try {
     const current = getStore();
     const updated = { ...current, ...data };
-    localStorage.setItem(CACHE_KEY, JSON.stringify(updated));
+    sessionStorage.setItem(CACHE_KEY, JSON.stringify(updated));
   } catch (e) { }
 };
 
@@ -62,17 +70,6 @@ export const subscribeAdminSync = (callback: (type: AdminDataType) => void): (()
   };
   window.addEventListener('admin_cache_updated', handleCustomEvent);
 
-  const handleStorageEvent = (e: StorageEvent) => {
-    if (e.key === CACHE_KEY) {
-      callback('properties');
-      callback('verifications');
-      callback('inquiries');
-      callback('users');
-      callback('contacts');
-    }
-  };
-  window.addEventListener('storage', handleStorageEvent);
-
   const handleBroadcastMessage = (e: MessageEvent) => {
     if (e.data?.type) {
       callback(e.data.type);
@@ -85,7 +82,6 @@ export const subscribeAdminSync = (callback: (type: AdminDataType) => void): (()
 
   return () => {
     window.removeEventListener('admin_cache_updated', handleCustomEvent);
-    window.removeEventListener('storage', handleStorageEvent);
     if (syncChannel) {
       syncChannel.removeEventListener('message', handleBroadcastMessage);
     }
@@ -123,14 +119,10 @@ export const setCachedContacts = (data: any[], notify = true): void => {
 };
 
 export const clearAdminCache = (): void => {
-  if (typeof window !== 'undefined') {
-    try {
-      localStorage.removeItem(CACHE_KEY);
-      notifyAdminSync('properties');
-      notifyAdminSync('verifications');
-      notifyAdminSync('inquiries');
-      notifyAdminSync('users');
-      notifyAdminSync('contacts');
-    } catch (e) { }
-  }
+  if (typeof window === 'undefined') return;
+  try {
+    sessionStorage.removeItem(CACHE_KEY);
+    localStorage.removeItem('propzy_admin_data_v2');
+    localStorage.removeItem('propzy_admin_data');
+  } catch (e) { }
 };

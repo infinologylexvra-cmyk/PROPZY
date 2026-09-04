@@ -17,6 +17,7 @@ export default function AdminOverviewPage() {
   const { showToast } = useApp();
   const [properties, setProperties] = useState<PropertyItem[]>([]);
   const [inquiries, setInquiries] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [actionPendingId, setActionPendingId] = useState<string | null>(null);
   const [propertyPendingDeletion, setPropertyPendingDeletion] = useState<PropertyItem | null>(null);
@@ -24,8 +25,8 @@ export default function AdminOverviewPage() {
   const fetchData = useCallback(async () => {
     try {
       const [propsRes, inqRes] = await Promise.all([
-        fetch('/api/properties?admin=true&limit=1000').catch(() => null),
-        fetch('/api/inquiries').catch(() => null)
+        fetch('/api/properties?admin=true&limit=1000', { cache: 'no-store' }).catch(() => null),
+        fetch('/api/inquiries', { cache: 'no-store' }).catch(() => null)
       ]);
 
       if (propsRes && propsRes.ok) {
@@ -44,27 +45,13 @@ export default function AdminOverviewPage() {
         }
       }
     } catch (e) {
-      console.warn('Using seeded data fallback:', e);
+      console.warn('Failed to fetch live admin data:', e);
+    } finally {
+      setLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    const localProps = getCachedProperties();
-    const localInqs = getCachedInquiries();
-
-    if (localProps && localProps.length > 0) {
-      setProperties(localProps);
-    } else {
-      setProperties([]);
-    }
-
-    if (localInqs && localInqs.length > 0) {
-      setInquiries(localInqs);
-    } else {
-      setInquiries([]);
-    }
-
-    // Always revalidate from server in background on mount
     fetchData();
   }, [fetchData]);
 
@@ -72,10 +59,7 @@ export default function AdminOverviewPage() {
   useAdminSync({
     dataType: 'all',
     onSync: () => {
-      const localProps = getCachedProperties();
-      const localInqs = getCachedInquiries();
-      if (localProps) setProperties(localProps);
-      if (localInqs) setInquiries(localInqs);
+      fetchData();
     },
     enablePolling: false,
   });
@@ -204,7 +188,7 @@ export default function AdminOverviewPage() {
             className="flex-1 sm:flex-none px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl bg-[#0a1810] border border-emerald-900/80 text-emerald-400 hover:bg-emerald-950 text-[11px] sm:text-xs font-semibold flex items-center justify-center space-x-1.5 transition-colors whitespace-nowrap"
           >
             <Building size={12} />
-            <span>Manage All ({totalListings})</span>
+            <span>Manage All ({loading ? '...' : totalListings})</span>
           </Link>
         </div>
       </div>
@@ -220,9 +204,11 @@ export default function AdminOverviewPage() {
             </div>
           </div>
           <div>
-            <div className="text-xl sm:text-3xl font-extrabold text-white tracking-tight">{totalListings}</div>
+            <div className="text-xl sm:text-3xl font-extrabold text-white tracking-tight">
+              {loading ? <span className="inline-block w-10 h-7 bg-emerald-950/80 rounded animate-pulse" /> : totalListings}
+            </div>
             <div className="text-[9px] sm:text-[11px] text-emerald-400 font-semibold mt-0.5 sm:mt-1 flex items-center space-x-1">
-              <span>{verifiedListings} Verified Listings</span>
+              <span>{loading ? 'Fetching...' : `${verifiedListings} Verified Listings`}</span>
             </div>
           </div>
         </div>
@@ -236,7 +222,9 @@ export default function AdminOverviewPage() {
             </div>
           </div>
           <div>
-            <div className="text-xl sm:text-3xl font-extrabold text-white tracking-tight">{pendingVerification}</div>
+            <div className="text-xl sm:text-3xl font-extrabold text-white tracking-tight">
+              {loading ? <span className="inline-block w-8 h-7 bg-amber-950/80 rounded animate-pulse" /> : pendingVerification}
+            </div>
             <div className="text-[9px] sm:text-[11px] text-amber-400 font-semibold mt-0.5 sm:mt-1 flex items-center space-x-1">
               <span>Awaiting Moderation</span>
             </div>
@@ -252,7 +240,9 @@ export default function AdminOverviewPage() {
             </div>
           </div>
           <div>
-            <div className="text-xl sm:text-3xl font-extrabold text-white tracking-tight">{inquiries.length || 12}</div>
+            <div className="text-xl sm:text-3xl font-extrabold text-white tracking-tight">
+              {loading ? <span className="inline-block w-8 h-7 bg-cyan-950/80 rounded animate-pulse" /> : inquiries.length}
+            </div>
             <div className="text-[9px] sm:text-[11px] text-cyan-400 font-semibold mt-0.5 sm:mt-1 flex items-center space-x-1">
               <span>Active Inquiries & Visits</span>
             </div>
@@ -268,7 +258,9 @@ export default function AdminOverviewPage() {
             </div>
           </div>
           <div>
-            <div className="text-xl sm:text-3xl font-extrabold text-white tracking-tight">{featuredListings}</div>
+            <div className="text-xl sm:text-3xl font-extrabold text-white tracking-tight">
+              {loading ? <span className="inline-block w-8 h-7 bg-purple-950/80 rounded animate-pulse" /> : featuredListings}
+            </div>
             <div className="text-[9px] sm:text-[11px] text-purple-400 font-semibold mt-0.5 sm:mt-1 flex items-center space-x-1">
               <span>Promoted on Home</span>
             </div>

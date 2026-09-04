@@ -36,7 +36,7 @@ export default function AdminContactsPage() {
   const fetchContacts = useCallback(async (silent = false) => {
     if (!silent) setLoading(true);
     try {
-      const res = await fetch('/api/contacts');
+      const res = await fetch('/api/contacts', { cache: 'no-store' });
       const data = await res.json();
       if (data.success && Array.isArray(data.data)) {
         setContacts(data.data);
@@ -66,12 +66,7 @@ export default function AdminContactsPage() {
   useAdminSync({
     dataType: 'contacts',
     onSync: () => {
-      const latest = getCachedContacts();
-      if (latest) {
-        setContacts(latest);
-      } else {
-        fetchContacts(true);
-      }
+      fetchContacts(true);
     },
     enablePolling: false,
   });
