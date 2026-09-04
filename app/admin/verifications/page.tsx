@@ -188,11 +188,10 @@ export default function AdminVerificationsPage() {
             <button
               key={st}
               onClick={() => setStatusFilter(st)}
-              className={`px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-extrabold uppercase transition-all tracking-wider capitalize whitespace-nowrap ${
-                statusFilter === st
+              className={`px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-extrabold uppercase transition-all tracking-wider capitalize whitespace-nowrap ${statusFilter === st
                   ? 'bg-emerald-500 text-black shadow-md'
                   : 'text-gray-400 hover:text-white'
-              }`}
+                }`}
             >
               {st}
             </button>

@@ -2,9 +2,9 @@
 
 import React, { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { 
-  Building, ShieldCheck, Search, Filter, RefreshCw, PlusCircle, 
-  CheckCircle2, Clock, Trash2, Edit3, Star, X, MapPin, Phone, XCircle 
+import {
+  Building, ShieldCheck, Search, Filter, RefreshCw, PlusCircle,
+  CheckCircle2, Clock, Trash2, Edit3, Star, X, MapPin, Phone, XCircle
 } from 'lucide-react';
 import { PropertyItem, INITIAL_PROPERTIES } from '@/lib/seedData';
 import { useApp } from '@/context/AppContext';
@@ -20,7 +20,7 @@ function AdminPropertiesContent() {
   const [properties, setProperties] = useState<PropertyItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionPendingId, setActionPendingId] = useState<string | null>(null);
-  
+
   // Filters State
   const [searchTerm, setSearchTerm] = useState(urlPid);
   const [cityFilter, setCityFilter] = useState('all');
@@ -115,9 +115,9 @@ function AdminPropertiesContent() {
     const newVerifiedStatus = !currentVerified;
 
     setProperties(prev => {
-      const updated = prev.map(p => 
-        (p._id === id || p.pid === id || p.id === id) 
-          ? { ...p, verified: newVerifiedStatus } 
+      const updated = prev.map(p =>
+        (p._id === id || p.pid === id || p.id === id)
+          ? { ...p, verified: newVerifiedStatus }
           : p
       );
       setCachedProperties(updated, true);
@@ -139,9 +139,9 @@ function AdminPropertiesContent() {
       console.error('Verify toggle error:', e);
       // Revert optimistic update
       setProperties(prev => {
-        const reverted = prev.map(p => 
-          (p._id === id || p.pid === id || p.id === id) 
-            ? { ...p, verified: currentVerified } 
+        const reverted = prev.map(p =>
+          (p._id === id || p.pid === id || p.id === id)
+            ? { ...p, verified: currentVerified }
             : p
         );
         setCachedProperties(reverted, true);
@@ -159,9 +159,9 @@ function AdminPropertiesContent() {
     const newFeaturedStatus = !currentFeatured;
 
     setProperties(prev => {
-      const updated = prev.map(p => 
-        (p._id === id || p.pid === id || p.id === id) 
-          ? { ...p, featured: newFeaturedStatus } 
+      const updated = prev.map(p =>
+        (p._id === id || p.pid === id || p.id === id)
+          ? { ...p, featured: newFeaturedStatus }
           : p
       );
       setCachedProperties(updated, true);
@@ -183,9 +183,9 @@ function AdminPropertiesContent() {
       console.error('Feature toggle error:', e);
       // Revert optimistic update
       setProperties(prev => {
-        const reverted = prev.map(p => 
-          (p._id === id || p.pid === id || p.id === id) 
-            ? { ...p, featured: currentFeatured } 
+        const reverted = prev.map(p =>
+          (p._id === id || p.pid === id || p.id === id)
+            ? { ...p, featured: currentFeatured }
             : p
         );
         setCachedProperties(reverted, true);
@@ -226,7 +226,7 @@ function AdminPropertiesContent() {
     const targetId = editingProperty._id || editingProperty.pid || editingProperty.id;
 
     setProperties(prev => {
-      const updated = prev.map(p => 
+      const updated = prev.map(p =>
         (p._id === targetId || p.pid === targetId || p.id === targetId) ? editingProperty : p
       );
       setCachedProperties(updated);
@@ -239,7 +239,7 @@ function AdminPropertiesContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editingProperty)
       });
-    } catch (e) {}
+    } catch (e) { }
 
     setEditingProperty(null);
     showToast('Property updated successfully!');
@@ -364,8 +364,8 @@ function AdminPropertiesContent() {
               const mainImg = item.images && item.images.length > 0 ? item.images[0] : null;
 
               return (
-                <div 
-                  key={`m-${targetId}`} 
+                <div
+                  key={`m-${targetId}`}
                   className="p-3 space-y-2.5 bg-[#08120c] border border-emerald-900/70 hover:border-emerald-700/90 rounded-xl shadow-md transition-all"
                 >
                   {/* Top Row: PID, Category Pill & Status Badges */}
@@ -475,11 +475,10 @@ function AdminPropertiesContent() {
                     <button
                       disabled={Boolean(actionPendingId)}
                       onClick={() => handleVerifyToggle(targetId, !!item.verified)}
-                      className={`flex-1 h-7 flex items-center justify-center space-x-1 px-2 rounded-lg text-[10px] font-bold transition-all cursor-pointer disabled:opacity-50 whitespace-nowrap shadow-sm active:scale-95 ${
-                        item.verified
+                      className={`flex-1 h-7 flex items-center justify-center space-x-1 px-2 rounded-lg text-[10px] font-bold transition-all cursor-pointer disabled:opacity-50 whitespace-nowrap shadow-sm active:scale-95 ${item.verified
                           ? 'bg-[#180d10] text-rose-300 border border-rose-800/80 hover:bg-rose-950'
                           : 'bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold shadow-emerald-500/20'
-                      }`}
+                        }`}
                     >
                       {item.verified ? (
                         <>
@@ -498,11 +497,10 @@ function AdminPropertiesContent() {
                     <button
                       disabled={Boolean(actionPendingId)}
                       onClick={() => handleFeatureToggle(targetId, !!item.featured)}
-                      className={`w-7 h-7 flex items-center justify-center rounded-lg border text-xs font-bold transition-all cursor-pointer disabled:opacity-50 shrink-0 ${
-                        item.featured
+                      className={`w-7 h-7 flex items-center justify-center rounded-lg border text-xs font-bold transition-all cursor-pointer disabled:opacity-50 shrink-0 ${item.featured
                           ? 'bg-purple-950 text-purple-300 border-purple-800'
                           : 'bg-[#0a1810] text-gray-300 border-emerald-900 hover:text-white'
-                      }`}
+                        }`}
                       title="Toggle Featured"
                     >
                       <Star size={12} className={item.featured ? 'text-purple-400 fill-purple-400' : ''} />
@@ -598,11 +596,10 @@ function AdminPropertiesContent() {
                           <button
                             disabled={Boolean(actionPendingId)}
                             onClick={() => handleVerifyToggle(targetId, !!item.verified)}
-                            className={`px-3 py-1.5 rounded-xl text-xs font-extrabold border transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap shadow-sm active:scale-95 ${
-                              item.verified
+                            className={`px-3 py-1.5 rounded-xl text-xs font-extrabold border transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap shadow-sm active:scale-95 ${item.verified
                                 ? 'bg-[#180d10] text-rose-300 border-rose-900/80 hover:bg-rose-950'
                                 : 'bg-emerald-500 hover:bg-emerald-400 text-black border-emerald-500 shadow-md shadow-emerald-500/20'
-                            }`}
+                              }`}
                           >
                             {item.verified ? 'Unverify' : 'Verify'}
                           </button>
@@ -611,11 +608,10 @@ function AdminPropertiesContent() {
                           <button
                             disabled={Boolean(actionPendingId)}
                             onClick={() => handleFeatureToggle(targetId, !!item.featured)}
-                            className={`p-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shrink-0 ${
-                              item.featured
+                            className={`p-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shrink-0 ${item.featured
                                 ? 'bg-purple-950 text-purple-300 border-purple-800'
                                 : 'bg-[#0a1810] text-gray-300 border-emerald-900 hover:text-white'
-                            }`}
+                              }`}
                             title="Toggle Featured status"
                           >
                             <Star size={13} className={item.featured ? 'text-purple-400 fill-purple-400' : ''} />

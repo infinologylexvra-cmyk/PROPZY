@@ -396,11 +396,10 @@ export default function AdminOverviewPage() {
                       <button
                         disabled={Boolean(actionPendingId)}
                         onClick={() => handleVerifyToggle(targetId, !!item.verified)}
-                        className={`h-6 px-2 rounded-md text-[9px] font-bold transition-all cursor-pointer whitespace-nowrap ${
-                          item.verified
+                        className={`h-6 px-2 rounded-md text-[9px] font-bold transition-all cursor-pointer whitespace-nowrap ${item.verified
                             ? 'bg-[#180d10] text-rose-300 border border-rose-900/80'
                             : 'bg-emerald-500 text-black font-extrabold'
-                        }`}
+                          }`}
                       >
                         {item.verified ? 'Unverify' : 'Verify'}
                       </button>
@@ -464,8 +463,8 @@ export default function AdminOverviewPage() {
                           disabled={Boolean(actionPendingId)}
                           onClick={() => handleVerifyToggle(item.pid || item._id || item.id, !!item.verified)}
                           className={`px-3 py-1 rounded-xl text-[11px] font-extrabold border transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${item.verified
-                              ? 'bg-[#140b0d] text-rose-400 border-rose-900/80 hover:bg-rose-950'
-                              : 'bg-emerald-500 hover:bg-emerald-400 text-black border-emerald-500'
+                            ? 'bg-[#140b0d] text-rose-400 border-rose-900/80 hover:bg-rose-950'
+                            : 'bg-emerald-500 hover:bg-emerald-400 text-black border-emerald-500'
                             }`}
                         >
                           {item.verified ? 'Unverify' : 'Verify Now'}

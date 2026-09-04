@@ -29,7 +29,7 @@ const getStore = (): AdminCacheStore => {
   try {
     const raw = localStorage.getItem(CACHE_KEY);
     if (raw) return JSON.parse(raw);
-  } catch (e) {}
+  } catch (e) { }
   return { properties: null, inquiries: null, users: null, verifications: null, contacts: null };
 };
 
@@ -39,7 +39,7 @@ const saveStore = (data: Partial<AdminCacheStore>) => {
     const current = getStore();
     const updated = { ...current, ...data };
     localStorage.setItem(CACHE_KEY, JSON.stringify(updated));
-  } catch (e) {}
+  } catch (e) { }
 };
 
 export const notifyAdminSync = (type: AdminDataType): void => {
@@ -49,12 +49,12 @@ export const notifyAdminSync = (type: AdminDataType): void => {
   if (syncChannel) {
     try {
       syncChannel.postMessage({ type, timestamp: Date.now() });
-    } catch (e) {}
+    } catch (e) { }
   }
 };
 
 export const subscribeAdminSync = (callback: (type: AdminDataType) => void): (() => void) => {
-  if (typeof window === 'undefined') return () => {};
+  if (typeof window === 'undefined') return () => { };
 
   const handleCustomEvent = (e: Event) => {
     const detail = (e as CustomEvent).detail;
@@ -131,6 +131,6 @@ export const clearAdminCache = (): void => {
       notifyAdminSync('inquiries');
       notifyAdminSync('users');
       notifyAdminSync('contacts');
-    } catch (e) {}
+    } catch (e) { }
   }
 };

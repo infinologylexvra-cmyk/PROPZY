@@ -94,11 +94,10 @@ export default function AdminUsersPage() {
             <button
               key={r}
               onClick={() => setRoleFilter(r)}
-              className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${
-                roleFilter === r
+              className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg sm:rounded-xl text-[11px] sm:text-xs font-bold uppercase tracking-wider transition-all cursor-pointer ${roleFilter === r
                   ? 'bg-emerald-500 text-black shadow-md'
                   : 'bg-[#050806] text-gray-400 border border-emerald-950 hover:text-white'
-              }`}
+                }`}
             >
               {r === 'all' ? 'All Roles' : `${r}s`}
             </button>
@@ -170,13 +169,12 @@ export default function AdminUsersPage() {
                       </div>
                     </div>
 
-                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold whitespace-nowrap uppercase tracking-wider border ${
-                      isAdmin
+                    <span className={`px-2 py-0.5 rounded-full text-[9px] font-extrabold whitespace-nowrap uppercase tracking-wider border ${isAdmin
                         ? 'bg-purple-950/80 text-purple-400 border-purple-800/80'
                         : isOwner
-                        ? 'bg-emerald-950/80 text-emerald-400 border border-emerald-800/80'
-                        : 'bg-cyan-950/80 text-cyan-400 border border-cyan-800/80'
-                    }`}>
+                          ? 'bg-emerald-950/80 text-emerald-400 border border-emerald-800/80'
+                          : 'bg-cyan-950/80 text-cyan-400 border border-cyan-800/80'
+                      }`}>
                       {displayRole}
                     </span>
                   </div>
@@ -243,13 +241,12 @@ export default function AdminUsersPage() {
                       </td>
                       <td className="p-3.5 font-mono text-gray-300">{u.phone || 'Not provided'}</td>
                       <td className="p-3.5">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold whitespace-nowrap uppercase tracking-wider ${
-                          isAdmin
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-extrabold whitespace-nowrap uppercase tracking-wider ${isAdmin
                             ? 'bg-purple-950/80 text-purple-400 border border-purple-800/80'
                             : isOwner
-                            ? 'bg-emerald-950/80 text-emerald-400 border border-emerald-800/80'
-                            : 'bg-cyan-950/80 text-cyan-400 border border-cyan-800/80'
-                        }`}>
+                              ? 'bg-emerald-950/80 text-emerald-400 border border-emerald-800/80'
+                              : 'bg-cyan-950/80 text-cyan-400 border border-cyan-800/80'
+                          }`}>
                           {displayRole}
                         </span>
                       </td>
