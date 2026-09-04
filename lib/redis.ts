@@ -194,6 +194,15 @@ export async function redisPing(): Promise<number | null> {
   if (!client) return null;
 
   try {
+    if (client.status === 'wait') {
+      await client.connect().catch(() => {});
+    } else if (client.status === 'connecting') {
+      await new Promise<void>((resolve) => {
+        client.once('ready', () => resolve());
+        client.once('error', () => resolve());
+        setTimeout(() => resolve(), 3000);
+      });
+    }
     const start = performance.now();
     await client.ping();
     return Number((performance.now() - start).toFixed(2));

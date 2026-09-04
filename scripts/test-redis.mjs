@@ -1,4 +1,3 @@
-import { getRedisClient, redisGet, redisSet, redisDel, redisPing, isRedisAvailable } from '../lib/redis.ts';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -6,7 +5,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Load env vars from .env.local
+// Load env vars from .env.local before importing Redis
 const envPath = path.resolve(__dirname, '../.env.local');
 if (fs.existsSync(envPath)) {
   const envContent = fs.readFileSync(envPath, 'utf8');
@@ -20,6 +19,8 @@ if (fs.existsSync(envPath)) {
     }
   });
 }
+
+const { getRedisClient, redisGet, redisSet, redisDel, redisPing, isRedisAvailable } = await import('../lib/redis.ts');
 
 async function runRedisTests() {
   console.log('🧪 Testing Redis Cache Layer...\n');
