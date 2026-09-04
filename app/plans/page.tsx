@@ -180,7 +180,7 @@ export default function ExplorePlansPage() {
                 <div>
                   <h3 className="text-2xl font-bold text-white">100 Credits</h3>
                   <p className="text-xs text-gray-300 mt-1">
-                    Get 100 credits with 90 days validity & dedicated Relationship Manager support.
+                    Get 100 credits with 90 days validity.
                   </p>
                 </div>
 
@@ -209,12 +209,7 @@ export default function ExplorePlansPage() {
                     </div>
                     <span className="font-semibold text-white">90 Days Extended Validity</span>
                   </li>
-                  <li className="flex items-center space-x-2.5">
-                    <div className="w-5 h-5 rounded-full bg-emerald-500 text-black flex items-center justify-center shrink-0 shadow-sm">
-                      <Check size={13} className="stroke-[3]" />
-                    </div>
-                    <span>Personal Relationship Manager (RM) Assistance</span>
-                  </li>
+                 
                   <li className="flex items-center space-x-2.5">
                     <div className="w-5 h-5 rounded-full bg-emerald-500 text-black flex items-center justify-center shrink-0 shadow-sm">
                       <Check size={13} className="stroke-[3]" />

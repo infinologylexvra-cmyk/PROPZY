@@ -233,15 +233,15 @@ export default function HomePage() {
 
             {/* Main Headline */}
             <h1 className="text-2xl sm:text-6xl lg:text-7xl font-extrabold text-white tracking-tight leading-[1.15]">
-              Verified properties for <br />
+              Trusted Properties for<br />
               <span className="font-serif italic text-emerald-500 bg-clip-text font-normal">
-                Rent Buy Sale
+                Rent . Buy . Sell
               </span>
             </h1>
 
             {/* Subtitle */}
             <p className="text-xs sm:text-base text-gray-400 max-w-2xl mx-auto leading-relaxed px-2">
-              Explore genuinely verified flats, houses, PGs & luxury properties in Chandigarh Tricity. Direct owner contact with zero brokerage.
+             Find trusted flats, homes, PGs and premium properties in Chandigarh Tricity, directly from verified owners with no brokerage.
             </p>
           </div>
 

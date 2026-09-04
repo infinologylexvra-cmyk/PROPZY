@@ -255,7 +255,7 @@ function NavbarContent() {
                     ) : currentUser.role === 'owner' ? (
                       <>
                         <div className="px-4 py-2 border-b border-emerald-950 text-[10px] font-extrabold text-emerald-400 uppercase tracking-wider">
-                          🔑 Owner Dashboard
+                          Owner Dashboard
                         </div>
                         <Link
                           href="/dashboard?tab=account"
@@ -271,18 +271,18 @@ function NavbarContent() {
                         >
                           My Properties
                         </Link>
-                        <Link
-                          href="/dashboard?tab=billing"
+                       <Link
+                          href="/dashboard?tab=wishlist"
                           onClick={() => setIsProfileMenuOpen(false)}
                           className="flex items-center px-4 py-2.5 text-xs font-semibold text-gray-200 rounded-xl hover:bg-emerald-950/60 hover:text-emerald-400 transition-colors"
                         >
-                          Billing History
+                          Saved Property
                         </Link>
                       </>
                     ) : (
                       <>
                         <div className="px-4 py-2 border-b border-emerald-950 text-[10px] font-extrabold text-emerald-400 uppercase tracking-wider">
-                          🏠 Tenant Profile
+                          Tenant Profile
                         </div>
                         <Link
                           href="/dashboard?tab=account"
