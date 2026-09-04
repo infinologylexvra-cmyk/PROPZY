@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Heart, ShieldCheck, MapPin, Bed, Bath, Maximize, PhoneCall, ChevronLeft, ChevronRight, UserCheck } from 'lucide-react';
+import { Heart, ShieldCheck, MapPin, Bed, Bath, Maximize, PhoneCall, ChevronLeft, ChevronRight, UserCheck, Building2 } from 'lucide-react';
 import { PropertyItem } from '@/lib/seedData';
 import { useApp } from '@/context/AppContext';
 
@@ -143,16 +143,23 @@ export const PropertyCard: React.FC<PropertyCardProps> = React.memo(({ property,
 
           {/* Specs Row */}
           <div className="flex items-center space-x-4 py-2 text-xs text-gray-300 border-t border-emerald-950/80">
-            {property.bedrooms !== undefined && (
-              <div className="flex items-center space-x-1.5">
-                <Bed size={14} className="text-emerald-500" />
-                <span>{property.bedrooms} Bed</span>
+            {property.category === 'commercial' || property.type === 'commercial' ? (
+              <div className="flex items-center space-x-1.5 text-emerald-400 font-semibold">
+                <Building2 size={14} className="text-emerald-400" />
+                <span>Commercial</span>
               </div>
+            ) : (
+              property.bedrooms !== undefined && property.bedrooms > 0 && (
+                <div className="flex items-center space-x-1.5">
+                  <Bed size={14} className="text-emerald-500" />
+                  <span>{property.bedrooms} Bed</span>
+                </div>
+              )
             )}
             {property.bathrooms !== undefined && (
               <div className="flex items-center space-x-1.5">
                 <Bath size={14} className="text-emerald-500" />
-                <span>{property.bathrooms} Bath</span>
+                <span>{property.bathrooms} {(property.category === 'commercial' || property.type === 'commercial') ? 'Washroom' : 'Bath'}</span>
               </div>
             )}
             {property.areaSqFt !== undefined && property.areaSqFt <= 99999 && (

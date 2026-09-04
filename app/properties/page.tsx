@@ -491,26 +491,28 @@ function PropertySearchContent() {
                   </div>
                 </div>
 
-                {/* Bedrooms */}
-                <div>
-                  <label className="block text-xs font-semibold text-gray-300 mb-2">Bedrooms (BHK)</label>
-                  <div className="grid grid-cols-4 gap-2">
-                    {['all', '1', '2', '3'].map((bhk) => (
-                      <button
-                        key={bhk}
-                        type="button"
-                        suppressHydrationWarning
-                        onClick={() => setBedrooms(bhk)}
-                        className={`py-2 rounded-xl text-xs font-bold border transition-all text-center cursor-pointer ${bedrooms === bhk
-                          ? 'bg-emerald-500 text-black border-emerald-500 shadow-md font-extrabold'
-                          : 'bg-[#050806] text-gray-300 border-emerald-950 hover:border-emerald-800'
-                          }`}
-                      >
-                        {bhk === 'all' ? 'All' : `${bhk} BHK`}
-                      </button>
-                    ))}
+                {/* Bedrooms (Residential Only) */}
+                {category !== 'commercial' && type !== 'commercial' && (
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-300 mb-2">Bedrooms (BHK)</label>
+                    <div className="grid grid-cols-4 gap-2">
+                      {['all', '1', '2', '3'].map((bhk) => (
+                        <button
+                          key={bhk}
+                          type="button"
+                          suppressHydrationWarning
+                          onClick={() => setBedrooms(bhk)}
+                          className={`py-2 rounded-xl text-xs font-bold border transition-all text-center cursor-pointer ${bedrooms === bhk
+                            ? 'bg-emerald-500 text-black border-emerald-500 shadow-md font-extrabold'
+                            : 'bg-[#050806] text-gray-300 border-emerald-950 hover:border-emerald-800'
+                            }`}
+                        >
+                          {bhk === 'all' ? 'All' : `${bhk} BHK`}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Verified Toggle */}
                 <div className="pt-3 border-t border-emerald-950">
@@ -693,26 +695,28 @@ function PropertySearchContent() {
               </div>
             </div>
 
-            {/* Bedrooms */}
-            <div>
-              <label className="block text-xs font-semibold text-gray-300 mb-2">Bedrooms (BHK)</label>
-              <div className="flex space-x-2">
-                {['all', '1', '2', '3'].map((bhk) => (
-                  <button
-                    key={bhk}
-                    type="button"
-                    suppressHydrationWarning
-                    onClick={() => setBedrooms(bhk)}
-                    className={`flex-1 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${bedrooms === bhk
-                      ? 'bg-emerald-500 text-black border-emerald-500'
-                      : 'bg-[#050806] text-gray-400 border-emerald-950 hover:text-white'
-                      }`}
-                  >
-                    {bhk === 'all' ? 'All' : `${bhk} BHK`}
-                  </button>
-                ))}
+            {/* Bedrooms (Residential Only) */}
+            {category !== 'commercial' && type !== 'commercial' && (
+              <div>
+                <label className="block text-xs font-semibold text-gray-300 mb-2">Bedrooms (BHK)</label>
+                <div className="flex space-x-2">
+                  {['all', '1', '2', '3'].map((bhk) => (
+                    <button
+                      key={bhk}
+                      type="button"
+                      suppressHydrationWarning
+                      onClick={() => setBedrooms(bhk)}
+                      className={`flex-1 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${bedrooms === bhk
+                        ? 'bg-emerald-500 text-black border-emerald-500'
+                        : 'bg-[#050806] text-gray-400 border-emerald-950 hover:text-white'
+                        }`}
+                    >
+                      {bhk === 'all' ? 'All' : `${bhk} BHK`}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Verified Toggle */}
             <div className="pt-2 border-t border-emerald-950">

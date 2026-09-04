@@ -5,7 +5,7 @@ import { useParams, useRouter, notFound } from 'next/navigation';
 import Link from 'next/link';
 import {
   ShieldCheck, MapPin, Bed, Bath, Maximize, Heart, PhoneCall,
-  ChevronLeft, ChevronRight, Check, User, Copy, Grid, X, Camera, Image as ImageIcon
+  ChevronLeft, ChevronRight, Check, User, Copy, Grid, X, Camera, Image as ImageIcon, Building2
 } from 'lucide-react';
 import { PropertyItem, INITIAL_PROPERTIES } from '@/lib/seedData';
 import { useApp } from '@/context/AppContext';
@@ -496,26 +496,42 @@ export default function PropertyDetailPage() {
           {/* Key Overview Cards */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-6 bg-white rounded-3xl border border-gray-100 shadow-xs">
             <div className="space-y-1">
-              <span className="text-xs text-gray-500 block">Rent / Price</span>
+              <span className="text-xs text-gray-500 block">
+                {property.category === 'commercial' ? 'Commercial Rate' : 'Rent / Price'}
+              </span>
               <span className="text-xl font-extrabold text-gray-900 block">{formatPrice(property.price)}</span>
             </div>
 
-            {property.bedrooms !== undefined && (
+            {property.category === 'commercial' || property.type === 'commercial' ? (
               <div className="space-y-1">
-                <span className="text-xs text-gray-500 block">Bedrooms</span>
+                <span className="text-xs text-gray-500 block">Property Type</span>
                 <span className="text-base font-bold text-gray-900 flex items-center space-x-1">
-                  <Bed size={18} className="text-emerald-500" />
-                  <span>{property.bedrooms} BHK</span>
+                  <Building2 size={18} className="text-emerald-500" />
+                  <span className="capitalize">Commercial</span>
                 </span>
               </div>
+            ) : (
+              property.bedrooms !== undefined && property.bedrooms > 0 && (
+                <div className="space-y-1">
+                  <span className="text-xs text-gray-500 block">Bedrooms</span>
+                  <span className="text-base font-bold text-gray-900 flex items-center space-x-1">
+                    <Bed size={18} className="text-emerald-500" />
+                    <span>{property.bedrooms} BHK</span>
+                  </span>
+                </div>
+              )
             )}
 
             {property.bathrooms !== undefined && (
               <div className="space-y-1">
-                <span className="text-xs text-gray-500 block">Bathrooms</span>
+                <span className="text-xs text-gray-500 block">
+                  {property.category === 'commercial' || property.type === 'commercial' ? 'Washrooms' : 'Bathrooms'}
+                </span>
                 <span className="text-base font-bold text-gray-900 flex items-center space-x-1">
                   <Bath size={18} className="text-emerald-500" />
-                  <span>{property.bathrooms} Baths</span>
+                  <span>
+                    {property.bathrooms === 0 ? 'Shared / Common' : `${property.bathrooms} ${(property.category === 'commercial' || property.type === 'commercial') ? (property.bathrooms === 1 ? 'Washroom' : 'Washrooms') : (property.bathrooms === 1 ? 'Bath' : 'Baths')}`}
+                  </span>
                 </span>
               </div>
             )}

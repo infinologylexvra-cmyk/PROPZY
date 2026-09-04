@@ -21,6 +21,7 @@ export default function PostPropertyPage() {
   // Form State
   const [category, setCategory] = useState<'rent' | 'sell' | 'buy' | 'pg' | 'commercial'>('rent');
   const [type, setType] = useState<'flat' | 'house' | 'pg' | 'commercial'>('flat');
+  const [commercialSubType, setCommercialSubType] = useState<string>('Office Space');
   const [title, setTitle] = useState('');
   const [city, setCity] = useState('Mohali');
   const [locality, setLocality] = useState('');
@@ -35,6 +36,8 @@ export default function PostPropertyPage() {
   const [selectedAmenities, setSelectedAmenities] = useState<string[]>([
     'Power Backup', 'Air Conditioner', 'Car Parking', 'Modular Kitchen'
   ]);
+
+  const isCommercial = category === 'commercial' || type === 'commercial';
   // Images State & Upload Handlers
   interface UploadQueueItem {
     id: string;
@@ -73,6 +76,7 @@ export default function PostPropertyPage() {
     step: number;
     category: 'rent' | 'sell' | 'buy' | 'pg' | 'commercial';
     type: 'flat' | 'house' | 'pg' | 'commercial';
+    commercialSubType?: string;
     title: string;
     city: string;
     locality: string;
@@ -110,6 +114,7 @@ export default function PostPropertyPage() {
     step,
     category,
     type,
+    commercialSubType,
     title,
     city,
     locality,
@@ -132,14 +137,15 @@ export default function PostPropertyPage() {
     if (typeof draft.step === 'number') setStep(draft.step);
     if (draft.category) setCategory(draft.category);
     if (draft.type) setType(draft.type);
+    if (typeof draft.commercialSubType === 'string') setCommercialSubType(draft.commercialSubType || 'Office Space');
     if (typeof draft.title === 'string') setTitle(draft.title || '');
     if (typeof draft.city === 'string') setCity(draft.city || 'Mohali');
     if (typeof draft.locality === 'string') setLocality(draft.locality || '');
     if (typeof draft.address === 'string') setAddress(draft.address || '');
     if (typeof draft.price !== 'undefined') setPrice(draft.price ?? 12000);
     if (typeof draft.deposit !== 'undefined') setDeposit(draft.deposit ?? 12000);
-    if (typeof draft.bedrooms === 'number') setBedrooms(draft.bedrooms || 2);
-    if (typeof draft.bathrooms === 'number') setBathrooms(draft.bathrooms || 2);
+    if (typeof draft.bedrooms === 'number') setBedrooms(draft.bedrooms);
+    if (typeof draft.bathrooms === 'number') setBathrooms(draft.bathrooms ?? 1);
     if (typeof draft.areaSqFt === 'number') setAreaSqFt(draft.areaSqFt || 1000);
     if (draft.furnishing) setFurnishing(draft.furnishing);
     if (typeof draft.description === 'string') setDescription(draft.description || '');
@@ -184,18 +190,36 @@ export default function PostPropertyPage() {
     }
   }, [user]);
 
-  const availableAmenities = [
+  const residentialAmenities = [
     'Power Backup', 'Air Conditioner', 'Car Parking', 'Modular Kitchen',
     'Wi-Fi', 'Balcony', 'Geyser', 'Elevator', 'Gym', 'Gated Security',
     'Laundry', 'RO Water', 'Housekeeping', 'CCTV'
   ];
 
-  const sampleImages = [
+  const commercialAmenities = [
+    'Power Backup', 'Central AC', 'Car Parking', 'Visitor Parking',
+    'High-Speed Wi-Fi', 'Elevator / Lift', 'Conference Room', 'Pantry Area',
+    'Fire Safety', 'CCTV & Security', 'Reception Area', '24/7 Access',
+    'Cafeteria / Food Court', 'Reserved Parking'
+  ];
+
+  const availableAmenities = isCommercial ? commercialAmenities : residentialAmenities;
+
+  const residentialSampleImages = [
     { label: 'Modern Flat', url: 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=800&q=80' },
     { label: 'Luxury Living', url: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=800&q=80' },
     { label: 'Kothi / House', url: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80' },
     { label: 'Cozy Room', url: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=800&q=80' }
   ];
+
+  const commercialSampleImages = [
+    { label: 'Modern Office', url: 'https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=800&q=80' },
+    { label: 'Conference / Workspace', url: 'https://images.unsplash.com/photo-1497215728101-856f4ea42174?auto=format&fit=crop&w=800&q=80' },
+    { label: 'Retail / Showroom', url: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=800&q=80' },
+    { label: 'Commercial Building', url: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80' }
+  ];
+
+  const sampleImages = isCommercial ? commercialSampleImages : residentialSampleImages;
 
   const maxSellImages = 10;
   const maxImagesReached = images.length >= maxSellImages;
@@ -612,6 +636,9 @@ export default function PostPropertyPage() {
 
     setSubmitting(true);
 
+    const defaultCommercialDesc = `Prime ${commercialSubType || 'commercial space'} available for ${category === 'sell' || category === 'buy' ? 'sale' : 'rent'} in ${locality}, ${city}. Features ${areaSqFt} sq.ft area with ${furnishing === 'fully-furnished' ? 'fully furnished plug & play setup' : furnishing === 'semi-furnished' ? 'semi-fitted interior' : 'bare shell layout'}. Direct owner contact.`;
+    const defaultResidentialDesc = `Beautiful ${bedrooms} BHK ${type} available for ${category === 'sell' || category === 'buy' ? 'sale' : category} in ${locality}, ${city}. Direct owner contact.`;
+
     const payload = {
       title,
       category,
@@ -621,11 +648,11 @@ export default function PostPropertyPage() {
       address: address || `${locality}, ${city}`,
       price: Number(price),
       deposit: Number(deposit) || 0,
-      bedrooms: Number(bedrooms),
+      bedrooms: isCommercial ? 0 : Number(bedrooms),
       bathrooms: Number(bathrooms),
       areaSqFt: Number(areaSqFt),
       furnishing,
-      description: description || `Beautiful ${bedrooms} BHK ${type} available for ${category === 'sell' || category === 'buy' ? 'sale' : category} in ${locality}, ${city}. Direct owner contact.`,
+      description: description || (isCommercial ? defaultCommercialDesc : defaultResidentialDesc),
       amenities: selectedAmenities,
       images: images,
       ownerName,
@@ -830,7 +857,16 @@ export default function PostPropertyPage() {
                     <button
                       key={cat}
                       type="button"
-                      onClick={() => setCategory(cat)}
+                      onClick={() => {
+                        setCategory(cat);
+                        if (cat === 'commercial') {
+                          setType('commercial');
+                          setBedrooms(0);
+                        } else if (type === 'commercial') {
+                          setType('flat');
+                          setBedrooms(2);
+                        }
+                      }}
                       className={`py-2.5 cursor-pointer rounded-xl font-bold uppercase transition-all border ${category === cat
                         ? 'bg-emerald-500 text-black border-emerald-500 shadow-md'
                         : 'bg-[#050806] text-gray-400 border-emerald-950 hover:text-white'
@@ -849,7 +885,15 @@ export default function PostPropertyPage() {
                     <button
                       key={t}
                       type="button"
-                      onClick={() => setType(t)}
+                      onClick={() => {
+                        setType(t);
+                        if (t === 'commercial') {
+                          setBedrooms(0);
+                        } else if (category === 'commercial') {
+                          setCategory('rent');
+                          setBedrooms(2);
+                        }
+                      }}
                       className={`py-2.5 rounded-xl font-bold uppercase transition-all border ${type === t
                         ? 'bg-emerald-500 text-black border-emerald-500 shadow-md'
                         : 'bg-[#050806] text-gray-400 border-emerald-950 hover:text-white'
@@ -868,7 +912,7 @@ export default function PostPropertyPage() {
                   required
                   value={title ?? ''}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g. Spacious 2BHK Apartment with Balcony in Sector 70"
+                  placeholder={isCommercial ? "e.g. Furnished Commercial Office Space in Sector 67" : "e.g. Spacious 2BHK Apartment with Balcony in Sector 70"}
                   className="w-full px-3.5 sm:px-4 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white focus:border-emerald-500 focus:outline-none"
                 />
               </div>
@@ -905,7 +949,7 @@ export default function PostPropertyPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <label className="block text-gray-300 font-semibold mb-1">
-                    {category === 'sell' || category === 'buy' ? 'Expected Sale Price (₹) *' : 'Monthly Rent (₹) *'}
+                    {category === 'sell' || category === 'buy' ? 'Expected Sale Price (₹) *' : isCommercial ? 'Monthly Rent (₹) *' : 'Monthly Rent (₹) *'}
                   </label>
                   <input
                     type="number"
@@ -947,36 +991,68 @@ export default function PostPropertyPage() {
           {step === 2 && (
             <div className="space-y-5 sm:space-y-6 text-xs">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-                <div>
-                  <label className="block text-gray-300 font-semibold mb-1">Bedrooms (BHK)</label>
-                  <select
-                    value={bedrooms}
-                    onChange={(e) => setBedrooms(Number(e.target.value))}
-                    className="w-full px-3.5 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white focus:border-emerald-500 focus:outline-none cursor-pointer"
-                  >
-                    <option value={1}>1 BHK</option>
-                    <option value={2}>2 BHK</option>
-                    <option value={3}>3 BHK</option>
-                    <option value={4}>4 BHK+</option>
-                  </select>
-                </div>
+                {isCommercial ? (
+                  <div>
+                    <label className="block text-gray-300 font-semibold mb-1">Commercial Space Type</label>
+                    <select
+                      value={commercialSubType}
+                      onChange={(e) => setCommercialSubType(e.target.value)}
+                      className="w-full px-3.5 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white focus:border-emerald-500 focus:outline-none cursor-pointer font-medium"
+                    >
+                      <option value="Office Space">Office Space</option>
+                      <option value="Shop / Retail">Shop / Retail Store</option>
+                      <option value="Showroom">Showroom</option>
+                      <option value="Warehouse / Godown">Warehouse / Godown</option>
+                      <option value="Coworking Space">Coworking Space</option>
+                      <option value="Commercial Building">Commercial Building</option>
+                      <option value="Other Commercial">Other Commercial</option>
+                    </select>
+                  </div>
+                ) : (
+                  <div>
+                    <label className="block text-gray-300 font-semibold mb-1">Bedrooms (BHK)</label>
+                    <select
+                      value={bedrooms}
+                      onChange={(e) => setBedrooms(Number(e.target.value))}
+                      className="w-full px-3.5 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white focus:border-emerald-500 focus:outline-none cursor-pointer"
+                    >
+                      <option value={1}>1 BHK</option>
+                      <option value={2}>2 BHK</option>
+                      <option value={3}>3 BHK</option>
+                      <option value={4}>4 BHK+</option>
+                    </select>
+                  </div>
+                )}
 
                 <div>
-                  <label className="block text-gray-300 font-semibold mb-1">Bathrooms</label>
+                  <label className="block text-gray-300 font-semibold mb-1">
+                    {isCommercial ? 'Washrooms' : 'Bathrooms'}
+                  </label>
                   <select
                     value={bathrooms}
                     onChange={(e) => setBathrooms(Number(e.target.value))}
                     className="w-full px-3.5 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white focus:border-emerald-500 focus:outline-none cursor-pointer"
                   >
-                    <option value={1}>1 Bath</option>
-                    <option value={2}>2 Baths</option>
-                    <option value={3}>3 Baths+</option>
+                    {isCommercial ? (
+                      <>
+                        <option value={0}>0 (Shared / Common)</option>
+                        <option value={1}>1 Private Washroom</option>
+                        <option value={2}>2 Private Washrooms</option>
+                        <option value={3}>3+ Washrooms</option>
+                      </>
+                    ) : (
+                      <>
+                        <option value={1}>1 Bath</option>
+                        <option value={2}>2 Baths</option>
+                        <option value={3}>3 Baths+</option>
+                      </>
+                    )}
                   </select>
                 </div>
 
                 <div>
                   <label className="block text-gray-300 font-semibold mb-1">
-                    Area (sq.ft)
+                    {isCommercial ? 'Super Area (sq.ft)' : 'Area (sq.ft)'}
                   </label>
 
                   <input
@@ -989,27 +1065,31 @@ export default function PostPropertyPage() {
                         setAreaSqFt(Number(value));
                       }
                     }}
-                    placeholder="e.g. 1100"
+                    placeholder={isCommercial ? "e.g. 1500" : "e.g. 1100"}
                     className="w-full px-3.5 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white font-mono focus:border-emerald-500 focus:outline-none font-bold"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-gray-300 font-semibold mb-1">Furnishing Status</label>
+                  <label className="block text-gray-300 font-semibold mb-1">
+                    {isCommercial ? 'Fit-out / Furnishing' : 'Furnishing Status'}
+                  </label>
                   <select
                     value={furnishing}
                     onChange={(e) => setFurnishing(e.target.value as 'unfurnished' | 'semi-furnished' | 'fully-furnished')}
                     className="w-full px-3.5 py-3 bg-[#050806] border border-emerald-900/80 rounded-xl text-white focus:border-emerald-500 focus:outline-none cursor-pointer"
                   >
-                    <option value="unfurnished">Unfurnished</option>
-                    <option value="semi-furnished">Semi-Furnished</option>
-                    <option value="fully-furnished">Fully Furnished</option>
+                    <option value="unfurnished">{isCommercial ? 'Bare Shell / Unfurnished' : 'Unfurnished'}</option>
+                    <option value="semi-furnished">{isCommercial ? 'Semi-Fitted / Warm Shell' : 'Semi-Furnished'}</option>
+                    <option value="fully-furnished">{isCommercial ? 'Fully Furnished / Plug & Play' : 'Fully Furnished'}</option>
                   </select>
                 </div>
               </div>
 
               <div>
-                <label className="block text-gray-300 font-semibold mb-2">Select Amenities Available</label>
+                <label className="block text-gray-300 font-semibold mb-2">
+                  {isCommercial ? 'Select Commercial Amenities & Facilities' : 'Select Amenities Available'}
+                </label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {availableAmenities.map((amenity) => (
                     <button
