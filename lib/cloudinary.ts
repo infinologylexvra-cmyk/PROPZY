@@ -47,6 +47,47 @@ export function extractPublicIdFromUrl(url: string): string | null {
 }
 
 /**
+ * Automatically uploads any Base64 data URLs in an image array to Cloudinary
+ * and returns the array with all Base64 strings replaced with secure HTTPS Cloudinary URLs.
+ */
+export async function uploadBase64ImagesToCloudinary(images: string[], folder = 'letsrentz/properties'): Promise<string[]> {
+  if (!Array.isArray(images) || images.length === 0) return [];
+
+  const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || process.env.CLOUDINARY_CLOUD_NAME;
+  const apiKey = process.env.CLOUDINARY_API_KEY;
+  const apiSecret = process.env.CLOUDINARY_API_SECRET;
+
+  const isConfigured = Boolean(cloudName && apiKey && apiSecret);
+
+  const processedImages: string[] = [];
+
+  for (const img of images) {
+    if (typeof img === 'string' && img.startsWith('data:image/')) {
+      if (isConfigured) {
+        try {
+          const res = await cloudinary.uploader.upload(img, {
+            folder,
+            resource_type: 'image',
+          });
+          if (res?.secure_url) {
+            processedImages.push(res.secure_url);
+            continue;
+          }
+        } catch (uploadErr: any) {
+          console.error('[Cloudinary Auto-Upload Error]:', uploadErr?.message);
+        }
+      }
+      // If upload failed or not configured, keep img
+      processedImages.push(img);
+    } else if (typeof img === 'string' && img.trim().length > 0) {
+      processedImages.push(img.trim());
+    }
+  }
+
+  return processedImages;
+}
+
+/**
  * Safely destroys an image on Cloudinary by its publicId.
  */
 export async function deleteCloudinaryImage(publicId: string) {
@@ -61,3 +102,4 @@ export async function deleteCloudinaryImage(publicId: string) {
 }
 
 export default cloudinary;
+

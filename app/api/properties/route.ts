@@ -16,6 +16,7 @@ import {
   deleteInFlight, 
   buildPropertyCacheKey 
 } from '@/lib/propertiesCache';
+import { uploadBase64ImagesToCloudinary } from '@/lib/cloudinary';
 
 export const runtime = 'nodejs';
 
@@ -422,6 +423,8 @@ export async function POST(req: NextRequest) {
     const resolvedOwnerPhone = existingUser?.phone || body.ownerPhone || '+91 98765 43210';
     const resolvedOwnerEmail = cleanAuthEmail;
 
+    const uploadedImages = await uploadBase64ImagesToCloudinary(cleanedImages);
+
     const newProperty = {
       pid: pidGenerated,
       title: body.title || 'Untitled Property Listing',
@@ -438,7 +441,7 @@ export async function POST(req: NextRequest) {
       furnishing: validFurnishing.includes(body.furnishing) ? body.furnishing : 'semi-furnished',
       verified: body.verified !== undefined ? body.verified : false,
       featured: body.featured !== undefined ? body.featured : false,
-      images: cleanedImages,
+      images: uploadedImages,
       description: body.description || `Property listing in ${body.locality || 'Mohali'}.`,
       amenities: Array.isArray(body.amenities) ? body.amenities : ['Power Backup', 'Car Parking'],
       ownerName: resolvedOwnerName,

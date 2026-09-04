@@ -6,7 +6,7 @@ import { memoryStore } from '@/lib/memoryStore';
 import { getAuthUser } from '@/lib/auth';
 import { canViewPropertyContactDetails, isAdminUser, isBrowserDocumentNavigation, isOwnedByUser, serializeProperty } from '@/lib/accessControl';
 import { clearPropertiesCache } from '@/lib/propertiesCache';
-import { extractPublicIdFromUrl, deleteCloudinaryImage } from '@/lib/cloudinary';
+import { extractPublicIdFromUrl, deleteCloudinaryImage, uploadBase64ImagesToCloudinary } from '@/lib/cloudinary';
 import { redisGet, redisSet } from '@/lib/redis';
 
 export async function GET(
@@ -120,6 +120,10 @@ export async function PATCH(
       if (existing) {
         if (authUser && !isAdminUser(authUser) && !isOwnedByUser(existing.ownerEmail, authUser)) {
           return NextResponse.json({ success: false, message: 'Forbidden. You can only modify your own property listing.' }, { status: 403 });
+        }
+
+        if (Array.isArray(body.images)) {
+          body.images = await uploadBase64ImagesToCloudinary(body.images);
         }
 
         updated = await Property.findOneAndUpdate(
