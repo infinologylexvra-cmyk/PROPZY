@@ -75,13 +75,28 @@ export default function PropertyDetailPage() {
       if (!property) return;
       setLoadingSimilar(true);
       try {
+        const isPg = property.category === 'pg' || property.type === 'pg';
+        const is1Bhk = property.bedrooms === 1;
+
         const queryParams = new URLSearchParams();
-        if (property.bedrooms && property.bedrooms > 0) {
-          queryParams.set('bedrooms', String(property.bedrooms));
-        }
-        if (property.category) {
+        if (isPg) {
+          queryParams.set('category', 'pg,rent');
+        } else if (is1Bhk) {
+          queryParams.set('category', 'rent,pg');
+          queryParams.set('bedrooms', '1');
+        } else if (property.bedrooms && property.bedrooms > 0) {
+          if (property.bedrooms === 3 || property.bedrooms === 4) {
+            queryParams.set('bedrooms', '3,4');
+          } else {
+            queryParams.set('bedrooms', String(property.bedrooms));
+          }
+          if (property.category) {
+            queryParams.set('category', property.category);
+          }
+        } else if (property.category) {
           queryParams.set('category', property.category);
         }
+        queryParams.set('limit', '50');
 
         const res = await fetch(`/api/properties?${queryParams.toString()}`);
         const data = await res.json();
@@ -91,16 +106,40 @@ export default function PropertyDetailPage() {
           const currentId = property.id;
           const currentMongoId = (property as any)._id?.toString();
 
-          // Filter out the active property
+          // Filter out the active property and ensure relevance
           const filtered = data.data.filter((p: PropertyItem) => {
             if (p.pid && currentPid && p.pid.toUpperCase() === currentPid) return false;
             if (p.id && currentId && p.id === currentId) return false;
             if ((p as any)._id && currentMongoId && (p as any)._id.toString() === currentMongoId) return false;
+
+            if (isPg) {
+              return p.category === 'pg' || p.type === 'pg' || p.bedrooms === 1;
+            }
+            if (is1Bhk) {
+              return p.bedrooms === 1 || p.category === 'pg' || p.type === 'pg';
+            }
             return true;
           });
 
-          // Sort by locality match first, then city match, then price proximity
+          // Sort by exact category/BHK match first, then locality match, then city match, then price proximity
           const sorted = filtered.sort((a: PropertyItem, b: PropertyItem) => {
+            if (isPg) {
+              const aIsPg = a.category === 'pg' || a.type === 'pg';
+              const bIsPg = b.category === 'pg' || b.type === 'pg';
+              if (aIsPg && !bIsPg) return -1;
+              if (!aIsPg && bIsPg) return 1;
+            } else if (is1Bhk) {
+              const aIs1Bhk = a.bedrooms === 1 && a.category !== 'pg';
+              const bIs1Bhk = b.bedrooms === 1 && b.category !== 'pg';
+              if (aIs1Bhk && !bIs1Bhk) return -1;
+              if (!aIs1Bhk && bIs1Bhk) return 1;
+            } else {
+              const aExactBhk = a.bedrooms === property.bedrooms;
+              const bExactBhk = b.bedrooms === property.bedrooms;
+              if (aExactBhk && !bExactBhk) return -1;
+              if (!aExactBhk && bExactBhk) return 1;
+            }
+
             const aLocalityMatch = a.locality && property.locality && a.locality.toLowerCase() === property.locality.toLowerCase();
             const bLocalityMatch = b.locality && property.locality && b.locality.toLowerCase() === property.locality.toLowerCase();
             if (aLocalityMatch && !bLocalityMatch) return -1;
@@ -131,7 +170,7 @@ export default function PropertyDetailPage() {
     }
 
     fetchSimilarProperties();
-  }, [property?.pid, property?.id, property?.bedrooms, property?.category, property?.locality, property?.city, property?.price]);
+  }, [property?.pid, property?.id, property?.bedrooms, property?.category, property?.type, property?.locality, property?.city, property?.price]);
 
   // Keyboard navigation for Lightbox
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
@@ -623,11 +662,11 @@ export default function PropertyDetailPage() {
           </div>
 
           {/* Description */}
-          <div className="bg-[#0a110d] p-6 rounded-3xl border border-emerald-950/90 shadow-xl space-y-3">
-            <h3 className="text-lg font-bold text-white">Property Overview & Details</h3>
-            <p className="text-xs sm:text-sm text-gray-300 leading-relaxed whitespace-pre-line">
+          <div className="bg-[#0a110d] p-6 rounded-3xl border border-emerald-950/90 shadow-xl space-y-3 flex flex-col">
+            <h3 className="text-lg font-bold text-white shrink-0">Property Overview & Details</h3>
+            <div className="max-h-60 sm:max-h-68 overflow-y-auto pr-3 text-xs sm:text-sm text-gray-300 leading-relaxed whitespace-pre-line select-text">
               {property.description}
-            </p>
+            </div>
           </div>
 
           {/* Amenities Checklist */}
@@ -734,7 +773,13 @@ export default function PropertyDetailPage() {
                 Similar homes nearby
               </h2>
               <p className="text-xs sm:text-sm text-gray-400">
-                {property.bedrooms && property.bedrooms > 0
+                {property.category === 'pg' || property.type === 'pg'
+                  ? `PG & 1 BHK properties around ₹${property.price.toLocaleString('en-IN')}${property.locality ? ` in ${property.locality}` : property.city ? ` in ${property.city}` : ''}`
+                  : property.bedrooms === 1
+                  ? `1 BHK & PG properties around ₹${property.price.toLocaleString('en-IN')}${property.locality ? ` in ${property.locality}` : property.city ? ` in ${property.city}` : ''}`
+                  : property.bedrooms && (property.bedrooms === 3 || property.bedrooms === 4)
+                  ? `3 & 4 BHK properties around ₹${property.price.toLocaleString('en-IN')}${property.locality ? ` in ${property.locality}` : property.city ? ` in ${property.city}` : ''}`
+                  : property.bedrooms && property.bedrooms > 0
                   ? `${property.bedrooms} BHK properties around ₹${property.price.toLocaleString('en-IN')}${property.locality ? ` in ${property.locality}` : property.city ? ` in ${property.city}` : ''}`
                   : `Similar ${property.category === 'commercial' || property.type === 'commercial' ? 'Commercial' : ''} properties in ${property.city || 'Tricity'}`}
               </p>
@@ -744,14 +789,15 @@ export default function PropertyDetailPage() {
               {totalSimilarCount > 0 && (
                 <Link
                   href={
-                    property.bedrooms && property.bedrooms > 0
+                    property.category === 'pg' || property.type === 'pg'
+                      ? `/properties?category=pg`
+                      : property.bedrooms && property.bedrooms > 0
                       ? `/properties?bedrooms=${property.bedrooms}${property.category ? `&category=${property.category}` : ''}`
                       : `/properties?category=${property.category}`
                   }
-                  className="inline-flex items-center space-x-1.5 text-xs sm:text-sm font-bold text-emerald-400 hover:text-emerald-300 transition-colors group mr-1"
+                  className="inline-flex items-center justify-center px-4 h-10 rounded-2xl bg-[#08120b] border border-emerald-900/80 hover:border-emerald-500 hover:bg-emerald-500 hover:text-black text-emerald-400 font-extrabold text-xs sm:text-sm transition-all shadow-md active:scale-95 cursor-pointer mr-1"
                 >
-                  <span>See all </span>
-                  <span className="group-hover:translate-x-1 transition-transform">→</span>
+                  <span>See all</span>
                 </Link>
               )}
 

@@ -192,10 +192,20 @@ function PropertySearchContent() {
     fetchFilteredProperties();
   }, [category, city, locality, pidSearch, debouncedMaxPrice, type, bedrooms, verifiedOnly]);
 
+  const isPgFilter = category === 'pg' || type === 'pg';
+  const isPgProperty = (p: PropertyItem) => p.category === 'pg' || p.type === 'pg';
+
+  const orderedProperties = useMemo(() => {
+    if (!isPgFilter) return properties;
+    const pgs = properties.filter(isPgProperty);
+    const oneBhks = properties.filter(p => !isPgProperty(p));
+    return [...pgs, ...oneBhks];
+  }, [properties, isPgFilter]);
+
   // Partition properties into exact location matches and nearby matches
   const { exactMatches, nearbyMatches, hasLocationFilter } = useMemo(() => {
-    return partitionPropertiesByLocation(properties, city, locality);
-  }, [properties, city, locality]);
+    return partitionPropertiesByLocation(orderedProperties, city, locality);
+  }, [orderedProperties, city, locality]);
 
   // Synchronize browser address bar URL with active filter state
   useEffect(() => {
@@ -249,6 +259,15 @@ function PropertySearchContent() {
     router.push('/properties');
   };
 
+  const handleContactClick = (p: PropertyItem) => {
+    if (!user) {
+      showToast('Please login to contact the property owner');
+      openAuthModal();
+      return;
+    }
+    setSelectedPropertyForInquiry(p);
+  };
+
   const getDynamicPageHeading = () => {
     const typeNames: Record<string, string> = {
       flat: 'Apartments & Flats',
@@ -275,7 +294,128 @@ function PropertySearchContent() {
     return 'Properties';
   };
 
-  const visibleAll = properties.slice(0, displayedCount);
+  const visibleAll = orderedProperties.slice(0, displayedCount);
+
+  const renderSectionListings = (items: PropertyItem[], sectionLocationTitle = '', isNearby = false) => {
+    if (items.length === 0) return null;
+
+    if (!isPgFilter) {
+      return (
+        <div className={`space-y-5 ${isNearby ? 'pt-8 border-t border-emerald-950/80' : ''}`}>
+          {isNearby ? (
+            <div className="space-y-1.5">
+              <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-[#081f13] border border-emerald-800/60 text-emerald-400 text-xs font-semibold shadow-inner">
+                <Sparkles size={13} />
+                <span>Nearby Options in Tricity</span>
+              </div>
+              <h2 className="text-base sm:text-xl font-extrabold text-white tracking-tight">
+                Similar properties in nearby locations
+              </h2>
+              <p className="text-xs text-gray-400 max-w-2xl">
+                {exactMatches.length > 0
+                  ? `Since you searched in ${locality || city}, here are verified options in surrounding sectors and nearby areas matching your criteria.`
+                  : `No properties found in this exact location matching all filters. Here are top verified options in nearby areas:`}
+              </p>
+            </div>
+          ) : sectionLocationTitle ? (
+            <div className="flex items-center space-x-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+              <h2 className="text-base sm:text-lg font-extrabold text-white">
+                Properties in {sectionLocationTitle}
+              </h2>
+            </div>
+          ) : null}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {items.map((property) => (
+              <PropertyCard
+                key={property.id || property.pid}
+                property={property}
+                onContactClick={handleContactClick}
+              />
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    // Partition when isPgFilter is active: Upper PG, Lower 1 BHK
+    const pgItems = items.filter(isPgProperty);
+    const oneBhkItems = items.filter(p => !isPgProperty(p));
+
+    return (
+      <div className={`space-y-10 ${isNearby ? 'pt-8 border-t border-emerald-950/80' : ''}`}>
+        {/* Upper: ONLY PG / Hostel Listings */}
+        {pgItems.length > 0 && (
+          <div className="space-y-4">
+            {isNearby ? (
+              <div className="space-y-1.5">
+                <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-[#081f13] border border-emerald-800/60 text-emerald-400 text-xs font-semibold shadow-inner">
+                  <Sparkles size={13} />
+                  <span>Nearby PG Options</span>
+                </div>
+                <h2 className="text-base sm:text-xl font-extrabold text-white tracking-tight">
+                  Similar PG & Hostels in nearby locations
+                </h2>
+                <p className="text-xs text-gray-400 max-w-2xl">
+                  Verified PG and hostel accommodations in surrounding sectors and nearby areas.
+                </p>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                <h2 className="text-base sm:text-lg font-extrabold text-white">
+                  {sectionLocationTitle ? `PG & Hostels in ${sectionLocationTitle}` : 'PG & Hostel Listings'}
+                </h2>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {pgItems.map((property) => (
+                <PropertyCard
+                  key={property.id || property.pid}
+                  property={property}
+                  onContactClick={handleContactClick}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Lower: 1 BHK Section with dedicated Heading */}
+        {oneBhkItems.length > 0 && (
+          <div className={`space-y-5 ${pgItems.length > 0 ? 'pt-8 border-t border-emerald-950/80' : ''}`}>
+            <div className="space-y-1.5">
+              <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-[#081f13] border border-emerald-800/60 text-emerald-400 text-xs font-semibold shadow-inner">
+                <Sparkles size={13} />
+                <span>Private Living Options</span>
+              </div>
+              <h2 className="text-base sm:text-xl font-extrabold text-white tracking-tight">
+                {isNearby
+                  ? 'Similar 1 BHK Flats in nearby locations'
+                  : sectionLocationTitle
+                  ? `1 BHK Flats & Rentals in ${sectionLocationTitle}`
+                  : '1 BHK Flats & Rental Options'}
+              </h2>
+              <p className="text-xs text-gray-400 max-w-2xl">
+                Looking for independent living or private space? Explore verified 1 BHK homes and flats available for rent in Tricity.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {oneBhkItems.map((property) => (
+                <PropertyCard
+                  key={property.id || property.pid}
+                  property={property}
+                  onContactClick={handleContactClick}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   return (
     <div className="bg-[#050806] text-gray-100 min-h-screen">
@@ -792,68 +932,20 @@ function PropertySearchContent() {
               <div className="space-y-10">
                 {/* 1. Exact Location Matches */}
                 {exactMatches.length > 0 && (
-                  <div className="space-y-5">
-                    <div className="flex items-center space-x-2">
-                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-                      <h2 className="text-base sm:text-lg font-extrabold text-white">
-                        Properties in {locality ? (city !== 'all' ? `${locality}, ${city}` : locality) : city}
-                      </h2>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {exactMatches.slice(0, displayedCount).map((property) => (
-                        <PropertyCard
-                          key={property.id || property.pid}
-                          property={property}
-                          onContactClick={(p) => {
-                            if (!user) {
-                              showToast('Please login to contact the property owner');
-                              openAuthModal();
-                              return;
-                            }
-                            setSelectedPropertyForInquiry(p);
-                          }}
-                        />
-                      ))}
-                    </div>
-                  </div>
+                  renderSectionListings(
+                    exactMatches.slice(0, displayedCount),
+                    locality ? (city !== 'all' ? `${locality}, ${city}` : locality) : city,
+                    false
+                  )
                 )}
 
                 {/* 2. Nearby Location Recommendations */}
                 {nearbyMatches.length > 0 && (
-                  <div className={`space-y-5 ${exactMatches.length > 0 ? 'pt-8 border-t border-emerald-950/80' : ''}`}>
-                    <div className="space-y-1.5">
-                      <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-[#081f13] border border-emerald-800/60 text-emerald-400 text-xs font-semibold shadow-inner">
-                        <Sparkles size={13} />
-                        <span>Nearby Options in Tricity</span>
-                      </div>
-                      <h2 className="text-base sm:text-xl font-extrabold text-white tracking-tight">
-                        Similar properties in nearby locations
-                      </h2>
-                      <p className="text-xs text-gray-400 max-w-2xl">
-                        {exactMatches.length > 0
-                          ? `Since you searched in ${locality || city}, here are verified options in surrounding sectors and nearby areas matching your criteria.`
-                          : `No properties found in this exact location matching all filters. Here are top verified options in nearby areas:`}
-                      </p>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {nearbyMatches.slice(0, displayedCount).map((property) => (
-                        <PropertyCard
-                          key={property.id || property.pid}
-                          property={property}
-                          onContactClick={(p) => {
-                            if (!user) {
-                              showToast('Please login to contact the property owner');
-                              openAuthModal();
-                              return;
-                            }
-                            setSelectedPropertyForInquiry(p);
-                          }}
-                        />
-                      ))}
-                    </div>
-                  </div>
+                  renderSectionListings(
+                    nearbyMatches.slice(0, displayedCount),
+                    '',
+                    true
+                  )
                 )}
 
                 {/* Show More Pagination */}
@@ -876,25 +968,10 @@ function PropertySearchContent() {
               </div>
             ) : (
               <>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {visibleAll.map((property) => (
-                    <PropertyCard
-                      key={property.id || property.pid}
-                      property={property}
-                      onContactClick={(p) => {
-                        if (!user) {
-                          showToast('Please login to contact the property owner');
-                          openAuthModal();
-                          return;
-                        }
-                        setSelectedPropertyForInquiry(p);
-                      }}
-                    />
-                  ))}
-                </div>
+                {renderSectionListings(visibleAll, '', false)}
 
                 {/* Manual "Show More Properties" (+21) Pagination Controls */}
-                {displayedCount < properties.length ? (
+                {displayedCount < orderedProperties.length ? (
                   <div className="py-12 flex flex-col items-center justify-center space-y-4">
                     <button
                       type="button"
@@ -905,7 +982,7 @@ function PropertySearchContent() {
                       <span>Show More Properties</span>
                     </button>
                   </div>
-                ) : properties.length > 0 ? (
+                ) : orderedProperties.length > 0 ? (
                   <div className="py-10 text-center text-xs text-gray-400 font-semibold border-t border-emerald-950/60 mt-8">
                     ✨ Showing all verified properties in Tricity
                   </div>

@@ -115,8 +115,22 @@ export async function GET(req: NextRequest) {
       const filter: any = {};
 
       if (category && category !== 'all') {
-        if (category === 'buy' || category === 'sell') {
+        if (typeof category === 'string' && category.includes(',')) {
+          const catList = category.split(',').map(c => c.trim()).filter(Boolean);
+          filter.category = { $in: catList };
+        } else if (category === 'buy' || category === 'sell') {
           filter.category = { $in: ['buy', 'sell'] };
+        } else if (category === 'pg') {
+          // When filtering by PG / Hostel, include all PG properties as well as 1 BHK rental properties
+          if (!bedrooms || bedrooms === 'all') {
+            filter.$or = [
+              { category: 'pg' },
+              { type: 'pg' },
+              { bedrooms: 1, category: { $in: ['rent', 'pg'] } }
+            ];
+          } else {
+            filter.category = 'pg';
+          }
         } else {
           filter.category = category;
         }
@@ -125,17 +139,35 @@ export async function GET(req: NextRequest) {
       if (locality) filter.locality = new RegExp(locality, 'i');
       if (type && type !== 'all') filter.type = type;
       if (pid) filter.pid = pid.trim().toUpperCase();
-      if (bedrooms && bedrooms !== 'all') filter.bedrooms = Number(bedrooms);
+      if (bedrooms && bedrooms !== 'all') {
+        if (typeof bedrooms === 'string' && bedrooms.includes(',')) {
+          const bhkList = bedrooms.split(',').map(b => Number(b.trim())).filter(n => !isNaN(n));
+          if (bhkList.length > 0) {
+            filter.bedrooms = { $in: bhkList };
+          }
+        } else {
+          filter.bedrooms = Number(bedrooms);
+        }
+      }
       if (maxPrice) filter.price = { $lte: Number(maxPrice) };
 
       if (search) {
-        filter.$or = [
+        const searchOr = [
           { title: new RegExp(search, 'i') },
           { locality: new RegExp(search, 'i') },
           { city: new RegExp(search, 'i') },
           { address: new RegExp(search, 'i') },
           { pid: new RegExp(search, 'i') }
         ];
+        if (filter.$or) {
+          filter.$and = filter.$and || [];
+          filter.$and.push({ $or: filter.$or }, { $or: searchOr });
+          delete filter.$or;
+        } else if (filter.$and) {
+          filter.$and.push({ $or: searchOr });
+        } else {
+          filter.$or = searchOr;
+        }
       }
 
       // Verified status filtering & visibility access control
@@ -156,11 +188,11 @@ export async function GET(req: NextRequest) {
           ];
 
           if (filter.$or) {
-            filter.$and = [
-              { $or: filter.$or },
-              { $or: userVisibilityOr }
-            ];
+            filter.$and = filter.$and || [];
+            filter.$and.push({ $or: filter.$or }, { $or: userVisibilityOr });
             delete filter.$or;
+          } else if (filter.$and) {
+            filter.$and.push({ $or: userVisibilityOr });
           } else {
             filter.$or = userVisibilityOr;
           }
