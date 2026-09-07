@@ -8,8 +8,17 @@ import React from 'react';
  * does NOT start with the given prefix. Used to hide Navbar/Footer
  * on admin pages where they are replaced by AdminSidebar/header.
  */
-export function HideOnRoute({ prefix, children }: { prefix: string; children: React.ReactNode }) {
+export function HideOnRoute({
+  prefix,
+  prefixes,
+  children,
+}: {
+  prefix?: string;
+  prefixes?: string[];
+  children: React.ReactNode;
+}) {
   const pathname = usePathname();
-  if (pathname.startsWith(prefix)) return null;
+  if (prefix && pathname.startsWith(prefix)) return null;
+  if (prefixes && prefixes.some((p) => pathname.startsWith(p))) return null;
   return <>{children}</>;
 }

@@ -98,8 +98,8 @@ function NavbarContent() {
     { key: 'contact', label: 'Contact', href: '/contact' },
   ];
 
-  // Hide Navbar completely on Admin portal routes (called after all hook declarations)
-  if (pathname && pathname.startsWith('/admin')) {
+  // Hide Navbar completely on Admin portal and Plans routes (called after all hook declarations)
+  if (pathname && (pathname.startsWith('/admin') || pathname.startsWith('/plans'))) {
     return null;
   }
 
@@ -306,7 +306,7 @@ function NavbarContent() {
                           Billing History
                         </Link>
                         <Link
-                          href="/dashboard?tab=explore-plans"
+                          href="/plans"
                           onClick={() => setIsProfileMenuOpen(false)}
                           className="flex items-center px-4 py-2.5 text-xs font-semibold text-gray-200 rounded-xl hover:bg-emerald-950/60 hover:text-emerald-400 transition-colors"
                         >
