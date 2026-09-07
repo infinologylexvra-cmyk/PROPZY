@@ -11,7 +11,7 @@ export default function NotFound() {
       <div className="max-w-2xl w-full space-y-8">
         {/* Glowing 404 Badge */}
         <div className="relative inline-flex items-center justify-center">
-          <div className="absolute inset-0 rounded-full bg-emerald-500/20 blur-2xl animate-pulse" />
+          <div className="absolute inset-0 rounded-full bg-emerald-500/20 blur-2xl" />
           <div className="relative w-24 h-24 rounded-3xl bg-[#0a2014] border border-emerald-800/80 text-emerald-400 flex items-center justify-center shadow-2xl shadow-emerald-950/80">
             <AlertCircle size={48} className="stroke-[2]" />
           </div>

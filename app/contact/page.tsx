@@ -237,14 +237,9 @@ export default function ContactPage() {
           <div className="lg:col-span-4 space-y-5">
             {/* Card 1: Live Status Header */}
             <div className="p-5 rounded-2xl bg-[#070f0b] border border-emerald-900/60 flex items-center justify-between">
-              <div className="flex items-center space-x-2.5">
-                <span className="relative flex h-2.5 w-2.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500" />
-                </span>
+              <div className="flex items-center space-x-2">
                 <span className="text-xs font-bold text-white">All systems operational</span>
               </div>
-             
             </div>
 
             {/* Card 2: REACH US DIRECTLY */}

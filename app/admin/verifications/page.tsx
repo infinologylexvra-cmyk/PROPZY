@@ -165,7 +165,7 @@ export default function AdminVerificationsPage() {
           <div className="flex flex-wrap items-center gap-2">
             <h1 className="text-xl sm:text-2xl font-extrabold text-white leading-tight">Owner Verification Queue</h1>
             {pendingCount > 0 && (
-              <span className="px-2 py-0.5 rounded-full bg-amber-500 text-black text-[9px] sm:text-[10px] font-extrabold shadow animate-pulse whitespace-nowrap shrink-0">
+              <span className="px-2 py-0.5 rounded-full bg-amber-500 text-black text-[9px] sm:text-[10px] font-extrabold shadow whitespace-nowrap shrink-0">
                 {pendingCount} Pending
               </span>
             )}

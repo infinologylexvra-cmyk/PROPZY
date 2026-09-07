@@ -807,12 +807,9 @@ function PropertySearchContent() {
                   {/* 1A. Exact Location PG Matches */}
                   {exactPg.length > 0 && (
                     <div className="space-y-4">
-                      <div className="flex items-center space-x-2">
-                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-                        <h2 className="text-base sm:text-lg font-extrabold text-white">
-                          PG & Hostels in {exactLocationTitle}
-                        </h2>
-                      </div>
+                      <h2 className="text-base sm:text-lg font-extrabold text-white">
+                        PG & Hostels in {exactLocationTitle}
+                      </h2>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         {exactPg.slice(0, displayedCount).map((property) => (
@@ -942,12 +939,9 @@ function PropertySearchContent() {
                   {/* Non-PG: Exact Location Matches */}
                   {exactMatches.length > 0 && (
                     <div className="space-y-5">
-                      <div className="flex items-center space-x-2">
-                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-                        <h2 className="text-base sm:text-lg font-extrabold text-white">
-                          Properties in {exactLocationTitle}
-                        </h2>
-                      </div>
+                      <h2 className="text-base sm:text-lg font-extrabold text-white">
+                        Properties in {exactLocationTitle}
+                      </h2>
 
                       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                         {exactMatches.slice(0, displayedCount).map((property) => (
@@ -1015,12 +1009,9 @@ function PropertySearchContent() {
                 {/* Upper: All PG Listings */}
                 {allPg.length > 0 && (
                   <div className="space-y-4">
-                    <div className="flex items-center space-x-2">
-                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
-                      <h2 className="text-base sm:text-lg font-extrabold text-white">
-                        PG & Hostel Listings
-                      </h2>
-                    </div>
+                    <h2 className="text-base sm:text-lg font-extrabold text-white">
+                      PG & Hostel Listings
+                    </h2>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                       {allPg.slice(0, displayedCount).map((property) => (
