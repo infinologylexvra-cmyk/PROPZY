@@ -359,21 +359,25 @@ function NavbarContent() {
           </div>
         </div>
 
-        {/* Action Bar for Mobile View Only (< sm) - Full Width Stack */}
-        <div className="flex flex-col sm:hidden gap-2 pb-3.5 pt-1.5 px-1 border-t border-emerald-950/40 w-full">
-          <GlobalSearchBar mode="public" placeholder="Search ID, City, Locality, Title..." className="w-full" />
+        {/* Action Bar for Mobile View Only (< sm) - Render search only on home page */}
+        {(pathname === '/' || currentUser?.role === 'owner') && (
+          <div className="flex flex-col sm:hidden gap-2 pb-3.5 pt-1.5 px-1 border-t border-emerald-950/40 w-full">
+            {pathname === '/' && (
+              <GlobalSearchBar mode="public" placeholder="Search ID, City, Locality, Title..." className="w-full" />
+            )}
 
-          {currentUser?.role === 'owner' && (
-            <Link
-              href="/post-property"
-              onClick={() => setActiveItem('sell')}
-              className="w-full h-10 flex items-center justify-center space-x-1.5 py-2.5 px-4 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs shadow-lg shadow-emerald-500/20 transition-all active:scale-[0.98] cursor-pointer"
-            >
-              <Plus size={15} className="stroke-[2.5]" />
-              <span>Post Property Free</span>
-            </Link>
-          )}
-        </div>
+            {currentUser?.role === 'owner' && (
+              <Link
+                href="/post-property"
+                onClick={() => setActiveItem('sell')}
+                className="w-full h-10 flex items-center justify-center space-x-1.5 py-2.5 px-4 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs shadow-lg shadow-emerald-500/20 transition-all active:scale-[0.98] cursor-pointer"
+              >
+                <Plus size={15} className="stroke-[2.5]" />
+                <span>Post Property Free</span>
+              </Link>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Mobile/Tablet/Laptop Navigation Drawer */}

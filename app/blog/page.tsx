@@ -196,7 +196,7 @@ export default function BlogPage() {
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-emerald-500/10 rounded-full blur-[130px] pointer-events-none" />
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-start">
             <button
               type="button"
               onClick={() => {
@@ -210,16 +210,6 @@ export default function BlogPage() {
             >
               <ArrowLeft size={15} className="text-emerald-400 group-hover:-translate-x-0.5 transition-transform" />
               <span>Back</span>
-            </button>
-
-            {/* "+ Add New Blog" CTA Button */}
-            <button
-              type="button"
-              onClick={() => setIsAddModalOpen(true)}
-              className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-full bg-emerald-500 hover:bg-emerald-400 text-black text-xs sm:text-sm font-extrabold shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition-all cursor-pointer"
-            >
-              <Plus size={16} className="stroke-[3]" />
-              <span>Add New Blog</span>
             </button>
           </div>
 
@@ -309,19 +299,8 @@ export default function BlogPage() {
               <div className="space-y-2">
                 <h3 className="text-2xl font-bold text-white tracking-tight">No blogs yet</h3>
                 <p className="text-xs sm:text-sm text-gray-400 leading-relaxed">
-                  Be the first to share rental insights, neighborhood guides, or property advice with the community.
+                  Helpful rental guides, neighborhood insights, and property tips will be published here soon.
                 </p>
-              </div>
-
-              <div>
-                <button
-                  type="button"
-                  onClick={() => setIsAddModalOpen(true)}
-                  className="inline-flex items-center space-x-2 px-6 py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-black text-sm font-extrabold shadow-lg shadow-emerald-500/25 hover:scale-105 active:scale-95 transition-all cursor-pointer"
-                >
-                  <Plus size={18} className="stroke-[3]" />
-                  <span>Add New Blog</span>
-                </button>
               </div>
             </div>
           ) : filteredBlogs.length === 0 ? (
