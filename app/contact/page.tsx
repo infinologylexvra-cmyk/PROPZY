@@ -77,7 +77,7 @@ export default function ContactPage() {
       {/* ─────────────────────────────────────────────────────────────
           SECTION 1: HERO HEADER (EXACT SCREENSHOT 1 DESIGN)
       ───────────────────────────────────────────────────────────── */}
-      <section className="relative pt-28 pb-20 overflow-hidden bg-gradient-to-b from-[#06140b] via-[#040906] to-[#040806]">
+      <section className="relative pt-8 pb-20 overflow-hidden bg-gradient-to-b from-[#06140b] via-[#040906] to-[#040806]">
         {/* Neon Green Radial Glow */}
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] bg-emerald-500/10 rounded-full blur-[140px] pointer-events-none" />
 

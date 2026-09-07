@@ -62,7 +62,7 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen bg-[#040806] text-white">
       {/* SECTION 1: HERO SECTION (SCREENSHOT 1) */}
-      <section className="relative pt-32 pb-20 overflow-hidden border-b border-emerald-950/60 bg-gradient-to-b from-[#06120b] via-[#040906] to-[#040806]">
+      <section className="relative pt-8 pb-20 overflow-hidden border-b border-emerald-950/60 bg-gradient-to-b from-[#06120b] via-[#040906] to-[#040806]">
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none " />
 
         {/* City Skyline Outline SVG Graphic */}

@@ -144,13 +144,13 @@ export default function RelaxPlanPage() {
 
             </div>
 
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5 sm:gap-4">
               <div>
                 <label className="block text-xs font-semibold text-gray-700 mb-1">Target City</label>
                 <select
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
-                  className="w-full px-3 py-2.5 text-xs text-black border border-gray-300 rounded-xl bg-white focus:border-emerald-500 focus:outline-hidden"
+                  className="w-full px-3.5 py-3 text-xs text-black border border-gray-300 rounded-xl bg-white focus:border-emerald-500 focus:outline-hidden cursor-pointer"
                 >
                   <option value="Mohali">Mohali</option>
                   <option value="Chandigarh">Chandigarh</option>
@@ -161,26 +161,31 @@ export default function RelaxPlanPage() {
               </div>
 
               <div>
-                <label className="block text-xs  font-semibold text-gray-700 mb-1">Max Budget (₹/mo)</label>
-                <input
-                  type="text"
-                  value={budget}
-                  onChange={(e) => setBudget(e.target.value)}
-                  placeholder="15000"
-                  className="w-full px-3 py-2.5 text-xs text-black  border border-gray-300 rounded-xl focus:border-emerald-500 focus:outline-hidden font-medium"
-                />
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Max Budget (₹/mo)</label>
+                <div className="relative flex items-center">
+                  <span className="absolute left-3.5 text-xs text-gray-500 font-bold">₹</span>
+                  <input
+                    type="number"
+                    value={budget}
+                    onChange={(e) => setBudget(e.target.value)}
+                    placeholder="15000"
+                    className="w-full pl-7 pr-3.5 py-3 text-xs text-black border border-gray-300 rounded-xl focus:border-emerald-500 focus:outline-hidden font-medium"
+                  />
+                </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-500 mb-1 ">Config (BHK)</label>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Config (BHK)</label>
                 <select
                   value={bhk}
                   onChange={(e) => setBhk(e.target.value)}
-                  className="w-full px-3 py-2.5 text-xs text-black border border-gray-300 rounded-xl bg-white focus:border-emerald-500 focus:outline-hidden"
+                  className="w-full px-3.5 py-3 text-xs text-black border border-gray-300 rounded-xl bg-white focus:border-emerald-500 focus:outline-hidden cursor-pointer"
                 >
                   <option value="1 BHK">1 BHK</option>
                   <option value="2 BHK">2 BHK</option>
                   <option value="3 BHK">3 BHK</option>
+                  <option value="4 BHK">4 BHK</option>
+                  <option value="4+ BHK">4+ BHK</option>
                   <option value="PG / Room">PG / Room</option>
                 </select>
               </div>
@@ -189,7 +194,7 @@ export default function RelaxPlanPage() {
             <button
               type="submit"
               disabled={submitting || submitted}
-              className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-xs shadow-lg transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-4 bg-emerald-600 hover:bg-emerald-500 active:scale-[0.99] text-white rounded-xl font-bold text-xs shadow-lg transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {submitting ? 'Activating Request...' : 'Activate Relax Plan Assistance'}
             </button> 

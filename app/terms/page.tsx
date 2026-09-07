@@ -39,7 +39,7 @@ export default function TermsOfUsePage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#050806] text-gray-100 font-sans antialiased pt-24 pb-20">
+    <div className="min-h-screen bg-[#050806] text-gray-100 font-sans antialiased pt-6 pb-20">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
         
         {/* Header */}

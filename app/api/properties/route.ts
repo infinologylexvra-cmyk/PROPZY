@@ -145,8 +145,13 @@ export async function GET(req: NextRequest) {
           if (bhkList.length > 0) {
             filter.bedrooms = { $in: bhkList };
           }
+        } else if (bedrooms === '4+' || bedrooms === '4plus' || bedrooms === '4_plus') {
+          filter.bedrooms = { $gte: 4 };
         } else {
-          filter.bedrooms = Number(bedrooms);
+          const num = Number(bedrooms);
+          if (!isNaN(num)) {
+            filter.bedrooms = num;
+          }
         }
       }
       if (maxPrice) filter.price = { $lte: Number(maxPrice) };

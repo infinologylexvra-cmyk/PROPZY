@@ -115,7 +115,7 @@ export default function HowItWorksPage() {
       {/* ─────────────────────────────────────────────────────────────
           HERO SECTION
       ───────────────────────────────────────────────────────────── */}
-      <section className="relative pt-28 pb-16 overflow-hidden border-b border-emerald-950/60 bg-gradient-to-b from-[#06120b] via-[#040906] to-[#040806]">
+      <section className="relative pt-6 pb-16 overflow-hidden border-b border-emerald-950/60 bg-gradient-to-b from-[#06120b] via-[#040906] to-[#040806]">
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-emerald-500/10 rounded-full blur-[130px] pointer-events-none" />
 
         <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">

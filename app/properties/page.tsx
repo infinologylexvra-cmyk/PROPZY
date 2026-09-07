@@ -525,19 +525,19 @@ function PropertySearchContent() {
                 {category !== 'commercial' && type !== 'commercial' && (
                   <div>
                     <label className="block text-xs font-semibold text-gray-300 mb-2">Bedrooms (BHK)</label>
-                    <div className="grid grid-cols-4 gap-2">
-                      {['all', '1', '2', '3'].map((bhk) => (
+                    <div className="grid grid-cols-3 gap-2">
+                      {['all', '1', '2', '3', '4', '4+'].map((bhk) => (
                         <button
                           key={bhk}
                           type="button"
                           suppressHydrationWarning
                           onClick={() => setBedrooms(bhk)}
                           className={`py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer text-center ${bedrooms === bhk
-                            ? 'bg-emerald-500 text-black border-emerald-500 shadow-md'
+                            ? 'bg-emerald-500 text-black border-emerald-500 shadow-md font-extrabold'
                             : 'bg-[#050806] text-gray-400 border-emerald-950 hover:text-white'
                             }`}
                         >
-                          {bhk === 'all' ? 'All' : `${bhk} BHK`}
+                          {bhk === 'all' ? 'All' : bhk === '4+' ? '4+ BHK' : `${bhk} BHK`}
                         </button>
                       ))}
                     </div>
@@ -717,19 +717,19 @@ function PropertySearchContent() {
             {category !== 'commercial' && type !== 'commercial' && (
               <div>
                 <label className="block text-xs font-semibold text-gray-300 mb-2">Bedrooms (BHK)</label>
-                <div className="flex space-x-2">
-                  {['all', '1', '2', '3'].map((bhk) => (
+                <div className="grid grid-cols-3 gap-2">
+                  {['all', '1', '2', '3', '4', '4+'].map((bhk) => (
                     <button
                       key={bhk}
                       type="button"
                       suppressHydrationWarning
                       onClick={() => setBedrooms(bhk)}
-                      className={`flex-1 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer ${bedrooms === bhk
-                        ? 'bg-emerald-500 text-black border-emerald-500'
+                      className={`py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer text-center ${bedrooms === bhk
+                        ? 'bg-emerald-500 text-black border-emerald-500 font-extrabold shadow-md'
                         : 'bg-[#050806] text-gray-400 border-emerald-950 hover:text-white'
                         }`}
                     >
-                      {bhk === 'all' ? 'All' : `${bhk} BHK`}
+                      {bhk === 'all' ? 'All' : bhk === '4+' ? '4+ BHK' : `${bhk} BHK`}
                     </button>
                   ))}
                 </div>

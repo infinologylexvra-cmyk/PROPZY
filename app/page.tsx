@@ -228,7 +228,7 @@ export default function HomePage() {
             {/* Top Pill Badge */}
             <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-[#0a2618] border border-emerald-800/60 text-emerald-400 text-[11px] sm:text-xs font-semibold tracking-wide">
               <span className="text-emerald-400">★</span>
-              <span>Find your perfect home • 0% Brokerage</span>
+              <span>Find your perfect home </span>  <span className='px-2'>• 0% Brokerage</span>
             </div>
 
             {/* Main Headline */}
