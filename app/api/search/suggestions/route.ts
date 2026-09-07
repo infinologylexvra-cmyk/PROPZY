@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import Property from '@/models/Property';
-import { memoryStore } from '@/lib/memoryStore';
 import { redisGet, redisSet } from '@/lib/redis';
 
 export async function GET(req: NextRequest) {
@@ -28,46 +27,31 @@ export async function GET(req: NextRequest) {
   try {
     const regex = new RegExp(q, 'i');
 
-    try {
-      await connectToDatabase();
-      const mongoResults = await Property.find({
-        $or: [
-          { pid: regex },
-          { title: regex },
-          { locality: regex },
-          { city: regex },
-          { category: regex },
-          { type: regex }
-        ]
-      })
-        .select('pid title locality city price category type verified images')
-        .limit(6)
-        .lean();
+    await connectToDatabase();
+    const mongoResults = await Property.find({
+      $or: [
+        { pid: regex },
+        { title: regex },
+        { locality: regex },
+        { city: regex },
+        { category: regex },
+        { type: regex }
+      ]
+    })
+      .select('pid title locality city price category type verified images')
+      .limit(6)
+      .lean();
 
-      if (mongoResults && mongoResults.length > 0) {
-        // Cache suggestions in Redis for 60 seconds
-        await redisSet(cacheKey, mongoResults, 60);
-        return NextResponse.json({ success: true, data: mongoResults, source: 'mongodb' });
-      }
-    } catch (dbErr) {
-      console.warn('Search suggestions DB fallback:', (dbErr as Error).message);
+    const results = mongoResults || [];
+
+    // Cache suggestions in Redis for 60 seconds
+    if (results.length > 0) {
+      await redisSet(cacheKey, results, 60);
     }
 
-    // In-Memory Search Fallback
-    const qLower = q.toLowerCase();
-    const memResults = memoryStore
-      .filter((p) =>
-        p.pid?.toLowerCase().includes(qLower) ||
-        p.title?.toLowerCase().includes(qLower) ||
-        p.locality?.toLowerCase().includes(qLower) ||
-        p.city?.toLowerCase().includes(qLower) ||
-        p.category?.toLowerCase().includes(qLower) ||
-        p.type?.toLowerCase().includes(qLower)
-      )
-      .slice(0, 6);
-
-    return NextResponse.json({ success: true, data: memResults, source: 'memory' });
+    return NextResponse.json({ success: true, data: results, source: 'mongodb' });
   } catch (error: any) {
-    return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+    console.warn('Search suggestions error:', error?.message);
+    return NextResponse.json({ success: true, data: [], source: 'empty' });
   }
 }

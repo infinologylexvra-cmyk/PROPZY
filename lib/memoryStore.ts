@@ -1,4 +1,4 @@
-import { INITIAL_PROPERTIES, PropertyItem } from './seedData';
+import { PropertyItem } from './seedData';
 
 export interface MemoryUser {
   id: string;
@@ -13,7 +13,7 @@ export interface MemoryUser {
   electricityBillUrl?: string;
 }
 
-export const memoryStore: PropertyItem[] = [...INITIAL_PROPERTIES];
+export const memoryStore: PropertyItem[] = [];
 
 export const memoryUsers: MemoryUser[] = [
   { id: 'usr-001', name: 'Raj Shamani', email: 'raj@gmail.com', phone: '+91 98765 43210', role: 'owner', password: '123456' },

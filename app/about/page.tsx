@@ -12,7 +12,6 @@ import {
   Headphones 
 } from 'lucide-react';
 import { CallToActionBanner } from '@/components/CallToActionBanner';
-import { INITIAL_PROPERTIES } from '@/lib/seedData';
 import { getClientPropertiesCache, setClientPropertiesCache } from '@/lib/clientPropertiesCache';
 
 export default function AboutPage() {
@@ -26,7 +25,7 @@ export default function AboutPage() {
         return cached.data.length;
       }
     }
-    return INITIAL_PROPERTIES.length;
+    return 0;
   });
 
   const getRoundedDisplayCount = (count: number): string => {
@@ -47,7 +46,7 @@ export default function AboutPage() {
         const res = await fetch('/api/properties?includeTotal=true');
         const data = await res.json();
         if (data.success) {
-          const total = typeof data.pagination?.total === 'number' ? data.pagination.total : (data.data?.length || INITIAL_PROPERTIES.length);
+          const total = typeof data.pagination?.total === 'number' ? data.pagination.total : (data.data?.length || 0);
           setTotalPropertiesCount(total);
           if (data.data) {
             setClientPropertiesCache('home_featured', data.data, data.pagination);

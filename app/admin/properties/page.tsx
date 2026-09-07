@@ -6,7 +6,7 @@ import {
   Building, ShieldCheck, Search, Filter, RefreshCw, PlusCircle,
   CheckCircle2, Clock, Trash2, Edit3, Star, X, MapPin, Phone, XCircle
 } from 'lucide-react';
-import { PropertyItem, INITIAL_PROPERTIES } from '@/lib/seedData';
+import { PropertyItem } from '@/lib/seedData';
 import { useApp } from '@/context/AppContext';
 import { getCachedProperties, setCachedProperties, hasCachedProperties } from '@/lib/adminCache';
 import { useAdminSync } from '@/hooks/useAdminSync';

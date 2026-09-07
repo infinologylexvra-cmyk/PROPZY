@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import Property from '@/models/Property';
 import User from '@/models/User';
-import { INITIAL_PROPERTIES, PropertyItem } from '@/lib/seedData';
-import { memoryStore } from '@/lib/memoryStore';
+import { PropertyItem } from '@/lib/seedData';
 import { getAuthUser } from '@/lib/auth';
 import { canViewPropertyContactDetails, isAdminUser, isBrowserDocumentNavigation, normalizeEmail, serializeProperty } from '@/lib/accessControl';
 import { 
@@ -288,41 +287,18 @@ export async function GET(req: NextRequest) {
         });
       }
 
-      // 2. For public visitors, fallback gracefully to INITIAL_PROPERTIES/memoryStore so the UI remains active
+      // Return empty database result for public visitors on error
       if (!isAdminQuery) {
-        let fallbackList = [...INITIAL_PROPERTIES];
-        if (category && category !== 'all') {
-          if (category === 'buy' || category === 'sell') {
-            fallbackList = fallbackList.filter(p => p.category === 'buy' || p.category === 'sell');
-          } else {
-            fallbackList = fallbackList.filter(p => p.category === category);
-          }
-        }
-        if (city && city !== 'all') fallbackList = fallbackList.filter(p => p.city.toLowerCase().includes(city.toLowerCase()));
-        if (locality) fallbackList = fallbackList.filter(p => p.locality.toLowerCase().includes(locality.toLowerCase()));
-        if (type && type !== 'all') fallbackList = fallbackList.filter(p => p.type === type);
-        if (pid) fallbackList = fallbackList.filter(p => p.pid.toUpperCase().includes(pid.toUpperCase()));
-        if (bedrooms && bedrooms !== 'all') fallbackList = fallbackList.filter(p => p.bedrooms === Number(bedrooms));
-        if (maxPrice) fallbackList = fallbackList.filter(p => p.price <= Number(maxPrice));
-        if (verified !== 'false') fallbackList = fallbackList.filter(p => p.verified);
-
-        const skip = (page - 1) * limit;
-        const pagedData = fallbackList.slice(skip, skip + limit);
-
         return NextResponse.json({
           success: true,
-          data: pagedData,
+          data: [],
           pagination: {
             page,
             limit,
-            hasMore: skip + limit < fallbackList.length,
-            total: fallbackList.length,
-            totalPages: Math.ceil(fallbackList.length / limit)
-          },
-          source: 'fallback',
-          warning: 'Serving fallback data due to database unavailability'
-        }, {
-          headers: { 'X-Cache-Status': 'FALLBACK' }
+            hasMore: false,
+            total: 0,
+            totalPages: 0
+          }
         });
       }
 
@@ -476,18 +452,10 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Fallback if MongoDB was completely unreachable
-    const memObj: PropertyItem = {
-      ...newProperty,
-      id: `prop-${Date.now()}`,
-      createdAt: new Date().toISOString()
-    };
-    memoryStore.unshift(memObj);
     return NextResponse.json({ 
-      success: true, 
-      data: memObj, 
-      message: 'Property posted successfully!' 
-    });
+      success: false, 
+      message: 'Failed to create property in database. Please check connection and try again.' 
+    }, { status: 500 });
   } catch (error: any) {
     return NextResponse.json({ 
       success: false, 

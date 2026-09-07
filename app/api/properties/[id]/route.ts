@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import Property from '@/models/Property';
-import { INITIAL_PROPERTIES } from '@/lib/seedData';
-import { memoryStore } from '@/lib/memoryStore';
 import { getAuthUser } from '@/lib/auth';
 import { canViewPropertyContactDetails, isAdminUser, isBrowserDocumentNavigation, isOwnedByUser, serializeProperty } from '@/lib/accessControl';
 import { clearPropertiesCache } from '@/lib/propertiesCache';
@@ -68,22 +66,7 @@ export async function GET(
       return NextResponse.json(responsePayload);
     }
   } catch (err) {
-    console.warn('Fallback single property fetch:', err);
-  }
-
-  // Memory fallback
-  const found = memoryStore.find(p => p.id === id || p.pid === id || p.pid === `PZ-${id.replace('prop-', '')}` || p.pid === `LR-${id.replace('prop-', '')}`) || INITIAL_PROPERTIES.find(p => p.id === id || p.pid === id || p.pid === `PZ-${id.replace('prop-', '')}` || p.pid === `LR-${id.replace('prop-', '')}`);
-  if (found) {
-    const canAccess = found.verified || isAdminUser(authUser) || isOwnedByUser(found.ownerEmail, authUser);
-
-    if (!canAccess) {
-      return NextResponse.json({ success: false, message: 'Property not found' }, { status: 404 });
-    }
-
-    return NextResponse.json({
-      success: true,
-      data: serializeProperty(found, canViewPropertyContactDetails(found, authUser))
-    });
+    console.warn('Single property fetch error:', err);
   }
 
   return NextResponse.json({ success: false, message: 'Property not found' }, { status: 404 });
@@ -109,23 +92,40 @@ export async function PATCH(
     queryFilter.push({ _id: id });
   }
 
+  // Upload any new base64 images to Cloudinary before saving to MongoDB
+  if (body.images && Array.isArray(body.images)) {
+    try {
+      body.images = await uploadBase64ImagesToCloudinary(body.images);
+    } catch (uploadErr) {
+      console.warn('Failed to upload some images to Cloudinary in PATCH:', uploadErr);
+    }
+  }
+
   let updated: any = null;
 
   for (let attempt = 1; attempt <= 2; attempt++) {
     try {
       await connectToDatabase(attempt === 2);
-      
+
       let existing: any = await Property.findOne({ $or: queryFilter }).lean();
+      if (!existing && id.match(/^[0-9a-fA-F]{24}$/)) {
+        existing = await Property.findById(id).lean().catch(() => null);
+      }
 
       if (existing) {
-        if (authUser && !isAdminUser(authUser) && !isOwnedByUser(existing.ownerEmail, authUser)) {
+        if (!isAdminUser(authUser) && !isOwnedByUser(existing.ownerEmail, authUser)) {
           return NextResponse.json({ success: false, message: 'Forbidden. You can only modify your own property listing.' }, { status: 403 });
         }
+      }
 
-        if (Array.isArray(body.images)) {
-          body.images = await uploadBase64ImagesToCloudinary(body.images);
-        }
-
+      if (id.match(/^[0-9a-fA-F]{24}$/)) {
+        updated = await Property.findByIdAndUpdate(
+          id,
+          { $set: body },
+          { new: true }
+        );
+      }
+      if (!updated) {
         updated = await Property.findOneAndUpdate(
           { $or: queryFilter },
           { $set: body },
@@ -141,19 +141,13 @@ export async function PATCH(
     }
   }
 
-  // Sync memoryStore fallback if active
-  const memIndex = memoryStore.findIndex(p => p.id === id || p.pid === id || p.pid === normalizedPz || p.pid === normalizedLr || (p._id && p._id.toString() === id));
-  if (memIndex !== -1) {
-    memoryStore[memIndex] = { ...memoryStore[memIndex], ...body };
-  }
-
   // Invalidate server-side property listings and single property cache
   await clearPropertiesCache();
 
-  if (updated || memIndex !== -1) {
+  if (updated) {
     return NextResponse.json({ 
       success: true, 
-      data: serializeProperty(updated || (memIndex !== -1 ? memoryStore[memIndex] : null), true) 
+      data: serializeProperty(updated, true) 
     });
   }
 
@@ -221,16 +215,11 @@ export async function DELETE(
     }
   }
 
-  const memIndex = memoryStore.findIndex(p => p.id === id || p.pid === id || p.pid === normalizedPz || p.pid === normalizedLr || (p._id && p._id.toString() === id));
-  if (memIndex !== -1) {
-    memoryStore.splice(memIndex, 1);
-  }
-
   // Invalidate server-side property listings and single property cache
   await clearPropertiesCache();
 
-  if (deleted || memIndex !== -1) {
-    return NextResponse.json({ success: true, data: serializeProperty(deleted || null, true) });
+  if (deleted) {
+    return NextResponse.json({ success: true, data: serializeProperty(deleted, true) });
   }
 
   return NextResponse.json({ success: false, message: 'Property not found' }, { status: 404 });

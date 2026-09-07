@@ -139,13 +139,13 @@ export default function ExplorePlansPage() {
           <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 items-stretch">
               {/* PLAN 1: ₹399 - 20 Contact Credits */}
-              <div className="bg-[#06120b] border border-emerald-950 hover:border-emerald-700/60 transition-all rounded-3xl p-6 sm:p-8 space-y-6 flex flex-col justify-between shadow-xl">
+              <div className="bg-[#06150d] border-2 border-emerald-500 hover:border-emerald-400 transition-all rounded-3xl p-6 sm:p-8 space-y-6 flex flex-col justify-between shadow-2xl shadow-emerald-950/80">
                 <div className="space-y-5">
                   <div className="flex items-center justify-between">
-                    <span className="px-3.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-[#0a1f14] text-emerald-400 border border-emerald-800/60">
+                    <span className="px-3.5 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-950 text-emerald-400 border border-emerald-800">
                       Standard Plan
                     </span>
-                    <span className="text-xs font-bold text-gray-400 flex items-center space-x-1">
+                    <span className="text-xs font-bold text-emerald-400 flex items-center space-x-1">
                       <Clock size={13} className="text-emerald-400" />
                       <span>30 Days Validity</span>
                     </span>
@@ -153,44 +153,44 @@ export default function ExplorePlansPage() {
 
                   <div>
                     <h3 className="text-2xl font-bold text-white">20 Credits</h3>
-                    <p className="text-xs text-gray-400 mt-1">
+                    <p className="text-xs text-gray-300 mt-1">
                       Perfect for renters looking to unlock up to 20 verified owner contacts in specific localities.
                     </p>
                   </div>
 
-                  <div className="py-2 border-y border-emerald-950">
-                    <div className="text-4xl font-extrabold text-white font-mono">
+                  <div className="py-2 border-y border-emerald-900/60">
+                    <div className="text-4xl font-extrabold text-emerald-400 font-mono">
                       ₹399 <span className="text-xs text-gray-400 font-sans font-normal">/ 30 days</span>
                     </div>
                   </div>
 
-                  <ul className="space-y-3 text-xs sm:text-sm text-gray-300">
+                  <ul className="space-y-3 text-xs sm:text-sm text-gray-200">
                     <li className="flex items-center space-x-2.5">
-                      <div className="w-5 h-5 rounded-full bg-emerald-950/80 border border-emerald-800/80 flex items-center justify-center text-emerald-400 shrink-0">
+                      <div className="w-5 h-5 rounded-full bg-emerald-500 text-black flex items-center justify-center shrink-0 shadow-sm">
                         <Check size={13} className="stroke-[3]" />
                       </div>
-                      <span className="font-semibold text-white">20 Credits</span>
+                      <span className="font-bold text-emerald-400">20 Credits</span>
                     </li>
                     <li className="flex items-center space-x-2.5">
-                      <div className="w-5 h-5 rounded-full bg-emerald-950/80 border border-emerald-800/80 flex items-center justify-center text-emerald-400 shrink-0">
+                      <div className="w-5 h-5 rounded-full bg-emerald-500 text-black flex items-center justify-center shrink-0 shadow-sm">
                         <Check size={13} className="stroke-[3]" />
                       </div>
-                      <span>Direct Phone Call & WhatsApp Connect</span>
+                      <span className="font-semibold text-white">Direct Phone Call & WhatsApp Connect</span>
                     </li>
                     <li className="flex items-center space-x-2.5">
-                      <div className="w-5 h-5 rounded-full bg-emerald-950/80 border border-emerald-800/80 flex items-center justify-center text-emerald-400 shrink-0">
+                      <div className="w-5 h-5 rounded-full bg-emerald-500 text-black flex items-center justify-center shrink-0 shadow-sm">
                         <Check size={13} className="stroke-[3]" />
                       </div>
-                      <span>100% Zero Brokerage Guarantee</span>
+                      <span className="font-semibold text-white">100% Zero Brokerage Guarantee</span>
                     </li>
                     <li className="flex items-center space-x-2.5">
-                      <div className="w-5 h-5 rounded-full bg-emerald-950/80 border border-emerald-800/80 flex items-center justify-center text-emerald-400 shrink-0">
+                      <div className="w-5 h-5 rounded-full bg-emerald-500 text-black flex items-center justify-center shrink-0 shadow-sm">
                         <Check size={13} className="stroke-[3]" />
                       </div>
                       <span>Instant Property ID (PID) Unlock</span>
                     </li>
                     <li className="flex items-center space-x-2.5">
-                      <div className="w-5 h-5 rounded-full bg-emerald-950/80 border border-emerald-800/80 flex items-center justify-center text-emerald-400 shrink-0">
+                      <div className="w-5 h-5 rounded-full bg-emerald-500 text-black flex items-center justify-center shrink-0 shadow-sm">
                         <Check size={13} className="stroke-[3]" />
                       </div>
                       <span>Standard Support & Advice</span>
@@ -201,7 +201,7 @@ export default function ExplorePlansPage() {
                 <button
                   type="button"
                   onClick={() => handleSubscribe('Standard Plan (20 Credits)', 399)}
-                  className="w-full py-4 bg-[#0b2416] hover:bg-emerald-500 hover:text-black border border-emerald-700/60 text-emerald-400 font-extrabold text-xs sm:text-sm rounded-2xl shadow-lg transition-all active:scale-95 cursor-pointer"
+                  className="w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs sm:text-sm rounded-2xl shadow-xl shadow-emerald-500/25 transition-all active:scale-95 cursor-pointer"
                 >
                   Subscribe Now • ₹399
                 </button>

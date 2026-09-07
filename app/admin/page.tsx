@@ -7,7 +7,7 @@ import {
   ArrowUpRight, Clock, PlusCircle, CheckCircle2, XCircle, Search, Sparkles, RefreshCw,
   Trash2, AlertTriangle
 } from 'lucide-react';
-import { PropertyItem, INITIAL_PROPERTIES, INITIAL_INQUIRIES } from '@/lib/seedData';
+import { PropertyItem } from '@/lib/seedData';
 import { useApp } from '@/context/AppContext';
 import { getCachedProperties, setCachedProperties, hasCachedProperties, getCachedInquiries, setCachedInquiries, hasCachedInquiries } from '@/lib/adminCache';
 import { useAdminSync } from '@/hooks/useAdminSync';

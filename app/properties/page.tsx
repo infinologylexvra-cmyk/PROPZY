@@ -1,15 +1,16 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback, Suspense } from 'react';
+import React, { useState, useEffect, useRef, useMemo, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Filter, SlidersHorizontal, ShieldCheck, Search, RefreshCw, X, ChevronLeft, ArrowLeft, Home as HomeIcon } from 'lucide-react';
-import { PropertyItem, INITIAL_PROPERTIES } from '@/lib/seedData';
+import { Filter, SlidersHorizontal, ShieldCheck, Search, RefreshCw, X, ChevronLeft, ArrowLeft, Home as HomeIcon, Sparkles } from 'lucide-react';
+import { PropertyItem } from '@/lib/seedData';
 import { PropertyCard } from '@/components/PropertyCard';
 import { InquiryModal } from '@/components/InquiryModal';
 import { SkeletonGrid } from '@/components/Loader';
 import { useApp } from '@/context/AppContext';
 import { getClientPropertiesCache, setClientPropertiesCache } from '@/lib/clientPropertiesCache';
+import { partitionPropertiesByLocation } from '@/lib/proximity';
 
 const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? React.useLayoutEffect : React.useEffect;
 
@@ -57,7 +58,6 @@ function PropertySearchContent() {
   const [displayedCount, setDisplayedCount] = useState(21);
   const [selectedPropertyForInquiry, setSelectedPropertyForInquiry] = useState<PropertyItem | null>(null);
 
-  const loadMoreRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const latestRequestIdRef = useRef<number>(0);
 
@@ -90,18 +90,21 @@ function PropertySearchContent() {
   }, [searchParams]);
 
   const fetchFilteredProperties = async () => {
-    // Build query params
-    const params = new URLSearchParams();
-    if (category !== 'all') params.set('category', category);
-    if (city !== 'all') params.set('city', city);
-    if (locality) params.set('locality', locality);
-    if (pidSearch) params.set('pid', pidSearch);
-    if (type !== 'all') params.set('type', type);
-    if (bedrooms !== 'all') params.set('bedrooms', bedrooms);
-    if (verifiedOnly) params.set('verified', 'true');
-    if (debouncedMaxPrice) params.set('maxPrice', debouncedMaxPrice.toString());
+    // Build query params for the API (fetches matching category, budget, BHK, type, verified status)
+    const apiParams = new URLSearchParams();
+    if (category !== 'all') apiParams.set('category', category);
+    if (pidSearch) apiParams.set('pid', pidSearch);
+    if (type !== 'all') apiParams.set('type', type);
+    if (bedrooms !== 'all') apiParams.set('bedrooms', bedrooms);
+    if (verifiedOnly) apiParams.set('verified', 'true');
+    if (debouncedMaxPrice) apiParams.set('maxPrice', debouncedMaxPrice.toString());
+    apiParams.set('limit', '100');
 
-    const clientCacheKey = params.toString();
+    // For client-side caching, incorporate city & locality so cache states stay distinct
+    const clientCacheParams = new URLSearchParams(apiParams);
+    if (city !== 'all') clientCacheParams.set('city', city);
+    if (locality) clientCacheParams.set('locality', locality);
+    const clientCacheKey = clientCacheParams.toString();
 
     // 1. Client-Side Instant Cache Check
     const cached = getClientPropertiesCache(clientCacheKey);
@@ -133,7 +136,7 @@ function PropertySearchContent() {
     const currentRequestId = ++latestRequestIdRef.current;
 
     try {
-      const fetchUrl = `/api/properties?${clientCacheKey}${clientCacheKey ? '&' : ''}limit=100`;
+      const fetchUrl = `/api/properties?${apiParams.toString()}`;
       const res = await fetch(fetchUrl, {
         signal: controller.signal
       });
@@ -188,6 +191,11 @@ function PropertySearchContent() {
   useEffect(() => {
     fetchFilteredProperties();
   }, [category, city, locality, pidSearch, debouncedMaxPrice, type, bedrooms, verifiedOnly]);
+
+  // Partition properties into exact location matches and nearby matches
+  const { exactMatches, nearbyMatches, hasLocationFilter } = useMemo(() => {
+    return partitionPropertiesByLocation(properties, city, locality);
+  }, [properties, city, locality]);
 
   // Synchronize browser address bar URL with active filter state
   useEffect(() => {
@@ -267,7 +275,7 @@ function PropertySearchContent() {
     return 'Properties';
   };
 
-  const visibleProperties = properties.slice(0, displayedCount);
+  const visibleAll = properties.slice(0, displayedCount);
 
   return (
     <div className="bg-[#050806] text-gray-100 min-h-screen">
@@ -303,93 +311,87 @@ function PropertySearchContent() {
             {locality && (
               <>
                 <span>/</span>
-                <span className="text-gray-300">{locality}</span>
+                <span className="text-emerald-400 font-semibold">{locality}</span>
               </>
             )}
           </nav>
         </div>
 
-        {/* Header Title */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-emerald-950/80 pb-6">
-          <div>
-            <h1 className="text-xl sm:text-4xl font-extrabold text-white tracking-tight">
-              {getDynamicPageHeading()}
-            </h1>
-            <p className="text-xs text-gray-400 mt-1">
-              Showing verified 0% brokerage listings {city !== 'all' ? `in ${city}` : 'across Chandigarh Tricity'}
-            </p>
-          </div>
-
-          <button
-            type="button"
-            suppressHydrationWarning
-            onClick={handleResetFilters}
-            className="inline-flex items-center space-x-1.5 text-xs font-semibold text-emerald-400 hover:text-emerald-300 self-start md:self-auto px-3.5 py-2 rounded-full bg-[#0a140f] border border-emerald-900/60 transition-colors cursor-pointer"
-          >
-            <RefreshCw size={14} />
-            <span>Reset Filters</span>
-          </button>
+        {/* Dynamic SEO Header */}
+        <div className="space-y-1.5 border-b border-emerald-950 pb-5">
+          <h1 className="text-xl sm:text-3xl font-extrabold text-white tracking-tight">
+            {getDynamicPageHeading()}
+          </h1>
+          <p className="text-xs sm:text-sm text-gray-400">
+            Verified direct-owner real estate options across Chandigarh, Mohali, Panchkula, Zirakpur & Kharar at 0% brokerage.
+          </p>
         </div>
 
-        {/* Header Actions & Mobile Filter Button */}
-        <div className="flex items-center justify-between md:hidden bg-[#0a110d] p-4 rounded-2xl border border-emerald-950">
+        {/* Mobile Filter Trigger Button */}
+        <div className="md:hidden flex items-center justify-between bg-[#0a110d] p-3 rounded-2xl border border-emerald-950/80">
           <button
             type="button"
             suppressHydrationWarning
             onClick={() => setIsMobileFilterOpen(true)}
-            className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-emerald-500 text-black text-xs font-extrabold shadow-md cursor-pointer"
+            className="flex items-center space-x-2 px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-extrabold rounded-xl transition-colors cursor-pointer shadow-md"
           >
-            <SlidersHorizontal size={16} />
+            <SlidersHorizontal size={14} />
             <span>Filter Properties</span>
           </button>
+
+          {(category !== 'all' || city !== 'all' || locality || type !== 'all' || bedrooms !== 'all' || verifiedOnly) && (
+            <button
+              type="button"
+              suppressHydrationWarning
+              onClick={handleResetFilters}
+              className="text-xs text-gray-400 hover:text-emerald-400 font-semibold flex items-center space-x-1 cursor-pointer"
+            >
+              <RefreshCw size={12} />
+              <span>Reset</span>
+            </button>
+          )}
         </div>
 
-        {/* Mobile Slide-over Filters Drawer (Left-Aligned) */}
+        {/* Mobile Filter Drawer Modal */}
         {isMobileFilterOpen && (
-          <div className="fixed inset-0 z-100 bg-black/85 backdrop-blur-md md:hidden flex justify-start">
-            <div className="w-full max-w-[340px] sm:max-w-sm bg-[#08100c] h-full flex flex-col border-r border-emerald-900/80 shadow-2xl animate-in slide-in-from-left duration-200">
-              {/* Drawer Header */}
-              <div className="flex items-center justify-between p-4 sm:p-5 border-b border-emerald-950/80 bg-[#0a140f] shrink-0">
-                <div className="flex items-center space-x-2.5">
-                  <div className="w-8 h-8 rounded-xl bg-emerald-950/80 border border-emerald-800/60 flex items-center justify-center text-emerald-400">
-                    <SlidersHorizontal size={16} />
+          <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm md:hidden flex justify-end animate-in fade-in duration-200">
+            <div className="w-full max-w-xs bg-[#0a110d] h-full overflow-y-auto p-6 space-y-6 border-l border-emerald-900/80 shadow-2xl flex flex-col justify-between">
+              <div className="space-y-6">
+                <div className="flex items-center justify-between border-b border-emerald-950 pb-4">
+                  <div className="flex items-center space-x-2">
+                    <Filter size={18} className="text-emerald-400" />
+                    <h3 className="text-base font-bold text-white">Filters</h3>
                   </div>
-                  <div>
-                    <h3 className="text-sm font-extrabold text-white">Filters</h3>
-                  </div>
+                  <button
+                    type="button"
+                    suppressHydrationWarning
+                    onClick={() => setIsMobileFilterOpen(false)}
+                    className="p-1 rounded-lg text-gray-400 hover:text-white"
+                  >
+                    <X size={20} />
+                  </button>
                 </div>
-                <button
-                  type="button"
-                  suppressHydrationWarning
-                  onClick={() => setIsMobileFilterOpen(false)}
-                  className="w-8 h-8 rounded-xl bg-[#050806] border border-emerald-950 flex items-center justify-center text-gray-400 hover:text-white cursor-pointer active:scale-95 transition-transform"
-                >
-                  <X size={18} />
-                </button>
-              </div>
 
-              {/* Scrollable Filters Content */}
-              <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-5 no-scrollbar">
-                {/* Category */}
+                {/* Purpose Category */}
                 <div>
-                  <label className="block text-xs font-semibold text-gray-300 mb-2">Purpose / Category</label>
+                  <label className="block text-xs font-semibold text-gray-300 mb-2">Purpose</label>
                   <div className="grid grid-cols-2 gap-2">
                     <button
                       type="button"
                       suppressHydrationWarning
                       onClick={() => handleCategoryChange('all')}
-                      className={`px-3 py-2.5 rounded-xl cursor-pointer text-xs font-semibold capitalize border transition-all text-center ${category === 'all'
+                      className={`px-3 py-2 rounded-xl text-xs font-semibold capitalize border transition-all cursor-pointer text-center ${category === 'all'
                         ? 'bg-emerald-500 text-black border-emerald-500 font-extrabold shadow-md'
                         : 'bg-[#050806] text-gray-300 border-emerald-950 hover:border-emerald-800'
                         }`}
                     >
-                      All Properties
+                      All
                     </button>
                     <button
                       type="button"
                       suppressHydrationWarning
                       onClick={() => handleCategoryChange('rent')}
-                      className={`px-3 py-2.5 rounded-xl cursor-pointer text-xs font-semibold capitalize border transition-all text-center ${category === 'rent'
+                      className={`px-3 py-2 rounded-xl text-xs font-semibold capitalize border transition-all cursor-pointer text-center ${category === 'rent'
                         ? 'bg-emerald-500 text-black border-emerald-500 font-extrabold shadow-md'
                         : 'bg-[#050806] text-gray-300 border-emerald-950 hover:border-emerald-800'
                         }`}
@@ -400,7 +402,7 @@ function PropertySearchContent() {
                       type="button"
                       suppressHydrationWarning
                       onClick={() => handleCategoryChange('buy')}
-                      className={`px-3 py-2.5 rounded-xl cursor-pointer text-xs font-semibold capitalize border transition-all text-center ${category === 'buy' || category === 'sell'
+                      className={`px-3 py-2 rounded-xl text-xs font-semibold capitalize border transition-all cursor-pointer text-center ${category === 'buy' || category === 'sell'
                         ? 'bg-emerald-500 text-black border-emerald-500 font-extrabold shadow-md'
                         : 'bg-[#050806] text-gray-300 border-emerald-950 hover:border-emerald-800'
                         }`}
@@ -411,7 +413,7 @@ function PropertySearchContent() {
                       type="button"
                       suppressHydrationWarning
                       onClick={() => handleCategoryChange('pg')}
-                      className={`px-3 py-2.5 rounded-xl cursor-pointer text-xs font-semibold capitalize border transition-all text-center ${category === 'pg'
+                      className={`px-3 py-2 rounded-xl text-xs font-semibold capitalize border transition-all cursor-pointer text-center ${category === 'pg'
                         ? 'bg-emerald-500 text-black border-emerald-500 font-extrabold shadow-md'
                         : 'bg-[#050806] text-gray-300 border-emerald-950 hover:border-emerald-800'
                         }`}
@@ -422,7 +424,7 @@ function PropertySearchContent() {
                       type="button"
                       suppressHydrationWarning
                       onClick={() => handleCategoryChange('commercial')}
-                      className={`col-span-2 px-3 py-2.5 rounded-xl cursor-pointer text-xs font-semibold capitalize border transition-all text-center ${category === 'commercial'
+                      className={`col-span-2 px-3 py-2 rounded-xl text-xs font-semibold capitalize border transition-all cursor-pointer text-center ${category === 'commercial'
                         ? 'bg-emerald-500 text-black border-emerald-500 font-extrabold shadow-md'
                         : 'bg-[#050806] text-gray-300 border-emerald-950 hover:border-emerald-800'
                         }`}
@@ -439,7 +441,7 @@ function PropertySearchContent() {
                     suppressHydrationWarning
                     value={city}
                     onChange={(e) => handleCityChange(e.target.value)}
-                    className="w-full px-3.5 py-2.5 text-xs border border-emerald-900/80 rounded-xl bg-[#050806] focus:border-emerald-500 focus:outline-none text-white cursor-pointer font-medium"
+                    className="w-full px-3 py-2 text-xs border border-emerald-900/80 rounded-xl bg-[#050806] text-white focus:border-emerald-500 focus:outline-none"
                   >
                     <option value="all" className="bg-[#0a110d] text-white">All Cities</option>
                     <option value="Mohali" className="bg-[#0a110d] text-white">Mohali</option>
@@ -457,7 +459,7 @@ function PropertySearchContent() {
                     suppressHydrationWarning
                     value={type}
                     onChange={(e) => setType(e.target.value)}
-                    className="w-full px-3.5 py-2.5 text-xs border border-emerald-900/80 rounded-xl bg-[#050806] focus:border-emerald-500 focus:outline-none text-white cursor-pointer font-medium"
+                    className="w-full px-3 py-2 text-xs border border-emerald-900/80 rounded-xl bg-[#050806] text-white focus:border-emerald-500 focus:outline-none"
                   >
                     <option value="all" className="bg-[#0a110d] text-white">All Types</option>
                     <option value="flat" className="bg-[#0a110d] text-white">Flat / Apartment</option>
@@ -471,7 +473,7 @@ function PropertySearchContent() {
                 <div>
                   <div className="flex justify-between text-xs font-semibold mb-2">
                     <span className="text-gray-300">Max Budget</span>
-                    <span className="text-emerald-400 font-extrabold font-mono">
+                    <span className="text-emerald-400 font-extrabold">
                       {`₹${maxPrice.toLocaleString('en-IN')}`}
                     </span>
                   </div>
@@ -491,20 +493,20 @@ function PropertySearchContent() {
                   </div>
                 </div>
 
-                {/* Bedrooms (Residential Only) */}
+                {/* Bedrooms */}
                 {category !== 'commercial' && type !== 'commercial' && (
                   <div>
                     <label className="block text-xs font-semibold text-gray-300 mb-2">Bedrooms (BHK)</label>
-                    <div className="grid grid-cols-4 gap-2">
+                    <div className="flex space-x-2">
                       {['all', '1', '2', '3'].map((bhk) => (
                         <button
                           key={bhk}
                           type="button"
                           suppressHydrationWarning
                           onClick={() => setBedrooms(bhk)}
-                          className={`py-2 rounded-xl text-xs font-bold border transition-all text-center cursor-pointer ${bedrooms === bhk
-                            ? 'bg-emerald-500 text-black border-emerald-500 shadow-md font-extrabold'
-                            : 'bg-[#050806] text-gray-300 border-emerald-950 hover:border-emerald-800'
+                          className={`flex-1 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${bedrooms === bhk
+                            ? 'bg-emerald-500 text-black border-emerald-500'
+                            : 'bg-[#050806] text-gray-400 border-emerald-950 hover:text-white'
                             }`}
                         >
                           {bhk === 'all' ? 'All' : `${bhk} BHK`}
@@ -515,9 +517,9 @@ function PropertySearchContent() {
                 )}
 
                 {/* Verified Toggle */}
-                <div className="pt-3 border-t border-emerald-950">
-                  <label className="flex items-center justify-between cursor-pointer select-none bg-[#050806] border border-emerald-950 p-3 rounded-xl hover:border-emerald-900 transition-colors">
-                    <span className="text-xs font-semibold text-gray-300 flex items-center space-x-2">
+                <div className="pt-2 border-t border-emerald-950">
+                  <label className="flex items-center justify-between cursor-pointer select-none">
+                    <span className="text-xs font-semibold text-gray-300 flex items-center space-x-1.5">
                       <ShieldCheck size={16} className="text-emerald-400" />
                       <span>Verified Only</span>
                     </span>
@@ -526,57 +528,60 @@ function PropertySearchContent() {
                       suppressHydrationWarning
                       checked={verifiedOnly}
                       onChange={(e) => setVerifiedOnly(e.target.checked)}
-                      className="w-4 h-4 text-emerald-500 rounded accent-emerald-500 cursor-pointer"
+                      className="w-4 h-4 text-emerald-500 rounded focus:ring-emerald-500 accent-emerald-500 cursor-pointer"
                     />
                   </label>
                 </div>
               </div>
 
-              {/* Fixed Bottom Action Bar */}
-              <div className="p-4 border-t border-emerald-950 bg-[#0a140f] shrink-0 flex items-center space-x-2.5">
-                <button
-                  type="button"
-                  suppressHydrationWarning
-                  onClick={() => {
-                    setCategory('all');
-                    setCity('all');
-                    setType('all');
-                    setBedrooms('all');
-                    setVerifiedOnly(false);
-                    setMaxPrice(defaultRentMax);
-                    setLocality('');
-                    setPidSearch('');
-                  }}
-                  className="px-4 py-3 rounded-xl bg-[#050806] hover:bg-[#07130b] text-gray-400 hover:text-white border border-emerald-950 text-xs font-bold transition-colors cursor-pointer"
-                >
-                  Reset
-                </button>
+              <div className="pt-4 border-t border-emerald-950 space-y-2">
                 <button
                   type="button"
                   suppressHydrationWarning
                   onClick={() => setIsMobileFilterOpen(false)}
-                  className="flex-1 py-3 bg-emerald-500 hover:bg-emerald-400 text-black rounded-xl font-extrabold text-xs shadow-lg shadow-emerald-500/20 transition-all cursor-pointer text-center"
+                  className="w-full py-3 bg-emerald-500 text-black rounded-xl font-extrabold text-xs shadow-lg"
                 >
                   Apply Filters
+                </button>
+                <button
+                  type="button"
+                  suppressHydrationWarning
+                  onClick={() => {
+                    handleResetFilters();
+                    setIsMobileFilterOpen(false);
+                  }}
+                  className="w-full py-2 bg-transparent text-gray-400 hover:text-white rounded-xl font-semibold text-xs text-center"
+                >
+                  Reset All Filters
                 </button>
               </div>
             </div>
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8 items-start">
-          {/* Desktop/Tablet Sidebar Filters */}
-          <aside className="hidden md:block md:col-span-1 bg-[#0a110d] p-6 rounded-3xl border border-emerald-950/90 shadow-xl sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto no-scrollbar self-start space-y-6">
-            <div className="flex items-center justify-between border-b border-emerald-950 pb-3">
-              <span className="text-sm font-bold text-white flex items-center space-x-2">
-                <SlidersHorizontal size={16} className="text-emerald-400" />
-                <span>Filters</span>
-              </span>
+        {/* Main 2-Column Content Layout (Desktop Sidebar + Main Listing Grid) */}
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8 items-start">
+          {/* Desktop Left Filter Sidebar */}
+          <aside className="hidden md:block bg-[#0a110d] p-6 rounded-3xl border border-emerald-950/90 shadow-xl space-y-6 sticky top-24">
+            <div className="flex items-center justify-between border-b border-emerald-950 pb-4">
+              <div className="flex items-center space-x-2">
+                <Filter size={18} className="text-emerald-400" />
+                <h3 className="text-base font-bold text-white">Filters</h3>
+              </div>
+              <button
+                type="button"
+                suppressHydrationWarning
+                onClick={handleResetFilters}
+                className="text-xs text-gray-400 hover:text-emerald-400 font-semibold cursor-pointer transition-colors"
+                title="Reset all filters"
+              >
+                Reset All
+              </button>
             </div>
 
-            {/* Category Tabs */}
+            {/* Purpose Category */}
             <div>
-              <label className="block text-xs font-semibold text-gray-300 mb-2">Purpose / Category</label>
+              <label className="block text-xs font-semibold text-gray-300 mb-2">Purpose</label>
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
@@ -587,7 +592,7 @@ function PropertySearchContent() {
                     : 'bg-[#050806] text-gray-300 border-emerald-950 hover:border-emerald-800'
                     }`}
                 >
-                  All Properties
+                  All
                 </button>
                 <button
                   type="button"
@@ -765,7 +770,7 @@ function PropertySearchContent() {
 
             {loading ? (
               <SkeletonGrid count={6} />
-            ) : properties.length === 0 ? (
+            ) : properties.length === 0 || (hasLocationFilter && exactMatches.length === 0 && nearbyMatches.length === 0) ? (
               <div className="bg-[#0a110d] p-12 text-center rounded-3xl border border-emerald-950 shadow-xl space-y-4">
                 <div className="w-16 h-16 bg-[#0e261a] text-emerald-400 rounded-full flex items-center justify-center mx-auto border border-emerald-800/60">
                   <Search size={32} />
@@ -783,10 +788,96 @@ function PropertySearchContent() {
                   Reset All Filters
                 </button>
               </div>
+            ) : hasLocationFilter ? (
+              <div className="space-y-10">
+                {/* 1. Exact Location Matches */}
+                {exactMatches.length > 0 && (
+                  <div className="space-y-5">
+                    <div className="flex items-center space-x-2">
+                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse" />
+                      <h2 className="text-base sm:text-lg font-extrabold text-white">
+                        Properties in {locality ? (city !== 'all' ? `${locality}, ${city}` : locality) : city}
+                      </h2>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {exactMatches.slice(0, displayedCount).map((property) => (
+                        <PropertyCard
+                          key={property.id || property.pid}
+                          property={property}
+                          onContactClick={(p) => {
+                            if (!user) {
+                              showToast('Please login to contact the property owner');
+                              openAuthModal();
+                              return;
+                            }
+                            setSelectedPropertyForInquiry(p);
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* 2. Nearby Location Recommendations */}
+                {nearbyMatches.length > 0 && (
+                  <div className={`space-y-5 ${exactMatches.length > 0 ? 'pt-8 border-t border-emerald-950/80' : ''}`}>
+                    <div className="space-y-1.5">
+                      <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-[#081f13] border border-emerald-800/60 text-emerald-400 text-xs font-semibold shadow-inner">
+                        <Sparkles size={13} />
+                        <span>Nearby Options in Tricity</span>
+                      </div>
+                      <h2 className="text-base sm:text-xl font-extrabold text-white tracking-tight">
+                        Similar properties in nearby locations
+                      </h2>
+                      <p className="text-xs text-gray-400 max-w-2xl">
+                        {exactMatches.length > 0
+                          ? `Since you searched in ${locality || city}, here are verified options in surrounding sectors and nearby areas matching your criteria.`
+                          : `No properties found in this exact location matching all filters. Here are top verified options in nearby areas:`}
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {nearbyMatches.slice(0, displayedCount).map((property) => (
+                        <PropertyCard
+                          key={property.id || property.pid}
+                          property={property}
+                          onContactClick={(p) => {
+                            if (!user) {
+                              showToast('Please login to contact the property owner');
+                              openAuthModal();
+                              return;
+                            }
+                            setSelectedPropertyForInquiry(p);
+                          }}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Show More Pagination */}
+                {(displayedCount < exactMatches.length || displayedCount < nearbyMatches.length) ? (
+                  <div className="py-8 flex flex-col items-center justify-center space-y-4">
+                    <button
+                      type="button"
+                      suppressHydrationWarning
+                      onClick={() => setDisplayedCount(prev => prev + 21)}
+                      className="px-8 py-3.5 bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-black font-extrabold text-xs rounded-full shadow-xl shadow-emerald-500/25 transition-all cursor-pointer flex items-center space-x-2.5"
+                    >
+                      <span>Show More Properties</span>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="py-8 text-center text-xs text-gray-400 font-semibold border-t border-emerald-950/60 mt-6">
+                    ✨ Showing all verified properties in Tricity
+                  </div>
+                )}
+              </div>
             ) : (
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {visibleProperties.map((property) => (
+                  {visibleAll.map((property) => (
                     <PropertyCard
                       key={property.id || property.pid}
                       property={property}

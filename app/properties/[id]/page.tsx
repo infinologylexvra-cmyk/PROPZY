@@ -7,7 +7,7 @@ import {
   ShieldCheck, MapPin, Bed, Bath, Maximize, Heart, PhoneCall,
   ChevronLeft, ChevronRight, Check, User, Copy, Grid, X, Camera, Image as ImageIcon, Building2, Sparkles
 } from 'lucide-react';
-import { PropertyItem, INITIAL_PROPERTIES } from '@/lib/seedData';
+import { PropertyItem } from '@/lib/seedData';
 import { useApp } from '@/context/AppContext';
 import { InquiryModal } from '@/components/InquiryModal';
 import { LazyImage } from '@/components/LazyImage';
@@ -669,7 +669,33 @@ export default function PropertyDetailPage() {
             <div className="space-y-3">
               <button
                 type="button"
-                onClick={() => {
+                onClick={async () => {
+                  if (!user) {
+                    showToast('Please login to get owner contact');
+                    openAuthModal();
+                    return;
+                  }
+
+                  try {
+                    await fetch('/api/inquiries', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      keepalive: true,
+                      body: JSON.stringify({
+                        propertyId: property.id || property.pid,
+                        propertyTitle: property.title,
+                        propertyPid: property.pid,
+                        tenantName: user.name || 'Interested Tenant',
+                        tenantPhone: user.phone || '',
+                        tenantEmail: user.email || '',
+                        tenantMessage: `Direct contact request for ${property.pid} (${property.title})`,
+                        status: 'New'
+                      })
+                    });
+                  } catch (err) {
+                    console.warn('Inquiry submission error:', err);
+                  }
+
                   if (typeof window !== 'undefined') {
                     window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
                   }
@@ -678,7 +704,7 @@ export default function PropertyDetailPage() {
                 className="w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-black rounded-2xl font-bold text-xs shadow-lg shadow-emerald-500/20 transition-all flex items-center justify-center space-x-2 cursor-pointer active:scale-95"
               >
                 <PhoneCall size={18} />
-                <span>Get Owner Contact Number</span>
+                <span>Contact Now</span>
               </button>
             </div>
 

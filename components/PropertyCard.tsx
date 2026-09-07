@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Heart, ShieldCheck, MapPin, Bed, Bath, Maximize, PhoneCall, ChevronLeft, ChevronRight, UserCheck, Building2 } from 'lucide-react';
 import { PropertyItem } from '@/lib/seedData';
 import { useApp } from '@/context/AppContext';
@@ -14,7 +15,8 @@ interface PropertyCardProps {
 }
 
 export const PropertyCard: React.FC<PropertyCardProps> = React.memo(({ property, onContactClick }) => {
-  const { toggleWishlist, isWishlisted } = useApp();
+  const router = useRouter();
+  const { user, openAuthModal, showToast, toggleWishlist, isWishlisted } = useApp();
   const [currentImgIndex, setCurrentImgIndex] = useState(0);
   const [mounted, setMounted] = useState(false);
 
@@ -171,12 +173,50 @@ export const PropertyCard: React.FC<PropertyCardProps> = React.memo(({ property,
           </div>
         </div>
 
-        {/* Card Footer matching Screenshot 3 */}
-        <div className="pt-2 flex items-center justify-between border-t border-emerald-950/80 text-xs">
-          <div className="flex items-center space-x-1.5 text-gray-400 font-medium">
-            <UserCheck size={14} className="text-emerald-400" />
-            <span>Direct Owner</span>
-          </div>
+        {/* Card Footer */}
+        <div className="pt-2.5 flex items-center justify-between border-t border-emerald-950/80 text-xs">
+          <button
+            type="button"
+            onClick={async (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+
+              if (!user) {
+                showToast('Please login to get owner contact');
+                openAuthModal();
+                return;
+              }
+
+              try {
+                await fetch('/api/inquiries', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  keepalive: true,
+                  body: JSON.stringify({
+                    propertyId: property.id || property.pid,
+                    propertyTitle: property.title,
+                    propertyPid: property.pid,
+                    tenantName: user.name || 'Interested Tenant',
+                    tenantPhone: user.phone || '',
+                    tenantEmail: user.email || '',
+                    tenantMessage: `Direct contact request for ${property.pid} (${property.title})`,
+                    status: 'New'
+                  })
+                });
+              } catch (err) {
+                console.warn('Inquiry submission error:', err);
+              }
+
+              if (typeof window !== 'undefined') {
+                window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+              }
+              router.push('/plans');
+            }}
+            className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-[11px] shadow-md shadow-emerald-500/20 transition-all cursor-pointer active:scale-95 z-20"
+          >
+            <PhoneCall size={12} className="stroke-[2.5]" />
+            <span>Contact Now</span>
+          </button>
 
           <div className="flex items-center space-x-1 text-emerald-400 font-bold group-hover:text-emerald-300 transition-colors">
             <span>Explore</span>

@@ -10,7 +10,7 @@ import {
   FileText, Sparkle, Compass, UserCheck, HeartHandshake, Bell, Award,
   CircleDollarSign, User, ChevronLeft, ChevronRight
 } from 'lucide-react';
-import { PropertyItem, INITIAL_PROPERTIES } from '@/lib/seedData';
+import { PropertyItem } from '@/lib/seedData';
 import { PropertyCard } from '@/components/PropertyCard';
 import { InquiryModal } from '@/components/InquiryModal';
 import { useApp } from '@/context/AppContext';
@@ -48,7 +48,7 @@ export default function HomePage() {
         return cached.data.length;
       }
     }
-    return INITIAL_PROPERTIES.length;
+    return 0;
   });
   const [loading, setLoading] = useState(() => {
     if (typeof window !== 'undefined') {

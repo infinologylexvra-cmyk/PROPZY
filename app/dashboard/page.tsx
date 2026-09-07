@@ -10,7 +10,7 @@ import {
 } from 'lucide-react';
 
 import { useApp, UserProfile, BillingRecord } from '@/context/AppContext';
-import { PropertyItem, INITIAL_PROPERTIES } from '@/lib/seedData';
+import { PropertyItem } from '@/lib/seedData';
 import { PropertyCard } from '@/components/PropertyCard';
 import { LazyImage } from '@/components/LazyImage';
 import { BrandSpinner } from '@/components/Loader';
@@ -1136,36 +1136,36 @@ function DashboardContent() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto items-stretch">
               {/* Plan 1: ₹399 - 20 Contact Credits */}
-              <div className="bg-[#050806] border border-emerald-900/60 hover:border-emerald-700/80 transition-all rounded-3xl p-6 sm:p-8 space-y-6 flex flex-col justify-between shadow-lg">
+              <div className="bg-[#06140c] border-2 border-emerald-500/80 hover:border-emerald-400 transition-all rounded-3xl p-6 sm:p-8 space-y-6 flex flex-col justify-between shadow-2xl shadow-emerald-950/50">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-[#0a1f14] text-emerald-400 border border-emerald-800/60">
+                    <span className="px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-emerald-950 text-emerald-400 border border-emerald-800">
                       Standard Plan
                     </span>
-                    <span className="text-xs font-bold text-gray-400">30 Days Validity</span>
+                    <span className="text-xs font-bold text-emerald-400">30 Days Validity</span>
                   </div>
 
                   <h4 className="text-xl font-bold text-white">20 Credits</h4>
-                  <div className="text-3xl font-extrabold text-white">
+                  <div className="text-3xl font-extrabold text-emerald-400">
                     ₹399 <span className="text-xs text-gray-400 font-normal">/ 30 days</span>
                   </div>
 
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-gray-300">
                     Ideal for tenants looking to unlock up to 20 verified owner contact details in Tricity.
                   </p>
 
-                  <ul className="space-y-2.5 text-xs text-gray-300 pt-2 border-t border-emerald-950">
+                  <ul className="space-y-2.5 text-xs text-gray-200 pt-2 border-t border-emerald-900/60">
                     <li className="flex items-center space-x-2">
                       <Check size={15} className="text-emerald-400 shrink-0 stroke-[2.5]" />
-                      <span className="font-semibold text-white">20 Credits</span>
+                      <span className="font-bold text-emerald-400">20 Credits</span>
                     </li>
                     <li className="flex items-center space-x-2">
                       <Check size={15} className="text-emerald-400 shrink-0 stroke-[2.5]" />
-                      <span>Direct Phone Number & WhatsApp Access</span>
+                      <span className="font-semibold text-white">Direct Phone Number & WhatsApp Access</span>
                     </li>
                     <li className="flex items-center space-x-2">
                       <Check size={15} className="text-emerald-400 shrink-0 stroke-[2.5]" />
-                      <span>0% Brokerage Guarantee</span>
+                      <span className="font-semibold text-white">0% Brokerage Guarantee</span>
                     </li>
                     <li className="flex items-center space-x-2">
                       <Check size={15} className="text-emerald-400 shrink-0 stroke-[2.5]" />
@@ -1181,7 +1181,7 @@ function DashboardContent() {
                 <button
                   type="button"
                   onClick={() => showToast('Redirecting to payment gateway for ₹399 plan...')}
-                  className="w-full py-3.5 bg-[#0e2417] hover:bg-emerald-500 hover:text-black border border-emerald-700/60 text-emerald-400 font-extrabold text-xs rounded-2xl shadow-lg transition-all active:scale-95 cursor-pointer"
+                  className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs rounded-2xl shadow-xl shadow-emerald-500/25 transition-all active:scale-95 cursor-pointer"
                 >
                   Subscribe Now • ₹399
                 </button>
