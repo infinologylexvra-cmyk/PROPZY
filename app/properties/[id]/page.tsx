@@ -1,17 +1,18 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useRouter, notFound } from 'next/navigation';
 import Link from 'next/link';
 import {
   ShieldCheck, MapPin, Bed, Bath, Maximize, Heart, PhoneCall,
-  ChevronLeft, ChevronRight, Check, User, Copy, Grid, X, Camera, Image as ImageIcon, Building2
+  ChevronLeft, ChevronRight, Check, User, Copy, Grid, X, Camera, Image as ImageIcon, Building2, Sparkles
 } from 'lucide-react';
 import { PropertyItem, INITIAL_PROPERTIES } from '@/lib/seedData';
 import { useApp } from '@/context/AppContext';
 import { InquiryModal } from '@/components/InquiryModal';
 import { LazyImage } from '@/components/LazyImage';
 import { BrandSpinner } from '@/components/Loader';
+import { PropertyCard } from '@/components/PropertyCard';
 
 export default function PropertyDetailPage() {
   const params = useParams();
@@ -27,6 +28,19 @@ export default function PropertyDetailPage() {
   const [touchStartX, setTouchStartX] = useState<number | null>(null);
   const [touchStartY, setTouchStartY] = useState<number | null>(null);
   const [isSwiping, setIsSwiping] = useState(false);
+
+  // Recommendations / Similar Properties State & Scroller Ref
+  const [similarProperties, setSimilarProperties] = useState<PropertyItem[]>([]);
+  const [loadingSimilar, setLoadingSimilar] = useState(false);
+  const [totalSimilarCount, setTotalSimilarCount] = useState(0);
+  const similarSliderRef = useRef<HTMLDivElement>(null);
+
+  const scrollSimilarSlider = (direction: 'left' | 'right') => {
+    if (similarSliderRef.current) {
+      const scrollAmount = direction === 'left' ? -380 : 380;
+      similarSliderRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  };
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -54,6 +68,70 @@ export default function PropertyDetailPage() {
     }
     fetchProperty();
   }, [id, user?.email, user?.role]);
+
+  // Fetch Similar Properties based on BHK / Category / Locality
+  useEffect(() => {
+    async function fetchSimilarProperties() {
+      if (!property) return;
+      setLoadingSimilar(true);
+      try {
+        const queryParams = new URLSearchParams();
+        if (property.bedrooms && property.bedrooms > 0) {
+          queryParams.set('bedrooms', String(property.bedrooms));
+        }
+        if (property.category) {
+          queryParams.set('category', property.category);
+        }
+
+        const res = await fetch(`/api/properties?${queryParams.toString()}`);
+        const data = await res.json();
+
+        if (data.success && Array.isArray(data.data)) {
+          const currentPid = property.pid?.toUpperCase();
+          const currentId = property.id;
+          const currentMongoId = (property as any)._id?.toString();
+
+          // Filter out the active property
+          const filtered = data.data.filter((p: PropertyItem) => {
+            if (p.pid && currentPid && p.pid.toUpperCase() === currentPid) return false;
+            if (p.id && currentId && p.id === currentId) return false;
+            if ((p as any)._id && currentMongoId && (p as any)._id.toString() === currentMongoId) return false;
+            return true;
+          });
+
+          // Sort by locality match first, then city match, then price proximity
+          const sorted = filtered.sort((a: PropertyItem, b: PropertyItem) => {
+            const aLocalityMatch = a.locality && property.locality && a.locality.toLowerCase() === property.locality.toLowerCase();
+            const bLocalityMatch = b.locality && property.locality && b.locality.toLowerCase() === property.locality.toLowerCase();
+            if (aLocalityMatch && !bLocalityMatch) return -1;
+            if (!aLocalityMatch && bLocalityMatch) return 1;
+
+            const aCityMatch = a.city && property.city && a.city.toLowerCase() === property.city.toLowerCase();
+            const bCityMatch = b.city && property.city && b.city.toLowerCase() === property.city.toLowerCase();
+            if (aCityMatch && !bCityMatch) return -1;
+            if (!aCityMatch && bCityMatch) return 1;
+
+            const aDiff = Math.abs(a.price - property.price);
+            const bDiff = Math.abs(b.price - property.price);
+            return aDiff - bDiff;
+          });
+
+          setSimilarProperties(sorted);
+          setTotalSimilarCount(filtered.length);
+        } else {
+          setSimilarProperties([]);
+          setTotalSimilarCount(0);
+        }
+      } catch (e) {
+        console.warn('Similar properties fetch error:', e);
+        setSimilarProperties([]);
+      } finally {
+        setLoadingSimilar(false);
+      }
+    }
+
+    fetchSimilarProperties();
+  }, [property?.pid, property?.id, property?.bedrooms, property?.category, property?.locality, property?.city, property?.price]);
 
   // Keyboard navigation for Lightbox
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
@@ -141,7 +219,7 @@ export default function PropertyDetailPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
       {/* Back Navigation & Share */}
       <div className="flex items-center justify-between">
         <button
@@ -192,16 +270,16 @@ export default function PropertyDetailPage() {
           {property.title}
         </h1>
 
-        <div className="flex items-center text-xs sm:text-sm text-gray-600 space-x-2">
+        <div className="flex items-center text-xs sm:text-sm text-gray-400 space-x-2">
           <MapPin size={16} className="text-emerald-500 shrink-0" />
           <span>{property.address}</span>
         </div>
       </div>
 
-      {/* Seamless Airbnb/Zillow-Style Photo Gallery Hero Grid */}
+      {/* Seamless Photo Gallery Hero Grid */}
       <div className="relative rounded-3xl overflow-hidden bg-[#070d0a] border border-emerald-950/80 shadow-2xl">
         <div className="h-[360px] sm:h-[440px] lg:h-[460px] grid grid-cols-1 lg:grid-cols-2 gap-2.5 p-2.5 bg-[#050806]">
-          {/* Main Left Featured Frame (Balanced 50% width on Desktop) */}
+          {/* Main Left Featured Frame (50% width on Desktop) */}
           <div
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
@@ -214,7 +292,7 @@ export default function PropertyDetailPage() {
             className={`relative h-full rounded-2xl overflow-hidden group bg-[#07110a] cursor-pointer select-none ${images.length === 1 ? 'lg:col-span-2' : 'lg:col-span-1'
               }`}
           >
-            {/* Sliding Track for smooth transitions */}
+            {/* Sliding Track */}
             <div
               className="flex w-full h-full transition-transform duration-300 ease-out"
               style={{ transform: `translateX(-${currentImgIndex * 100}%)` }}
@@ -230,7 +308,7 @@ export default function PropertyDetailPage() {
               ))}
             </div>
 
-            {/* Desktop Navigation Arrows (Hidden on mobile, visible on desktop) */}
+            {/* Desktop Navigation Arrows */}
             {images.length > 1 && (
               <div className="hidden sm:flex absolute inset-0 z-20 pointer-events-none items-center justify-between px-3">
                 <button
@@ -327,7 +405,6 @@ export default function PropertyDetailPage() {
           {/* Right Thumbnails Dynamic Grid Layout for 4 Images */}
           {images.length === 4 && (
             <div className="hidden lg:grid lg:col-span-1 grid-cols-2 grid-rows-2 gap-2.5 h-full min-h-0 overflow-hidden">
-              {/* Top Row: Photo #2 spanning full right column width */}
               <button
                 type="button"
                 onClick={() => {
@@ -340,7 +417,6 @@ export default function PropertyDetailPage() {
                 <LazyImage src={images[1]} alt="Photo 2" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
               </button>
 
-              {/* Bottom Row: Photo #3 and Photo #4 */}
               <button
                 type="button"
                 onClick={() => {
@@ -386,7 +462,6 @@ export default function PropertyDetailPage() {
                   >
                     <LazyImage src={images[actualIndex]} alt={`Photo ${actualIndex + 1}`} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
 
-                    {/* "+X More Photos" Overlay on 5th tile if images > 5 */}
                     {isLastTile && remainingCount > 0 && (
                       <div className="absolute inset-0 bg-black/70 backdrop-blur-[2px] flex flex-col items-center justify-center text-white transition-all hover:bg-black/60">
                         <Grid size={20} className="text-emerald-400 mb-0.5" />
@@ -436,7 +511,7 @@ export default function PropertyDetailPage() {
             </button>
           </div>
 
-          {/* Main Active Image View - Medium Crisp Sizing */}
+          {/* Main Active Image View */}
           <div
             onTouchStart={handleTouchStart}
             onTouchMove={handleTouchMove}
@@ -494,18 +569,18 @@ export default function PropertyDetailPage() {
         {/* Left Specification Column */}
         <div className="lg:col-span-2 space-y-8">
           {/* Key Overview Cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-6 bg-white rounded-3xl border border-gray-100 shadow-xs">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-6 bg-[#0a110d] rounded-3xl border border-emerald-950/90 shadow-xl">
             <div className="space-y-1">
-              <span className="text-xs text-gray-500 block">
+              <span className="text-xs text-gray-400 block">
                 {property.category === 'commercial' ? 'Commercial Rate' : 'Rent / Price'}
               </span>
-              <span className="text-xl font-extrabold text-gray-900 block">{formatPrice(property.price)}</span>
+              <span className="text-xl font-extrabold text-white block">{formatPrice(property.price)}</span>
             </div>
 
             {property.category === 'commercial' || property.type === 'commercial' ? (
               <div className="space-y-1">
-                <span className="text-xs text-gray-500 block">Property Type</span>
-                <span className="text-base font-bold text-gray-900 flex items-center space-x-1">
+                <span className="text-xs text-gray-400 block">Property Type</span>
+                <span className="text-base font-bold text-white flex items-center space-x-1">
                   <Building2 size={18} className="text-emerald-500" />
                   <span className="capitalize">Commercial</span>
                 </span>
@@ -513,8 +588,8 @@ export default function PropertyDetailPage() {
             ) : (
               property.bedrooms !== undefined && property.bedrooms > 0 && (
                 <div className="space-y-1">
-                  <span className="text-xs text-gray-500 block">Bedrooms</span>
-                  <span className="text-base font-bold text-gray-900 flex items-center space-x-1">
+                  <span className="text-xs text-gray-400 block">Bedrooms</span>
+                  <span className="text-base font-bold text-white flex items-center space-x-1">
                     <Bed size={18} className="text-emerald-500" />
                     <span>{property.bedrooms} BHK</span>
                   </span>
@@ -524,10 +599,10 @@ export default function PropertyDetailPage() {
 
             {property.bathrooms !== undefined && (
               <div className="space-y-1">
-                <span className="text-xs text-gray-500 block">
+                <span className="text-xs text-gray-400 block">
                   {property.category === 'commercial' || property.type === 'commercial' ? 'Washrooms' : 'Bathrooms'}
                 </span>
-                <span className="text-base font-bold text-gray-900 flex items-center space-x-1">
+                <span className="text-base font-bold text-white flex items-center space-x-1">
                   <Bath size={18} className="text-emerald-500" />
                   <span>
                     {property.bathrooms === 0 ? 'Shared / Common' : `${property.bathrooms} ${(property.category === 'commercial' || property.type === 'commercial') ? (property.bathrooms === 1 ? 'Washroom' : 'Washrooms') : (property.bathrooms === 1 ? 'Bath' : 'Baths')}`}
@@ -538,8 +613,8 @@ export default function PropertyDetailPage() {
 
             {property.areaSqFt && (
               <div className="space-y-1">
-                <span className="text-xs text-gray-500 block">Super Area</span>
-                <span className="text-base font-bold text-gray-900 flex items-center space-x-1">
+                <span className="text-xs text-gray-400 block">Super Area</span>
+                <span className="text-base font-bold text-white flex items-center space-x-1">
                   <Maximize size={18} className="text-emerald-500" />
                   <span>{property.areaSqFt} sqft</span>
                 </span>
@@ -548,20 +623,20 @@ export default function PropertyDetailPage() {
           </div>
 
           {/* Description */}
-          <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-xs space-y-3">
-            <h3 className="text-lg font-bold text-gray-900">Property Overview & Details</h3>
-            <p className="text-xs sm:text-sm text-gray-700 leading-relaxed whitespace-pre-line">
+          <div className="bg-[#0a110d] p-6 rounded-3xl border border-emerald-950/90 shadow-xl space-y-3">
+            <h3 className="text-lg font-bold text-white">Property Overview & Details</h3>
+            <p className="text-xs sm:text-sm text-gray-300 leading-relaxed whitespace-pre-line">
               {property.description}
             </p>
           </div>
 
           {/* Amenities Checklist */}
-          <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-xs space-y-4">
-            <h3 className="text-lg font-bold text-gray-900">Features & Amenities</h3>
+          <div className="bg-[#0a110d] p-6 rounded-3xl border border-emerald-950/90 shadow-xl space-y-4">
+            <h3 className="text-lg font-bold text-white">Features & Amenities</h3>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {property.amenities.map((amenity) => (
-                <div key={amenity} className="flex items-center space-x-2 text-xs font-semibold text-gray-800 bg-gray-50 p-3 rounded-xl">
-                  <div className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+                <div key={amenity} className="flex items-center space-x-2 text-xs font-semibold text-gray-200 bg-[#06120b] p-3 rounded-xl border border-emerald-950">
+                  <div className="w-5 h-5 rounded-full bg-emerald-950/80 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-800/80">
                     <Check size={12} />
                   </div>
                   <span>{amenity}</span>
@@ -573,20 +648,20 @@ export default function PropertyDetailPage() {
 
         {/* Right Owner Contact Sidebar Card */}
         <div className="space-y-6">
-          <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-lg space-y-6 sticky top-24">
-            <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+          <div className="bg-[#0a110d] p-6 rounded-3xl border border-emerald-950/90 shadow-xl space-y-6 sticky top-24">
+            <div className="flex items-center justify-between border-b border-emerald-950 pb-4">
               <div>
-                <span className="text-xs text-gray-500 block">Listed By</span>
-                <h4 className="text-base font-bold text-gray-900 flex items-center space-x-1.5">
-                  <User size={16} className="text-emerald-500" />
+                <span className="text-xs text-gray-400 block">Listed By</span>
+                <h4 className="text-base font-bold text-white flex items-center space-x-1.5">
+                  <User size={16} className="text-emerald-400" />
                   <span>{listedBy}</span>
                 </h4>
-                <span className="text-[10px] uppercase font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">
+                <span className="text-[10px] uppercase font-semibold text-emerald-400 bg-emerald-950/80 border border-emerald-800/60 px-2 py-0.5 rounded">
                   {property.ownerRole}
                 </span>
               </div>
 
-              <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center font-bold text-lg">
+              <div className="w-12 h-12 bg-emerald-500 text-black rounded-full flex items-center justify-center font-bold text-lg shadow-md shadow-emerald-500/20">
                 {listedBy.charAt(0)}
               </div>
             </div>
@@ -600,15 +675,15 @@ export default function PropertyDetailPage() {
                   }
                   router.push('/plans');
                 }}
-                className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-2xl font-bold text-xs shadow-lg transition-all flex items-center justify-center space-x-2 cursor-pointer"
+                className="w-full py-4 bg-emerald-500 hover:bg-emerald-400 text-black rounded-2xl font-bold text-xs shadow-lg shadow-emerald-500/20 transition-all flex items-center justify-center space-x-2 cursor-pointer active:scale-95"
               >
                 <PhoneCall size={18} />
                 <span>Get Owner Contact Number</span>
               </button>
             </div>
 
-            <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100 text-[11px] text-gray-600 space-y-2">
-              <div className="flex items-center space-x-1.5 text-emerald-600 font-semibold">
+            <div className="p-4 bg-[#06120b] rounded-2xl border border-emerald-950 text-[11px] text-gray-300 space-y-2">
+              <div className="flex items-center space-x-1.5 text-emerald-400 font-semibold">
                 <ShieldCheck size={14} />
                 <span>PROPZY Verified Protection</span>
               </div>
@@ -617,6 +692,92 @@ export default function PropertyDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* ─────────────────────────────────────────────────────────────
+          SIMILAR HOMES / PROPERTIES RECOMMENDATION HORIZONTAL SCROLLER
+      ───────────────────────────────────────────────────────────── */}
+      {(loadingSimilar || similarProperties.length > 0) && (
+        <section className="pt-8 border-t border-emerald-950/80 space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+              <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-[#081f13] border border-emerald-800/60 text-emerald-400 text-xs font-semibold mb-2 shadow-inner">
+                <Sparkles size={13} />
+                <span>Verified Recommendations</span>
+              </div>
+              <h2 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight">
+                Similar homes nearby
+              </h2>
+              <p className="text-xs sm:text-sm text-gray-400">
+                {property.bedrooms && property.bedrooms > 0
+                  ? `${property.bedrooms} BHK properties around ₹${property.price.toLocaleString('en-IN')}${property.locality ? ` in ${property.locality}` : property.city ? ` in ${property.city}` : ''}`
+                  : `Similar ${property.category === 'commercial' || property.type === 'commercial' ? 'Commercial' : ''} properties in ${property.city || 'Tricity'}`}
+              </p>
+            </div>
+
+            <div className="flex items-center space-x-3 self-end sm:self-auto shrink-0">
+              {totalSimilarCount > 0 && (
+                <Link
+                  href={
+                    property.bedrooms && property.bedrooms > 0
+                      ? `/properties?bedrooms=${property.bedrooms}${property.category ? `&category=${property.category}` : ''}`
+                      : `/properties?category=${property.category}`
+                  }
+                  className="inline-flex items-center space-x-1.5 text-xs sm:text-sm font-bold text-emerald-400 hover:text-emerald-300 transition-colors group mr-1"
+                >
+                  <span>See all </span>
+                  <span className="group-hover:translate-x-1 transition-transform">→</span>
+                </Link>
+              )}
+
+              {/* Slider Left & Right Arrow Buttons */}
+              <button
+                type="button"
+                suppressHydrationWarning
+                onClick={() => scrollSimilarSlider('left')}
+                className="w-10 h-10 rounded-2xl bg-[#08120b] border border-emerald-900/80 hover:border-emerald-500 hover:bg-emerald-500 hover:text-black text-emerald-400 flex items-center justify-center transition-all shadow-md active:scale-95 cursor-pointer"
+                aria-label="Previous properties"
+              >
+                <ChevronLeft size={18} className="stroke-[2.5]" />
+              </button>
+
+              <button
+                type="button"
+                suppressHydrationWarning
+                onClick={() => scrollSimilarSlider('right')}
+                className="w-10 h-10 rounded-2xl bg-[#08120b] border border-emerald-900/80 hover:border-emerald-500 hover:bg-emerald-500 hover:text-black text-emerald-400 flex items-center justify-center transition-all shadow-md active:scale-95 cursor-pointer"
+                aria-label="Next properties"
+              >
+                <ChevronRight size={18} className="stroke-[2.5]" />
+              </button>
+            </div>
+          </div>
+
+          {/* Horizontal Scroller Container */}
+          <div
+            ref={similarSliderRef}
+            className="flex space-x-4 sm:space-x-6 overflow-x-auto pb-6 pt-1 snap-x snap-mandatory scroll-smooth no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+          >
+            {loadingSimilar ? (
+              Array.from({ length: 4 }).map((_, i) => (
+                <div
+                  key={`similar-skel-${i}`}
+                  className="w-[82vw] max-w-[340px] sm:w-80 lg:w-[360px] shrink-0 snap-center sm:snap-start h-88 rounded-3xl bg-[#0a110d] border border-emerald-950/80 animate-pulse"
+                />
+              ))
+            ) : (
+              similarProperties.map((item) => (
+                <div
+                  key={item.id || item.pid}
+                  className="w-[82vw] max-w-[340px] sm:w-80 lg:w-[360px] shrink-0 snap-center sm:snap-start flex flex-col"
+                >
+                  <PropertyCard property={item} />
+                </div>
+              ))
+            )}
+          </div>
+        </section>
+      )}
 
       <InquiryModal
         property={showInquiryModal ? property : null}
