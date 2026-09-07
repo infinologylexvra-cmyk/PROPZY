@@ -380,21 +380,21 @@ function PropertySearchContent() {
           )}
         </div>
 
-        {/* Mobile Filter Drawer Modal */}
+        {/* Mobile Filter Drawer Modal (Full Width) */}
         {isMobileFilterOpen && (
-          <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm md:hidden flex justify-end animate-in fade-in duration-200">
-            <div className="w-full max-w-xs bg-[#0a110d] h-full overflow-y-auto p-6 space-y-6 border-l border-emerald-900/80 shadow-2xl flex flex-col justify-between">
-              <div className="space-y-6">
+          <div className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md md:hidden flex flex-col animate-in fade-in duration-200">
+            <div className="w-full h-full bg-[#0a110d] overflow-y-auto p-5 sm:p-6 space-y-6 shadow-2xl flex flex-col justify-between pb-24">
+              <div className="space-y-6 max-w-lg mx-auto w-full">
                 <div className="flex items-center justify-between border-b border-emerald-950 pb-4">
                   <div className="flex items-center space-x-2">
-                    <Filter size={18} className="text-emerald-400" />
-                    <h3 className="text-base font-bold text-white">Filters</h3>
+                    <Filter size={20} className="text-emerald-400" />
+                    <h3 className="text-lg font-bold text-white">Filter Properties</h3>
                   </div>
                   <button
                     type="button"
                     suppressHydrationWarning
                     onClick={() => setIsMobileFilterOpen(false)}
-                    className="p-1 rounded-lg text-gray-400 hover:text-white"
+                    className="p-2 rounded-xl bg-[#0e261a] border border-emerald-900/80 text-gray-300 hover:text-white hover:bg-emerald-900/50 transition-colors cursor-pointer"
                   >
                     <X size={20} />
                   </button>
@@ -403,12 +403,12 @@ function PropertySearchContent() {
                 {/* Purpose Category */}
                 <div>
                   <label className="block text-xs font-semibold text-gray-300 mb-2">Purpose</label>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 gap-2.5">
                     <button
                       type="button"
                       suppressHydrationWarning
                       onClick={() => handleCategoryChange('all')}
-                      className={`px-3 py-2 rounded-xl text-xs font-semibold capitalize border transition-all cursor-pointer text-center ${category === 'all'
+                      className={`px-3 py-2.5 rounded-xl text-xs font-semibold capitalize border transition-all cursor-pointer text-center ${category === 'all'
                         ? 'bg-emerald-500 text-black border-emerald-500 font-extrabold shadow-md'
                         : 'bg-[#050806] text-gray-300 border-emerald-950 hover:border-emerald-800'
                         }`}
@@ -419,7 +419,7 @@ function PropertySearchContent() {
                       type="button"
                       suppressHydrationWarning
                       onClick={() => handleCategoryChange('rent')}
-                      className={`px-3 py-2 rounded-xl text-xs font-semibold capitalize border transition-all cursor-pointer text-center ${category === 'rent'
+                      className={`px-3 py-2.5 rounded-xl text-xs font-semibold capitalize border transition-all cursor-pointer text-center ${category === 'rent'
                         ? 'bg-emerald-500 text-black border-emerald-500 font-extrabold shadow-md'
                         : 'bg-[#050806] text-gray-300 border-emerald-950 hover:border-emerald-800'
                         }`}
@@ -430,7 +430,7 @@ function PropertySearchContent() {
                       type="button"
                       suppressHydrationWarning
                       onClick={() => handleCategoryChange('buy')}
-                      className={`px-3 py-2 rounded-xl text-xs font-semibold capitalize border transition-all cursor-pointer text-center ${category === 'buy' || category === 'sell'
+                      className={`px-3 py-2.5 rounded-xl text-xs font-semibold capitalize border transition-all cursor-pointer text-center ${category === 'buy' || category === 'sell'
                         ? 'bg-emerald-500 text-black border-emerald-500 font-extrabold shadow-md'
                         : 'bg-[#050806] text-gray-300 border-emerald-950 hover:border-emerald-800'
                         }`}
@@ -441,7 +441,7 @@ function PropertySearchContent() {
                       type="button"
                       suppressHydrationWarning
                       onClick={() => handleCategoryChange('pg')}
-                      className={`px-3 py-2 rounded-xl text-xs font-semibold capitalize border transition-all cursor-pointer text-center ${category === 'pg'
+                      className={`px-3 py-2.5 rounded-xl text-xs font-semibold capitalize border transition-all cursor-pointer text-center ${category === 'pg'
                         ? 'bg-emerald-500 text-black border-emerald-500 font-extrabold shadow-md'
                         : 'bg-[#050806] text-gray-300 border-emerald-950 hover:border-emerald-800'
                         }`}
@@ -452,7 +452,7 @@ function PropertySearchContent() {
                       type="button"
                       suppressHydrationWarning
                       onClick={() => handleCategoryChange('commercial')}
-                      className={`col-span-2 px-3 py-2 rounded-xl text-xs font-semibold capitalize border transition-all cursor-pointer text-center ${category === 'commercial'
+                      className={`col-span-2 px-3 py-2.5 rounded-xl text-xs font-semibold capitalize border transition-all cursor-pointer text-center ${category === 'commercial'
                         ? 'bg-emerald-500 text-black border-emerald-500 font-extrabold shadow-md'
                         : 'bg-[#050806] text-gray-300 border-emerald-950 hover:border-emerald-800'
                         }`}
@@ -469,7 +469,7 @@ function PropertySearchContent() {
                     suppressHydrationWarning
                     value={city}
                     onChange={(e) => handleCityChange(e.target.value)}
-                    className="w-full px-3 py-2 text-xs border border-emerald-900/80 rounded-xl bg-[#050806] text-white focus:border-emerald-500 focus:outline-none"
+                    className="w-full px-3.5 py-2.5 text-xs border border-emerald-900/80 rounded-xl bg-[#050806] text-white focus:border-emerald-500 focus:outline-none cursor-pointer"
                   >
                     <option value="all" className="bg-[#0a110d] text-white">All Cities</option>
                     <option value="Mohali" className="bg-[#0a110d] text-white">Mohali</option>
@@ -487,7 +487,7 @@ function PropertySearchContent() {
                     suppressHydrationWarning
                     value={type}
                     onChange={(e) => setType(e.target.value)}
-                    className="w-full px-3 py-2 text-xs border border-emerald-900/80 rounded-xl bg-[#050806] text-white focus:border-emerald-500 focus:outline-none"
+                    className="w-full px-3.5 py-2.5 text-xs border border-emerald-900/80 rounded-xl bg-[#050806] text-white focus:border-emerald-500 focus:outline-none cursor-pointer"
                   >
                     <option value="all" className="bg-[#0a110d] text-white">All Types</option>
                     <option value="flat" className="bg-[#0a110d] text-white">Flat / Apartment</option>
@@ -525,15 +525,15 @@ function PropertySearchContent() {
                 {category !== 'commercial' && type !== 'commercial' && (
                   <div>
                     <label className="block text-xs font-semibold text-gray-300 mb-2">Bedrooms (BHK)</label>
-                    <div className="flex space-x-2">
+                    <div className="grid grid-cols-4 gap-2">
                       {['all', '1', '2', '3'].map((bhk) => (
                         <button
                           key={bhk}
                           type="button"
                           suppressHydrationWarning
                           onClick={() => setBedrooms(bhk)}
-                          className={`flex-1 py-1.5 rounded-xl text-xs font-bold border transition-all cursor-pointer ${bedrooms === bhk
-                            ? 'bg-emerald-500 text-black border-emerald-500'
+                          className={`py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer text-center ${bedrooms === bhk
+                            ? 'bg-emerald-500 text-black border-emerald-500 shadow-md'
                             : 'bg-[#050806] text-gray-400 border-emerald-950 hover:text-white'
                             }`}
                         >
@@ -544,30 +544,15 @@ function PropertySearchContent() {
                   </div>
                 )}
 
-                {/* Verified Toggle */}
-                <div className="pt-2 border-t border-emerald-950">
-                  <label className="flex items-center justify-between cursor-pointer select-none">
-                    <span className="text-xs font-semibold text-gray-300 flex items-center space-x-1.5">
-                      <ShieldCheck size={16} className="text-emerald-400" />
-                      <span>Verified Only</span>
-                    </span>
-                    <input
-                      type="checkbox"
-                      suppressHydrationWarning
-                      checked={verifiedOnly}
-                      onChange={(e) => setVerifiedOnly(e.target.checked)}
-                      className="w-4 h-4 text-emerald-500 rounded focus:ring-emerald-500 accent-emerald-500 cursor-pointer"
-                    />
-                  </label>
-                </div>
+            
               </div>
 
-              <div className="pt-4 border-t border-emerald-950 space-y-2">
+              <div className="pt-4 border-t border-emerald-950 space-y-2 max-w-lg mx-auto w-full">
                 <button
                   type="button"
                   suppressHydrationWarning
                   onClick={() => setIsMobileFilterOpen(false)}
-                  className="w-full py-3 bg-emerald-500 text-black rounded-xl font-extrabold text-xs shadow-lg"
+                  className="w-full py-3.5 bg-emerald-500 hover:bg-emerald-400 text-black rounded-xl font-extrabold text-xs shadow-lg shadow-emerald-500/20 active:scale-98 transition-all cursor-pointer"
                 >
                   Apply Filters
                 </button>
@@ -578,7 +563,7 @@ function PropertySearchContent() {
                     handleResetFilters();
                     setIsMobileFilterOpen(false);
                   }}
-                  className="w-full py-2 bg-transparent text-gray-400 hover:text-white rounded-xl font-semibold text-xs text-center"
+                  className="w-full py-2.5 bg-transparent text-gray-400 hover:text-white rounded-xl font-semibold text-xs text-center cursor-pointer"
                 >
                   Reset All Filters
                 </button>
