@@ -465,36 +465,56 @@ function PropertySearchContent() {
                 {/* City */}
                 <div>
                   <label className="block text-xs font-semibold text-gray-300 mb-2">City</label>
-                  <select
-                    suppressHydrationWarning
-                    value={city}
-                    onChange={(e) => handleCityChange(e.target.value)}
-                    className="w-full px-3.5 py-2.5 text-xs border border-emerald-900/80 rounded-xl bg-[#050806] text-white focus:border-emerald-500 focus:outline-none cursor-pointer"
-                  >
-                    <option value="all" className="bg-[#0a110d] text-white">All Cities</option>
-                    <option value="Mohali" className="bg-[#0a110d] text-white">Mohali</option>
-                    <option value="Chandigarh" className="bg-[#0a110d] text-white">Chandigarh</option>
-                    <option value="Kharar" className="bg-[#0a110d] text-white">Kharar</option>
-                    <option value="Zirakpur" className="bg-[#0a110d] text-white">Zirakpur</option>
-                    <option value="Panchkula" className="bg-[#0a110d] text-white">Panchkula</option>
-                  </select>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { value: 'all', label: 'All Cities' },
+                      { value: 'Mohali', label: 'Mohali' },
+                      { value: 'Chandigarh', label: 'Chandigarh' },
+                      { value: 'Kharar', label: 'Kharar' },
+                      { value: 'Zirakpur', label: 'Zirakpur' },
+                      { value: 'Panchkula', label: 'Panchkula' }
+                    ].map((c) => (
+                      <button
+                        key={c.value}
+                        type="button"
+                        suppressHydrationWarning
+                        onClick={() => handleCityChange(c.value)}
+                        className={`py-2.5 px-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer text-center truncate ${city === c.value
+                          ? 'bg-emerald-500 text-black border-emerald-500 font-extrabold shadow-md'
+                          : 'bg-[#050806] text-gray-300 border-emerald-950 hover:border-emerald-800'
+                          }`}
+                      >
+                        {c.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Property Type */}
                 <div>
                   <label className="block text-xs font-semibold text-gray-300 mb-2">Property Type</label>
-                  <select
-                    suppressHydrationWarning
-                    value={type}
-                    onChange={(e) => setType(e.target.value)}
-                    className="w-full px-3.5 py-2.5 text-xs border border-emerald-900/80 rounded-xl bg-[#050806] text-white focus:border-emerald-500 focus:outline-none cursor-pointer"
-                  >
-                    <option value="all" className="bg-[#0a110d] text-white">All Types</option>
-                    <option value="flat" className="bg-[#0a110d] text-white">Flat / Apartment</option>
-                    <option value="house" className="bg-[#0a110d] text-white">House / Villa</option>
-                    <option value="pg" className="bg-[#0a110d] text-white">PG / Hostel</option>
-                    <option value="commercial" className="bg-[#0a110d] text-white">Commercial Space</option>
-                  </select>
+                  <div className="grid grid-cols-2 gap-2.5">
+                    {[
+                      { value: 'all', label: 'All Types' },
+                      { value: 'flat', label: 'Flat / Apartment' },
+                      { value: 'house', label: 'House / Villa' },
+                      { value: 'pg', label: 'PG / Hostel' },
+                      { value: 'commercial', label: 'Commercial Space' }
+                    ].map((t, idx) => (
+                      <button
+                        key={t.value}
+                        type="button"
+                        suppressHydrationWarning
+                        onClick={() => setType(t.value)}
+                        className={`${idx === 0 ? 'col-span-2' : ''} py-2.5 px-2.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer text-center truncate ${type === t.value
+                          ? 'bg-emerald-500 text-black border-emerald-500 font-extrabold shadow-md'
+                          : 'bg-[#050806] text-gray-300 border-emerald-950 hover:border-emerald-800'
+                          }`}
+                      >
+                        {t.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 {/* Max Budget Slider */}
@@ -657,36 +677,56 @@ function PropertySearchContent() {
             {/* City */}
             <div>
               <label className="block text-xs font-semibold text-gray-300 mb-2">City</label>
-              <select
-                suppressHydrationWarning
-                value={city}
-                onChange={(e) => handleCityChange(e.target.value)}
-                className="w-full px-3 py-2.5 text-xs border border-emerald-900/80 rounded-xl bg-[#050806] focus:border-emerald-500 focus:outline-none font-medium text-white cursor-pointer"
-              >
-                <option value="all" className="bg-[#0a110d] text-white">All Cities</option>
-                <option value="Mohali" className="bg-[#0a110d] text-white">Mohali</option>
-                <option value="Chandigarh" className="bg-[#0a110d] text-white">Chandigarh</option>
-                <option value="Kharar" className="bg-[#0a110d] text-white">Kharar</option>
-                <option value="Zirakpur" className="bg-[#0a110d] text-white">Zirakpur</option>
-                <option value="Panchkula" className="bg-[#0a110d] text-white">Panchkula</option>
-              </select>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { value: 'all', label: 'All Cities' },
+                  { value: 'Mohali', label: 'Mohali' },
+                  { value: 'Chandigarh', label: 'Chandigarh' },
+                  { value: 'Kharar', label: 'Kharar' },
+                  { value: 'Zirakpur', label: 'Zirakpur' },
+                  { value: 'Panchkula', label: 'Panchkula' }
+                ].map((c) => (
+                  <button
+                    key={c.value}
+                    type="button"
+                    suppressHydrationWarning
+                    onClick={() => handleCityChange(c.value)}
+                    className={`py-2 px-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer text-center truncate ${city === c.value
+                      ? 'bg-emerald-500 text-black border-emerald-500 font-extrabold shadow-md'
+                      : 'bg-[#050806] text-gray-300 border-emerald-950 hover:border-emerald-800'
+                      }`}
+                  >
+                    {c.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Property Type */}
             <div>
               <label className="block text-xs font-semibold text-gray-300 mb-2">Property Type</label>
-              <select
-                suppressHydrationWarning
-                value={type}
-                onChange={(e) => setType(e.target.value)}
-                className="w-full px-3 py-2.5 text-xs border border-emerald-900/80 rounded-xl bg-[#050806] focus:border-emerald-500 focus:outline-none font-medium text-white cursor-pointer"
-              >
-                <option value="all" className="bg-[#0a110d] text-white">All Types</option>
-                <option value="flat" className="bg-[#0a110d] text-white">Flat / Apartment</option>
-                <option value="house" className="bg-[#0a110d] text-white">House / Villa</option>
-                <option value="pg" className="bg-[#0a110d] text-white">PG / Hostel</option>
-                <option value="commercial" className="bg-[#0a110d] text-white">Commercial Space</option>
-              </select>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { value: 'all', label: 'All Types' },
+                  { value: 'flat', label: 'Flat / Apartment' },
+                  { value: 'house', label: 'House / Villa' },
+                  { value: 'pg', label: 'PG / Hostel' },
+                  { value: 'commercial', label: 'Commercial' }
+                ].map((t, idx) => (
+                  <button
+                    key={t.value}
+                    type="button"
+                    suppressHydrationWarning
+                    onClick={() => setType(t.value)}
+                    className={`${idx === 0 ? 'col-span-2' : ''} py-2 px-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer text-center truncate ${type === t.value
+                      ? 'bg-emerald-500 text-black border-emerald-500 font-extrabold shadow-md'
+                      : 'bg-[#050806] text-gray-300 border-emerald-950 hover:border-emerald-800'
+                      }`}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             {/* Max Budget Slider */}
