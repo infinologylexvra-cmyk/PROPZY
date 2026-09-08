@@ -57,32 +57,32 @@ export default function SafetySecurityPage() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         
         {/* Header */}
-        <div className="text-center space-y-4 max-w-2xl mx-auto">
-          <div className="inline-flex items-center space-x-2 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider">
+        <div className="text-center space-y-3 sm:space-y-4 max-w-2xl mx-auto">
+          <div className="inline-flex items-center space-x-2 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-3.5 py-1 sm:px-4 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold uppercase tracking-wider">
             <ShieldCheck size={14} />
             <span>Trust & Safety</span>
           </div>
-          <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white">
+          <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white leading-tight">
             Safety & <span className="text-emerald-400">Security</span> Standards
           </h1>
-          <p className="text-xs sm:text-sm text-gray-400 leading-relaxed">
+          <p className="text-xs sm:text-sm text-gray-400 leading-relaxed max-w-lg mx-auto">
             Discover how PROPZY TRICITY protects tenants and property owners through verified listings, document moderation, and secure 0% brokerage operations.
           </p>
         </div>
 
         {/* Pillars Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
           {safetyPillars.map((p, idx) => {
             const Icon = p.icon;
             return (
               <div
                 key={idx}
-                className="bg-[#0a110d] border border-emerald-950 p-6 rounded-3xl space-y-3 shadow-lg hover:border-emerald-800 transition-all"
+                className="bg-[#0a110d] border border-emerald-950 p-4.5 sm:p-6 rounded-2xl sm:rounded-3xl space-y-2.5 sm:space-y-3 shadow-lg hover:border-emerald-800 transition-all"
               >
-                <div className="w-12 h-12 rounded-2xl bg-[#0e1d14] border border-emerald-900/60 text-emerald-400 flex items-center justify-center">
-                  <Icon size={22} />
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-[#0e1d14] border border-emerald-900/60 text-emerald-400 flex items-center justify-center">
+                  <Icon size={20} className="sm:w-[22px] sm:h-[22px]" />
                 </div>
-                <h3 className="text-base font-bold text-white">{p.title}</h3>
+                <h3 className="text-sm sm:text-base font-bold text-white">{p.title}</h3>
                 <p className="text-xs text-gray-400 leading-relaxed">{p.desc}</p>
               </div>
             );
@@ -90,19 +90,19 @@ export default function SafetySecurityPage() {
         </div>
 
         {/* Safety Guidelines */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 pt-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-8 pt-2 sm:pt-4">
           {safetyGuidelines.map((g, idx) => (
             <div
               key={idx}
-              className="bg-[#080d09] border border-emerald-950/80 p-8 rounded-3xl space-y-5 shadow-xl"
+              className="bg-[#080d09] border border-emerald-950/80 p-5 sm:p-8 rounded-2xl sm:rounded-3xl space-y-4 sm:space-y-5 shadow-xl"
             >
-              <h3 className="text-lg font-bold text-white tracking-tight border-b border-emerald-950 pb-3">
+              <h3 className="text-base sm:text-lg font-bold text-white tracking-tight border-b border-emerald-950 pb-3">
                 {g.title}
               </h3>
-              <ul className="space-y-3.5">
+              <ul className="space-y-3 sm:space-y-3.5">
                 {g.points.map((pt, i) => (
-                  <li key={i} className="flex items-start space-x-3 text-xs text-gray-300 leading-relaxed">
-                    <CheckCircle2 size={16} className="text-emerald-400 shrink-0 mt-0.5" />
+                  <li key={i} className="flex items-start space-x-2.5 sm:space-x-3 text-xs text-gray-300 leading-relaxed">
+                    <CheckCircle2 size={15} className="text-emerald-400 shrink-0 mt-0.5" />
                     <span>{pt}</span>
                   </li>
                 ))}
@@ -112,10 +112,10 @@ export default function SafetySecurityPage() {
         </div>
 
         {/* Report Suspicious Listing Banner */}
-        <div className="bg-[#120909] border border-red-900/40 rounded-3xl p-8 flex flex-col sm:flex-row items-center justify-between gap-6">
-          <div className="space-y-2 text-center sm:text-left">
-            <div className="flex items-center justify-center sm:justify-start space-x-2 text-red-400 font-bold text-sm">
-              <AlertTriangle size={18} />
+        <div className="bg-[#120909] border border-red-900/40 rounded-2xl sm:rounded-3xl p-5 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-5 sm:gap-6">
+          <div className="space-y-1.5 sm:space-y-2 text-center sm:text-left">
+            <div className="flex items-center justify-center sm:justify-start space-x-2 text-red-400 font-bold text-xs sm:text-sm">
+              <AlertTriangle size={16} />
               <span>Report Fraudulent or Suspicious Activity</span>
             </div>
             <p className="text-xs text-gray-300 max-w-lg">
@@ -124,7 +124,7 @@ export default function SafetySecurityPage() {
           </div>
           <Link
             href="/contact"
-            className="px-6 py-3 bg-red-500 hover:bg-red-400 text-black font-extrabold text-xs rounded-full shadow-lg transition-all shrink-0"
+            className="w-full sm:w-auto text-center px-6 py-3 bg-red-500 hover:bg-red-400 text-black font-extrabold text-xs rounded-full shadow-lg transition-all shrink-0"
           >
             Report an Issue
           </Link>

@@ -100,7 +100,7 @@ export default function SingleBlogPage() {
           </div>
 
           <div className="space-y-4">
-            <h1 className="text-3xl sm:text-5xl font-serif font-bold text-white tracking-tight leading-tight">
+            <h1 className="text-2xl sm:text-4xl md:text-5xl font-serif font-bold text-white tracking-tight leading-tight">
               {blog.title}
             </h1>
 
@@ -130,11 +130,11 @@ export default function SingleBlogPage() {
       </section>
 
       {/* Article Body Section */}
-      <section className="py-12 sm:py-16 bg-[#030604]">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+      <section className="py-10 sm:py-16 bg-[#030604]">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-8">
           {/* Cover Image */}
           {blog.coverImage && (
-            <div className="w-full h-72 sm:h-96 rounded-3xl overflow-hidden bg-emerald-950/40 border border-emerald-950 shadow-2xl">
+            <div className="w-full h-56 sm:h-80 md:h-96 rounded-2xl sm:rounded-3xl overflow-hidden bg-emerald-950/40 border border-emerald-950 shadow-2xl">
               <img
                 src={blog.coverImage}
                 alt={blog.title}
@@ -144,12 +144,12 @@ export default function SingleBlogPage() {
           )}
 
           {/* Excerpt callout box */}
-          <div className="p-6 rounded-3xl bg-[#06140c] border-l-4 border-emerald-400 text-sm sm:text-base text-gray-200 italic leading-relaxed shadow-inner">
+          <div className="p-4.5 sm:p-6 rounded-2xl sm:rounded-3xl bg-[#06140c] border-l-4 border-emerald-400 text-xs sm:text-sm md:text-base text-gray-200 italic leading-relaxed shadow-inner">
             "{blog.excerpt}"
           </div>
 
           {/* Full content */}
-          <div className="text-sm sm:text-base text-gray-300 leading-relaxed space-y-6 font-sans whitespace-pre-line">
+          <div className="text-xs sm:text-sm md:text-base text-gray-300 leading-relaxed space-y-5 sm:space-y-6 font-sans whitespace-pre-line">
             {blog.content}
           </div>
 

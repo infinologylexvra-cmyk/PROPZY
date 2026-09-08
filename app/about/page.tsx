@@ -62,7 +62,7 @@ export default function AboutPage() {
   return (
     <div className="min-h-screen bg-[#040806] text-white">
       {/* SECTION 1: HERO SECTION (SCREENSHOT 1) */}
-      <section className="relative pt-8 pb-20 overflow-hidden border-b border-emerald-950/60 bg-gradient-to-b from-[#06120b] via-[#040906] to-[#040806]">
+      <section className="relative pt-6 sm:pt-8 pb-14 sm:pb-20 overflow-hidden border-b border-emerald-950/60 bg-gradient-to-b from-[#06120b] via-[#040906] to-[#040806]">
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none " />
 
         {/* City Skyline Outline SVG Graphic */}
@@ -75,63 +75,64 @@ export default function AboutPage() {
           </svg>
         </div>
 
-        <div className="relative z-10 max-w-4xl mx-auto px-4 text-center space-y-6">
-          <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-[#081f13] border border-emerald-800/60 text-emerald-400 text-xs font-semibold shadow-inner">
+        <div className="relative z-10 max-w-4xl mx-auto px-4 text-center space-y-4 sm:space-y-6">
+          <div className="inline-flex items-center space-x-2 px-3.5 py-1 sm:px-4 sm:py-1.5 rounded-full bg-[#081f13] border border-emerald-800/60 text-emerald-400 text-xs font-semibold shadow-inner">
             <span>★</span>
             <span>About Us</span>
           </div>
 
-          <h1 className="text-4xl sm:text-6xl font-serif font-bold text-white tracking-tight leading-tight">
+          <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-white tracking-tight leading-tight">
             Build on trust Driven <br />
             <span className="italic font-serif font-normal text-emerald-400">
               By Purpose
             </span>
-          </h1>          <p className="text-gray-300 text-sm sm:text-base max-w-2xl mx-auto font-normal leading-relaxed">
+          </h1>
+          <p className="text-gray-300 text-xs sm:text-sm md:text-base max-w-2xl mx-auto font-normal leading-relaxed">
             At PROPZY TRICITY, we believe finding a home should be simple, transparent, and stress-free. Every property is carefully verified so you can buy, rent, or sell with complete confidence.
           </p>
         </div>
       </section>
 
       {/* SECTION 2: BUILDING IMPACT STATS (SCREENSHOT 2) */}
-      <section className="py-20 border-b border-emerald-950/60 bg-[#030604]">
-        <div className="max-w-6xl mx-auto px-4 text-center space-y-12">
-          <div className="space-y-3">
-            <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-[#081f13] border border-emerald-800/60 text-emerald-400 text-xs font-semibold">
+      <section className="py-12 sm:py-20 border-b border-emerald-950/60 bg-[#030604]">
+        <div className="max-w-6xl mx-auto px-4 text-center space-y-8 sm:space-y-12">
+          <div className="space-y-2 sm:space-y-3">
+            <div className="inline-flex items-center space-x-2 px-3.5 py-1 sm:px-4 sm:py-1.5 rounded-full bg-[#081f13] border border-emerald-800/60 text-emerald-400 text-xs font-semibold">
               <span>★</span>
               <span>About Us</span>
             </div>
-            <h2 className="text-3xl sm:text-5xl font-bold tracking-tight text-white">
+            <h2 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight text-white leading-tight">
               Building <span className="text-emerald-400">impact</span>, one deal at a time
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6 max-w-5xl mx-auto">
             {/* Card 1: Dynamic Verified Properties */}
-            <div className="p-8 rounded-3xl bg-[#06120b] border border-emerald-950 hover:border-emerald-700/60 transition-all flex flex-col items-center justify-center space-y-4 group shadow-xl shadow-emerald-950/20">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-950/80 border border-emerald-800/60 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform">
-                <Building2 size={24} />
+            <div className="p-6 sm:p-8 rounded-2xl sm:rounded-3xl bg-[#06120b] border border-emerald-950 hover:border-emerald-700/60 transition-all flex flex-col items-center justify-center space-y-3 sm:space-y-4 group shadow-xl shadow-emerald-950/20">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-emerald-950/80 border border-emerald-800/60 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform">
+                <Building2 size={22} className="sm:w-6 sm:h-6" />
               </div>
-              <div className="text-3xl sm:text-4xl font-extrabold font-mono text-white">
+              <div className="text-2xl sm:text-3xl md:text-4xl font-extrabold font-mono text-white">
                 {getRoundedDisplayCount(totalPropertiesCount)}
               </div>
               <div className="text-xs text-gray-400 font-medium">Verified Properties</div>
             </div>
 
             {/* Card 2: 20+ Happy Clients */}
-            <div className="p-8 rounded-3xl bg-[#06120b] border border-emerald-950 hover:border-emerald-700/60 transition-all flex flex-col items-center justify-center space-y-4 group shadow-xl shadow-emerald-950/20">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-950/80 border border-emerald-800/60 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform">
-                <Users size={24} />
+            <div className="p-6 sm:p-8 rounded-2xl sm:rounded-3xl bg-[#06120b] border border-emerald-950 hover:border-emerald-700/60 transition-all flex flex-col items-center justify-center space-y-3 sm:space-y-4 group shadow-xl shadow-emerald-950/20">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-emerald-950/80 border border-emerald-800/60 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform">
+                <Users size={22} className="sm:w-6 sm:h-6" />
               </div>
-              <div className="text-3xl sm:text-4xl font-extrabold font-mono text-white">20+</div>
+              <div className="text-2xl sm:text-3xl md:text-4xl font-extrabold font-mono text-white">20+</div>
               <div className="text-xs text-gray-400 font-medium">Happy Clients</div>
             </div>
 
             {/* Card 3: 5 Cities */}
-            <div className="p-8 rounded-3xl bg-[#06120b] border border-emerald-950 hover:border-emerald-700/60 transition-all flex flex-col items-center justify-center space-y-4 group shadow-xl shadow-emerald-950/20">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-950/80 border border-emerald-800/60 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform">
-                <MapPin size={24} />
+            <div className="p-6 sm:p-8 rounded-2xl sm:rounded-3xl bg-[#06120b] border border-emerald-950 hover:border-emerald-700/60 transition-all flex flex-col items-center justify-center space-y-3 sm:space-y-4 group shadow-xl shadow-emerald-950/20">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-emerald-950/80 border border-emerald-800/60 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform">
+                <MapPin size={22} className="sm:w-6 sm:h-6" />
               </div>
-              <div className="text-3xl sm:text-4xl font-extrabold font-mono text-white">5 Cities</div>
+              <div className="text-2xl sm:text-3xl md:text-4xl font-extrabold font-mono text-white">5 Cities</div>
               <div className="text-xs text-gray-400 font-medium">Active Tricity</div>
             </div>
           </div>
@@ -139,22 +140,22 @@ export default function AboutPage() {
       </section>
 
       {/* SECTION 3: WHY CHOOSE US (SCREENSHOT 3) */}
-      <section className="py-20 max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          <div className="lg:col-span-6 space-y-6">
-            <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-[#081f13] border border-emerald-800/60 text-emerald-400 text-xs font-semibold">
+      <section className="py-12 sm:py-20 max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-12 items-center">
+          <div className="lg:col-span-6 space-y-4 sm:space-y-6">
+            <div className="inline-flex items-center space-x-2 px-3.5 py-1 sm:px-4 sm:py-1.5 rounded-full bg-[#081f13] border border-emerald-800/60 text-emerald-400 text-xs font-semibold">
               <span>★</span>
               <span>Why Choose Us</span>
             </div>
 
-            <h2 className="text-3xl sm:text-5xl font-serif font-bold text-white leading-tight">
+            <h2 className="text-xl sm:text-3xl md:text-4xl lg:text-5xl font-serif font-bold text-white leading-tight">
               Finding a home should be exciting,{' '}
               <span className="italic font-serif font-normal text-emerald-400">
                 not exhausting.
               </span>
             </h2>
     
-            <div className="space-y-4 text-xs sm:text-sm text-gray-300 leading-relaxed font-normal">
+            <div className="space-y-3 sm:space-y-4 text-xs sm:text-sm text-gray-300 leading-relaxed font-normal">
               <p>
                 Searching for a property shouldn't mean scrolling through fake listings, dealing with hidden charges, or making endless phone calls.
               </p>
@@ -164,43 +165,43 @@ export default function AboutPage() {
             </div>
           </div>
 
-          <div className="lg:col-span-6 space-y-4">
-            <div className="p-6 rounded-2xl bg-[#06120b] border border-emerald-900/60 hover:border-emerald-600/80 transition-all flex items-start space-x-4">
-              <div className="w-10 h-10 rounded-xl bg-[#092214] border border-emerald-700/60 flex items-center justify-center text-emerald-400 shrink-0 mt-0.5">
-                <ShieldCheck size={20} />
+          <div className="lg:col-span-6 space-y-3 sm:space-y-4">
+            <div className="p-4.5 sm:p-6 rounded-2xl bg-[#06120b] border border-emerald-900/60 hover:border-emerald-600/80 transition-all flex items-start space-x-3.5 sm:space-x-4">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#092214] border border-emerald-700/60 flex items-center justify-center text-emerald-400 shrink-0 mt-0.5">
+                <ShieldCheck size={18} className="sm:w-5 sm:h-5" />
               </div>
               <div className="space-y-1">
-                <h4 className="text-base font-bold text-white">Verified Properties</h4>
+                <h4 className="text-sm sm:text-base font-bold text-white">Verified Properties</h4>
                 <p className="text-xs text-gray-400">Every property is carefully verified for authenticity and accuracy.</p>
               </div>
             </div>
 
-            <div className="p-6 rounded-2xl bg-[#06120b] border border-emerald-900/60 hover:border-emerald-600/80 transition-all flex items-start space-x-4">
-              <div className="w-10 h-10 rounded-xl bg-[#092214] border border-emerald-700/60 flex items-center justify-center text-emerald-400 shrink-0 mt-0.5">
-                <CheckCircle2 size={20} />
+            <div className="p-4.5 sm:p-6 rounded-2xl bg-[#06120b] border border-emerald-900/60 hover:border-emerald-600/80 transition-all flex items-start space-x-3.5 sm:space-x-4">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#092214] border border-emerald-700/60 flex items-center justify-center text-emerald-400 shrink-0 mt-0.5">
+                <CheckCircle2 size={18} className="sm:w-5 sm:h-5" />
               </div>
               <div className="space-y-1">
-                <h4 className="text-base font-bold text-white">Zero Brokerage</h4>
+                <h4 className="text-sm sm:text-base font-bold text-white">Zero Brokerage</h4>
                 <p className="text-xs text-gray-400">Connect directly with property owners and save on unnecessary brokerage fees.</p>
               </div>
             </div>
 
-            <div className="p-6 rounded-2xl bg-[#06120b] border border-emerald-900/60 hover:border-emerald-600/80 transition-all flex items-start space-x-4">
-              <div className="w-10 h-10 rounded-xl bg-[#092214] border border-emerald-700/60 flex items-center justify-center text-emerald-400 shrink-0 mt-0.5">
-                <FileText size={20} />
+            <div className="p-4.5 sm:p-6 rounded-2xl bg-[#06120b] border border-emerald-900/60 hover:border-emerald-600/80 transition-all flex items-start space-x-3.5 sm:space-x-4">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#092214] border border-emerald-700/60 flex items-center justify-center text-emerald-400 shrink-0 mt-0.5">
+                <FileText size={18} className="sm:w-5 sm:h-5" />
               </div>
               <div className="space-y-1">
-                <h4 className="text-base font-bold text-white">Transparent Information</h4>
+                <h4 className="text-sm sm:text-base font-bold text-white">Transparent Information</h4>
                 <p className="text-xs text-gray-400">Real photos, verified details, and honest property information.</p>
               </div>
             </div>
 
-            <div className="p-6 rounded-2xl bg-[#06120b] border border-emerald-900/60 hover:border-emerald-600/80 transition-all flex items-start space-x-4">
-              <div className="w-10 h-10 rounded-xl bg-[#092214] border border-emerald-700/60 flex items-center justify-center text-emerald-400 shrink-0 mt-0.5">
-                <Headphones size={20} />
+            <div className="p-4.5 sm:p-6 rounded-2xl bg-[#06120b] border border-emerald-900/60 hover:border-emerald-600/80 transition-all flex items-start space-x-3.5 sm:space-x-4">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-[#092214] border border-emerald-700/60 flex items-center justify-center text-emerald-400 shrink-0 mt-0.5">
+                <Headphones size={18} className="sm:w-5 sm:h-5" />
               </div>
               <div className="space-y-1">
-                <h4 className="text-base font-bold text-white">Dedicated Support</h4>
+                <h4 className="text-sm sm:text-base font-bold text-white">Dedicated Support</h4>
                 <p className="text-xs text-gray-400">From your first search to the final decision, our team is here to guide you.</p>
               </div>
             </div>

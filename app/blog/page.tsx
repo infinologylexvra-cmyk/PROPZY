@@ -213,18 +213,18 @@ export default function BlogPage() {
             </button>
           </div>
 
-          <div className="text-center space-y-4 max-w-3xl mx-auto">
-            <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-[#081f13] border border-emerald-800/60 text-emerald-400 text-xs font-semibold shadow-inner">
+          <div className="text-center space-y-3 sm:space-y-4 max-w-3xl mx-auto">
+            <div className="inline-flex items-center space-x-2 px-3.5 py-1 sm:px-4 sm:py-1.5 rounded-full bg-[#081f13] border border-emerald-800/60 text-emerald-400 text-xs font-semibold shadow-inner">
               <BookOpen size={14} />
               <span>PROPZY TRICITY Knowledge Hub</span>
             </div>
 
-            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-serif font-bold text-white tracking-tight leading-tight">
+            <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-white tracking-tight leading-tight">
               Insights, Guides & <br />
               <span className="text-emerald-400 font-sans italic">Rental Wisdom</span>
             </h1>
 
-            <p className="text-gray-300 text-sm sm:text-base max-w-2xl mx-auto font-normal leading-relaxed">
+            <p className="text-gray-300 text-xs sm:text-sm md:text-base max-w-2xl mx-auto font-normal leading-relaxed">
               Explore expert tips on renting, property laws, Tricity market trends, neighborhood guides, and home decor without middleman bias.
             </p>
 
@@ -291,13 +291,13 @@ export default function BlogPage() {
             </div>
           ) : blogs.length === 0 ? (
             /* EMPTY STATE: "No blog yet" with "Add New Blog" Button */
-            <div className="max-w-md mx-auto text-center py-16 px-6 rounded-3xl bg-[#06120b] border border-emerald-950/80 space-y-6 shadow-2xl">
-              <div className="w-20 h-20 mx-auto rounded-3xl bg-[#0a2315] border border-emerald-800/60 flex items-center justify-center text-emerald-400 shadow-inner">
-                <BookOpen size={36} />
+            <div className="max-w-md mx-auto text-center py-12 sm:py-16 px-5 sm:px-6 rounded-2xl sm:rounded-3xl bg-[#06120b] border border-emerald-950/80 space-y-5 sm:space-y-6 shadow-2xl">
+              <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto rounded-2xl sm:rounded-3xl bg-[#0a2315] border border-emerald-800/60 flex items-center justify-center text-emerald-400 shadow-inner">
+                <BookOpen size={30} className="sm:w-9 sm:h-9" />
               </div>
 
               <div className="space-y-2">
-                <h3 className="text-2xl font-bold text-white tracking-tight">No blogs yet</h3>
+                <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight">No blogs yet</h3>
                 <p className="text-xs sm:text-sm text-gray-400 leading-relaxed">
                   Helpful rental guides, neighborhood insights, and property tips will be published here soon.
                 </p>
@@ -371,7 +371,7 @@ export default function BlogPage() {
                         <span>{blog.authorName || 'PROPZY Editorial'}</span>
                       </div>
 
-                      <h3 className="text-lg sm:text-xl font-bold text-white group-hover:text-emerald-400 transition-colors line-clamp-2">
+                      <h3 className="text-base sm:text-lg font-bold text-white group-hover:text-emerald-400 transition-colors line-clamp-2">
                         {blog.title}
                       </h3>
 
@@ -641,7 +641,7 @@ export default function BlogPage() {
 
               {/* Title & Meta */}
               <div className="space-y-3">
-                <h1 className="text-2xl sm:text-3xl font-serif font-bold text-white leading-snug">
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-serif font-bold text-white leading-snug">
                   {selectedBlogForReading.title}
                 </h1>
 

@@ -64,27 +64,27 @@ export default function FAQPage() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
         
         {/* Header */}
-        <div className="text-center space-y-4 max-w-2xl mx-auto">
-          <div className="inline-flex items-center space-x-2 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider">
+        <div className="text-center space-y-3 sm:space-y-4 max-w-2xl mx-auto">
+          <div className="inline-flex items-center space-x-2 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-3.5 py-1 sm:px-4 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold uppercase tracking-wider">
             <HelpCircle size={14} />
             <span>Frequently Asked Questions</span>
           </div>
-          <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white">
+          <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white leading-tight">
             Got Questions? <span className="text-emerald-400">We have Answers.</span>
           </h1>
-          <p className="text-xs sm:text-sm text-gray-400 leading-relaxed">
+          <p className="text-xs sm:text-sm text-gray-400 leading-relaxed max-w-lg mx-auto">
             Everything you need to know about renting, owner verifications, and 0% brokerage on PROPZY TRICITY.
           </p>
 
           {/* Search Box */}
-          <div className="relative max-w-lg mx-auto pt-2">
+          <div className="relative max-w-lg mx-auto pt-1 sm:pt-2">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
             <input
               type="text"
               placeholder="Search question or keyword (e.g. 0% brokerage, verification)..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 bg-[#0a110d] border border-emerald-950 rounded-2xl text-xs sm:text-sm text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 transition-colors shadow-lg"
+              className="w-full pl-11 pr-4 py-2.5 sm:py-3 bg-[#0a110d] border border-emerald-950 rounded-2xl text-xs sm:text-sm text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 transition-colors shadow-lg"
             />
           </div>
         </div>
@@ -100,7 +100,7 @@ export default function FAQPage() {
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key as any)}
-              className={`px-4 py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
+              className={`px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full text-xs font-bold transition-all cursor-pointer ${
                 activeTab === tab.key
                   ? 'bg-emerald-500 text-black shadow-lg shadow-emerald-500/20'
                   : 'bg-[#0a110d] border border-emerald-950 text-gray-400 hover:text-white'
@@ -112,7 +112,7 @@ export default function FAQPage() {
         </div>
 
         {/* Accordion Q&A List */}
-        <div className="space-y-3">
+        <div className="space-y-2.5 sm:space-y-3">
           {filteredFaqs.map((faq, idx) => {
             const isOpen = openIndex === idx;
             return (
@@ -122,9 +122,9 @@ export default function FAQPage() {
               >
                 <button
                   onClick={() => setOpenIndex(isOpen ? null : idx)}
-                  className="w-full px-6 py-4 flex items-center justify-between text-left cursor-pointer hover:bg-[#0d1611] transition-colors"
+                  className="w-full px-4.5 py-3.5 sm:px-6 sm:py-4 flex items-center justify-between text-left cursor-pointer hover:bg-[#0d1611] transition-colors"
                 >
-                  <span className="text-sm font-bold text-white pr-4">{faq.question}</span>
+                  <span className="text-xs sm:text-sm font-bold text-white pr-3 sm:pr-4">{faq.question}</span>
                   <ChevronDown
                     size={18}
                     className={`text-emerald-400 shrink-0 transition-transform duration-300 ${
@@ -133,7 +133,7 @@ export default function FAQPage() {
                   />
                 </button>
                 {isOpen && (
-                  <div className="px-6 pb-5 pt-1 text-xs text-gray-300 leading-relaxed border-t border-emerald-950/60 bg-[#080d09]">
+                  <div className="px-4.5 pb-4 pt-1 sm:px-6 sm:pb-5 text-xs text-gray-300 leading-relaxed border-t border-emerald-950/60 bg-[#080d09]">
                     {faq.answer}
                   </div>
                 )}
@@ -143,12 +143,12 @@ export default function FAQPage() {
         </div>
 
         {/* Contact Banner */}
-        <div className="bg-[#0a1c12] border border-emerald-900/80 rounded-3xl p-6 text-center space-y-3">
-          <h3 className="text-base font-bold text-white">Have a specific question not listed here?</h3>
+        <div className="bg-[#0a1c12] border border-emerald-900/80 rounded-2xl sm:rounded-3xl p-5 sm:p-6 text-center space-y-2.5 sm:space-y-3">
+          <h3 className="text-sm sm:text-base font-bold text-white">Have a specific question not listed here?</h3>
           <p className="text-xs text-gray-400">
             Our support team is available to assist you with any platform query.
           </p>
-          <div className="pt-2">
+          <div className="pt-1.5 sm:pt-2">
             <Link
               href="/contact"
               className="inline-flex items-center space-x-2 px-6 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs rounded-full shadow-lg transition-all"

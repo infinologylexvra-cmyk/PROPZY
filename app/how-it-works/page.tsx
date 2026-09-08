@@ -136,31 +136,31 @@ export default function HowItWorksPage() {
             </button>
           </div>
 
-          <div className="text-center space-y-4 max-w-3xl mx-auto">
-            <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-[#081f13] border border-emerald-800/60 text-emerald-400 text-xs font-semibold shadow-inner">
+          <div className="text-center space-y-3 sm:space-y-4 max-w-3xl mx-auto">
+            <div className="inline-flex items-center space-x-2 px-3.5 py-1 sm:px-4 sm:py-1.5 rounded-full bg-[#081f13] border border-emerald-800/60 text-emerald-400 text-xs font-semibold shadow-inner">
               <Sparkles size={14} />
               <span>Simple, Transparent & 0% Brokerage</span>
             </div>
 
-            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-serif font-bold text-white tracking-tight leading-tight">
+            <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-white tracking-tight leading-tight">
               How{' '}
-              <span className="text-emerald-400 font-sans italic ml-2 mr-3.5 sm:mr-5 inline-block">
+              <span className="text-emerald-400 font-sans italic ml-1.5 sm:ml-2 mr-2 sm:mr-3.5 inline-block">
                 PROPZY TRICITY
               </span>
               Works
             </h1>
 
-            <p className="text-gray-300 text-sm sm:text-base max-w-2xl mx-auto font-normal leading-relaxed">
+            <p className="text-gray-300 text-xs sm:text-sm md:text-base max-w-2xl mx-auto font-normal leading-relaxed">
               Say goodbye to fake listings, middlemen commissions, and endless broker calls. PROPZY TRICITY connects genuine tenants directly with property owners in three simple steps.
             </p>
 
             {/* TAB SELECTOR */}
-            <div className="pt-4 flex justify-center">
-              <div className="p-1.5 bg-[#07130b] border border-emerald-900/80 rounded-2xl inline-flex space-x-2 shadow-xl">
+            <div className="pt-2 sm:pt-4 flex justify-center">
+              <div className="p-1 sm:p-1.5 bg-[#07130b] border border-emerald-900/80 rounded-2xl inline-flex space-x-1.5 sm:space-x-2 shadow-xl">
                 <button
                   type="button"
                   onClick={() => setActiveTab('tenant')}
-                  className={`px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+                  className={`px-3.5 py-2 sm:px-5 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
                     activeTab === 'tenant'
                       ? 'bg-emerald-500 text-black shadow-lg shadow-emerald-500/20'
                       : 'text-gray-400 hover:text-white'
@@ -171,7 +171,7 @@ export default function HowItWorksPage() {
                 <button
                   type="button"
                   onClick={() => setActiveTab('owner')}
-                  className={`px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+                  className={`px-3.5 py-2 sm:px-5 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
                     activeTab === 'owner'
                       ? 'bg-emerald-500 text-black shadow-lg shadow-emerald-500/20'
                       : 'text-gray-400 hover:text-white'
@@ -188,40 +188,40 @@ export default function HowItWorksPage() {
       {/* ─────────────────────────────────────────────────────────────
           STEPS BREAKDOWN SECTION
       ───────────────────────────────────────────────────────────── */}
-      <section className="py-16 sm:py-24 border-b border-emerald-950/60 bg-[#030604]">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
-          <div className="text-center space-y-3">
+      <section className="py-12 sm:py-20 lg:py-24 border-b border-emerald-950/60 bg-[#030604]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 sm:space-y-12">
+          <div className="text-center space-y-2 sm:space-y-3">
             <div className="text-xs font-bold uppercase text-emerald-400 tracking-widest">
               {activeTab === 'tenant' ? 'TENANT JOURNEY' : 'LANDLORD JOURNEY'}
             </div>
-            <h2 className="text-2xl sm:text-4xl font-bold text-white tracking-tight">
+            <h2 className="text-xl sm:text-3xl md:text-4xl font-bold text-white tracking-tight leading-tight">
               {activeTab === 'tenant'
                 ? 'Your 3-Step Guide to Finding a Dream Home'
                 : 'Rent Out Your Property with 100% Peace of Mind'}
             </h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-8">
             {(activeTab === 'tenant' ? tenantSteps : ownerSteps).map((stepItem, idx) => {
               const IconComp = stepItem.icon;
               return (
                 <div
                   key={idx}
-                  className="relative p-8 rounded-3xl bg-[#06120b] border border-emerald-950 hover:border-emerald-700/60 transition-all duration-300 flex flex-col justify-between space-y-6 group hover:-translate-y-1 shadow-lg"
+                  className="relative p-5 sm:p-8 rounded-2xl sm:rounded-3xl bg-[#06120b] border border-emerald-950 hover:border-emerald-700/60 transition-all duration-300 flex flex-col justify-between space-y-4 sm:space-y-6 group hover:-translate-y-1 shadow-lg"
                 >
                   {/* Top Badge & Number */}
                   <div className="flex items-center justify-between">
-                    <div className="w-12 h-12 rounded-2xl bg-[#0b2416] border border-emerald-800/60 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform">
-                      <IconComp size={22} />
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-[#0b2416] border border-emerald-800/60 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform">
+                      <IconComp size={20} className="sm:w-[22px] sm:h-[22px]" />
                     </div>
-                    <span className="text-4xl font-extrabold font-mono text-emerald-500/20 group-hover:text-emerald-500/40 transition-colors">
+                    <span className="text-2xl sm:text-3xl md:text-4xl font-extrabold font-mono text-emerald-500/20 group-hover:text-emerald-500/40 transition-colors">
                       {stepItem.step}
                     </span>
                   </div>
 
                   {/* Content */}
-                  <div className="space-y-3">
-                    <h3 className="text-xl font-bold text-white group-hover:text-emerald-400 transition-colors">
+                  <div className="space-y-2 sm:space-y-3">
+                    <h3 className="text-base sm:text-lg md:text-xl font-bold text-white group-hover:text-emerald-400 transition-colors">
                       {stepItem.title}
                     </h3>
                     <p className="text-xs sm:text-sm text-gray-400 leading-relaxed">
@@ -242,11 +242,11 @@ export default function HowItWorksPage() {
           </div>
 
           {/* Action Button */}
-          <div className="text-center pt-4">
+          <div className="text-center pt-2 sm:pt-4">
             {activeTab === 'tenant' ? (
               <Link
                 href="/properties"
-                className="inline-flex items-center space-x-2.5 px-7 py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-black text-sm font-extrabold shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition-all"
+                className="w-full sm:w-auto inline-flex items-center justify-center space-x-2.5 px-6 sm:px-7 py-3 sm:py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-black text-xs sm:text-sm font-extrabold shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition-all"
               >
                 <span>Browse Verified Properties</span>
                 <ArrowRight size={16} />
@@ -254,7 +254,7 @@ export default function HowItWorksPage() {
             ) : (
               <Link
                 href="/post-property"
-                className="inline-flex items-center space-x-2.5 px-7 py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-black text-sm font-extrabold shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition-all"
+                className="w-full sm:w-auto inline-flex items-center justify-center space-x-2.5 px-6 sm:px-7 py-3 sm:py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-black text-xs sm:text-sm font-extrabold shadow-lg shadow-emerald-500/20 hover:scale-105 active:scale-95 transition-all"
               >
                 <span>Post Your Property Free</span>
                 <ArrowRight size={16} />
@@ -267,14 +267,14 @@ export default function HowItWorksPage() {
       {/* ─────────────────────────────────────────────────────────────
           COMPARISON TABLE SECTION
       ───────────────────────────────────────────────────────────── */}
-      <section className="py-16 sm:py-20 border-b border-emerald-950/60 bg-[#061009]/60">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
-          <div className="text-center space-y-3">
+      <section className="py-12 sm:py-20 border-b border-emerald-950/60 bg-[#061009]/60">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-10">
+          <div className="text-center space-y-2 sm:space-y-3">
             <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-[#081f13] border border-emerald-800/60 text-emerald-400 text-xs font-semibold">
               <Percent size={13} />
               <span>The PROPZY TRICITY Difference</span>
             </div>
-            <h2 className="text-2xl sm:text-4xl font-bold text-white tracking-tight">
+            <h2 className="text-xl sm:text-3xl md:text-4xl font-bold text-white tracking-tight leading-tight">
               Why PROPZY TRICITY Beats Traditional Real Estate
             </h2>
             <p className="text-xs sm:text-sm text-gray-400 max-w-xl mx-auto">
@@ -282,15 +282,15 @@ export default function HowItWorksPage() {
             </p>
           </div>
 
-          <div className="overflow-x-auto rounded-3xl border border-emerald-950 bg-[#06120b]">
+          <div className="overflow-x-auto rounded-2xl sm:rounded-3xl border border-emerald-950 bg-[#06120b]">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="border-b border-emerald-950/80 bg-[#08190e]">
-                  <th className="py-4 px-6 text-xs font-extrabold uppercase text-gray-400 tracking-wider">Features</th>
-                  <th className="py-4 px-6 text-xs font-extrabold uppercase text-emerald-400 tracking-wider bg-emerald-950/40">
+                  <th className="py-3.5 sm:py-4 px-4 sm:px-6 text-[10px] sm:text-xs font-extrabold uppercase text-gray-400 tracking-wider">Features</th>
+                  <th className="py-3.5 sm:py-4 px-4 sm:px-6 text-[10px] sm:text-xs font-extrabold uppercase text-emerald-400 tracking-wider bg-emerald-950/40">
                     PROPZY TRICITY
                   </th>
-                  <th className="py-4 px-6 text-xs font-extrabold uppercase text-gray-500 tracking-wider">
+                  <th className="py-3.5 sm:py-4 px-4 sm:px-6 text-[10px] sm:text-xs font-extrabold uppercase text-gray-500 tracking-wider">
                     Traditional Brokers
                   </th>
                 </tr>
@@ -298,14 +298,14 @@ export default function HowItWorksPage() {
               <tbody className="divide-y divide-emerald-950/60 text-xs sm:text-sm">
                 {comparisonRows.map((row, idx) => (
                   <tr key={idx} className="hover:bg-[#08190f]/50 transition-colors">
-                    <td className="py-4 px-6 font-semibold text-gray-200">{row.feature}</td>
-                    <td className="py-4 px-6 font-bold text-emerald-400 bg-emerald-950/20 flex items-center space-x-2">
-                      <Check size={16} className="text-emerald-400 shrink-0" />
+                    <td className="py-3 sm:py-4 px-4 sm:px-6 font-semibold text-gray-200 text-xs">{row.feature}</td>
+                    <td className="py-3 sm:py-4 px-4 sm:px-6 font-bold text-emerald-400 bg-emerald-950/20 flex items-center space-x-1.5 sm:space-x-2 text-xs">
+                      <Check size={15} className="text-emerald-400 shrink-0" />
                       <span>{row.propzy}</span>
                     </td>
-                    <td className="py-4 px-6 text-gray-400">
-                      <div className="flex items-center space-x-2 text-rose-400/80">
-                        <X size={15} className="shrink-0" />
+                    <td className="py-3 sm:py-4 px-4 sm:px-6 text-gray-400 text-xs">
+                      <div className="flex items-center space-x-1.5 sm:space-x-2 text-rose-400/80">
+                        <X size={14} className="shrink-0" />
                         <span className="text-gray-400">{row.broker}</span>
                       </div>
                     </td>
@@ -320,14 +320,14 @@ export default function HowItWorksPage() {
       {/* ─────────────────────────────────────────────────────────────
           FREQUENTLY ASKED QUESTIONS
       ───────────────────────────────────────────────────────────── */}
-      <section className="py-16 sm:py-20 border-b border-emerald-950/60 bg-[#030604]">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
-          <div className="text-center space-y-3">
+      <section className="py-12 sm:py-20 border-b border-emerald-950/60 bg-[#030604]">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-10">
+          <div className="text-center space-y-2 sm:space-y-3">
             <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-[#081f13] border border-emerald-800/60 text-emerald-400 text-xs font-semibold">
               <HelpCircle size={13} />
               <span>Questions & Answers</span>
             </div>
-            <h2 className="text-2xl sm:text-4xl font-bold text-white tracking-tight">
+            <h2 className="text-xl sm:text-3xl md:text-4xl font-bold text-white tracking-tight leading-tight">
               Frequently Asked Questions
             </h2>
             <p className="text-xs sm:text-sm text-gray-400">
@@ -335,7 +335,7 @@ export default function HowItWorksPage() {
             </p>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {faqs.map((faq, index) => {
               const isOpen = openFaq === index;
               return (
@@ -346,9 +346,9 @@ export default function HowItWorksPage() {
                   <button
                     type="button"
                     onClick={() => setOpenFaq(isOpen ? null : index)}
-                    className="w-full p-5 text-left flex items-center justify-between space-x-4 hover:bg-emerald-950/30 transition-colors cursor-pointer"
+                    className="w-full p-4 sm:p-5 text-left flex items-center justify-between space-x-3 sm:space-x-4 hover:bg-emerald-950/30 transition-colors cursor-pointer"
                   >
-                    <span className="text-sm sm:text-base font-bold text-white">
+                    <span className="text-xs sm:text-sm md:text-base font-bold text-white">
                       {faq.q}
                     </span>
                     <ChevronDown
@@ -359,7 +359,7 @@ export default function HowItWorksPage() {
                     />
                   </button>
                   {isOpen && (
-                    <div className="px-5 pb-5 text-xs sm:text-sm text-gray-300 leading-relaxed border-t border-emerald-950/60 pt-3">
+                    <div className="px-4 pb-4 sm:px-5 sm:pb-5 text-xs sm:text-sm text-gray-300 leading-relaxed border-t border-emerald-950/60 pt-2.5 sm:pt-3">
                       {faq.a}
                     </div>
                   )}

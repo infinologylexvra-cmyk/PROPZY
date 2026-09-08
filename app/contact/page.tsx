@@ -91,15 +91,15 @@ export default function ContactPage() {
           </svg>
         </div>
 
-        <div className="relative z-10 max-w-4xl mx-auto px-4 text-center space-y-5">
+        <div className="relative z-10 max-w-4xl mx-auto px-4 text-center space-y-4 sm:space-y-5">
           {/* Badge */}
-          <div className="inline-flex items-center space-x-2 px-4 py-1.5 rounded-full bg-[#081f13] border border-emerald-800/60 text-emerald-400 text-xs font-semibold shadow-inner">
+          <div className="inline-flex items-center space-x-2 px-3.5 py-1 sm:px-4 sm:py-1.5 rounded-full bg-[#081f13] border border-emerald-800/60 text-emerald-400 text-xs font-semibold shadow-inner">
             <span>★</span>
             <span>Contact Us</span>
           </div>
 
           {/* Title */}
-          <h1 className="text-2xl sm:text-6xl font-serif font-bold text-white tracking-tight leading-tight">
+          <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-white tracking-tight leading-tight">
             Let's Talk About Your <br />
             <span className="italic font-serif font-normal text-emerald-400">
               Next Property.
@@ -116,23 +116,23 @@ export default function ContactPage() {
       {/* ─────────────────────────────────────────────────────────────
           SECTION 2: CONTACT FORM & DIRECT DETAILS (EXACT SCREENSHOT 2)
       ───────────────────────────────────────────────────────────── */}
-      <section className="py-12 max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <section className="py-8 sm:py-12 max-w-6xl mx-auto px-4 sm:px-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start">
           {/* Left Column: Form Card */}
-          <div className="lg:col-span-8 p-6 sm:p-10 rounded-3xl bg-[#070e0a] border border-emerald-900/60 shadow-2xl space-y-6">
+          <div className="lg:col-span-8 p-5 sm:p-8 md:p-10 rounded-2xl sm:rounded-3xl bg-[#070e0a] border border-emerald-900/60 shadow-2xl space-y-5 sm:space-y-6">
             <div className="space-y-1">
-              <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">Send us a message</h2>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white tracking-tight">Send us a message</h2>
               <p className="text-xs sm:text-sm text-gray-400">
                 Fill in your details and we'll get back to you within 2 hours.
               </p>
             </div>
 
             {submitted ? (
-              <div className="py-12 text-center space-y-4">
-                <div className="w-14 h-14 rounded-full bg-emerald-500/20 text-emerald-400 mx-auto flex items-center justify-center border border-emerald-500/40">
-                  <CheckCircle size={32} />
+              <div className="py-8 sm:py-12 text-center space-y-3 sm:space-y-4">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-emerald-500/20 text-emerald-400 mx-auto flex items-center justify-center border border-emerald-500/40">
+                  <CheckCircle size={28} className="sm:w-8 sm:h-8" />
                 </div>
-                <h3 className="text-xl font-bold text-white">Message Received!</h3>
+                <h3 className="text-lg sm:text-xl font-bold text-white">Message Received!</h3>
                 <p className="text-xs text-gray-300 max-w-md mx-auto">
                   Thank you for contacting Propzy. Our support team will respond to your email within 2 hours.
                 </p>

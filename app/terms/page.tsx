@@ -43,12 +43,12 @@ export default function TermsOfUsePage() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
         
         {/* Header */}
-        <div className="space-y-3">
+        <div className="space-y-2.5 sm:space-y-3">
           <Link href="/" className="inline-flex items-center space-x-1.5 text-xs text-emerald-400 hover:underline">
             <ArrowLeft size={14} />
             <span>Back to Home</span>
           </Link>
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-white leading-tight">
             Terms of <span className="text-emerald-400">Use</span>
           </h1>
           <p className="text-xs text-gray-400">
@@ -57,14 +57,14 @@ export default function TermsOfUsePage() {
         </div>
 
         {/* Content Box */}
-        <div className="bg-[#0a110d] border border-emerald-950 rounded-3xl p-6 sm:p-10 space-y-8 shadow-xl">
+        <div className="bg-[#0a110d] border border-emerald-950 rounded-2xl sm:rounded-3xl p-4.5 sm:p-8 md:p-10 space-y-6 sm:space-y-8 shadow-xl">
           {sections.map((s) => (
-            <div key={s.id} className="space-y-2 border-b border-emerald-950/60 pb-6 last:border-b-0 last:pb-0">
-              <h2 className="text-base font-bold text-white tracking-wide flex items-center space-x-2">
-                <CheckCircle2 size={16} className="text-emerald-400" />
+            <div key={s.id} className="space-y-2 border-b border-emerald-950/60 pb-5 sm:pb-6 last:border-b-0 last:pb-0">
+              <h2 className="text-sm sm:text-base font-bold text-white tracking-wide flex items-center space-x-2">
+                <CheckCircle2 size={16} className="text-emerald-400 shrink-0" />
                 <span>{s.title}</span>
               </h2>
-              <p className="text-xs text-gray-300 leading-relaxed pl-6">
+              <p className="text-xs text-gray-300 leading-relaxed pl-0 sm:pl-6">
                 {s.content}
               </p>
             </div>

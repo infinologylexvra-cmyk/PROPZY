@@ -75,15 +75,15 @@ export default function HelpCenterPage() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         
         {/* Hero Header */}
-        <div className="text-center space-y-4 max-w-2xl mx-auto">
-          <div className="inline-flex items-center space-x-2 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider">
+        <div className="text-center space-y-3 sm:space-y-4 max-w-2xl mx-auto">
+          <div className="inline-flex items-center space-x-2 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-3.5 py-1 sm:px-4 sm:py-1.5 rounded-full text-[11px] sm:text-xs font-bold uppercase tracking-wider">
             <HelpCircle size={14} />
             <span>PROPZY TRICITY Help Center</span>
           </div>
-          <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-white">
+          <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white leading-tight">
             How can we <span className="text-emerald-400">help you</span> today?
           </h1>
-          <p className="text-xs sm:text-sm text-gray-400 leading-relaxed">
+          <p className="text-xs sm:text-sm text-gray-400 leading-relaxed max-w-lg mx-auto">
             Search our knowledge base or browse help topics below to get instant answers.
           </p>
 
@@ -95,24 +95,24 @@ export default function HelpCenterPage() {
               placeholder="Search help articles, topics, or FAQs..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-11 pr-4 py-3.5 bg-[#0a110d] border border-emerald-950 rounded-2xl text-xs sm:text-sm text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 transition-colors shadow-lg"
+              className="w-full pl-11 pr-4 py-3 sm:py-3.5 bg-[#0a110d] border border-emerald-950 rounded-2xl text-xs sm:text-sm text-white placeholder-gray-500 focus:outline-none focus:border-emerald-500 transition-colors shadow-lg"
             />
           </div>
         </div>
 
         {/* Category Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
           {categories.map((cat, idx) => {
             const Icon = cat.icon;
             return (
               <div
                 key={idx}
-                className="bg-[#0a110d] border border-emerald-950 hover:border-emerald-700/80 p-6 rounded-3xl space-y-3 transition-all group cursor-pointer shadow-lg hover:-translate-y-1"
+                className="bg-[#0a110d] border border-emerald-950 hover:border-emerald-700/80 p-4.5 sm:p-6 rounded-2xl sm:rounded-3xl space-y-2.5 sm:space-y-3 transition-all group cursor-pointer shadow-lg hover:-translate-y-1"
               >
-                <div className="w-12 h-12 rounded-2xl bg-[#0e1d14] border border-emerald-900/60 group-hover:bg-emerald-500 group-hover:text-black text-emerald-400 flex items-center justify-center transition-all">
-                  <Icon size={22} />
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-[#0e1d14] border border-emerald-900/60 group-hover:bg-emerald-500 group-hover:text-black text-emerald-400 flex items-center justify-center transition-all">
+                  <Icon size={20} className="sm:w-[22px] sm:h-[22px]" />
                 </div>
-                <h3 className="text-base font-bold text-white group-hover:text-emerald-400 transition-colors">
+                <h3 className="text-sm sm:text-base font-bold text-white group-hover:text-emerald-400 transition-colors">
                   {cat.title}
                 </h3>
                 <p className="text-xs text-gray-400 leading-relaxed">
@@ -125,28 +125,28 @@ export default function HelpCenterPage() {
         </div>
 
         {/* Popular Articles */}
-        <div className="space-y-6">
+        <div className="space-y-4 sm:space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-bold text-white tracking-tight">Popular Help Articles</h2>
+            <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight">Popular Help Articles</h2>
             <Link href="/faq" className="text-xs font-semibold text-emerald-400 hover:underline flex items-center space-x-1">
               <span>View All FAQs</span>
               <ArrowRight size={12} />
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
             {filteredArticles.map((article, idx) => (
               <div
                 key={idx}
-                className="bg-[#09100c] border border-emerald-950/80 p-6 rounded-3xl space-y-3 shadow-md hover:border-emerald-900 transition-all"
+                className="bg-[#09100c] border border-emerald-950/80 p-4.5 sm:p-6 rounded-2xl sm:rounded-3xl space-y-2.5 sm:space-y-3 shadow-md hover:border-emerald-900 transition-all"
               >
                 <div className="flex items-center justify-between text-[11px]">
-                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-950 text-emerald-400 font-bold border border-emerald-900/60">
+                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-950 text-emerald-400 font-bold border border-emerald-900/60 text-[10px] sm:text-[11px]">
                     {article.category}
                   </span>
-                  <span className="text-gray-500">{article.readTime}</span>
+                  <span className="text-gray-500 text-[11px]">{article.readTime}</span>
                 </div>
-                <h3 className="text-sm font-bold text-white leading-snug">{article.title}</h3>
+                <h3 className="text-xs sm:text-sm font-bold text-white leading-snug">{article.title}</h3>
                 <p className="text-xs text-gray-400 leading-relaxed">{article.content}</p>
               </div>
             ))}
@@ -154,17 +154,17 @@ export default function HelpCenterPage() {
         </div>
 
         {/* Contact Support Banner */}
-        <div className="bg-linear-to-r from-[#0a1c12] to-[#07130c] border border-emerald-900/80 rounded-3xl p-8 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xl">
-          <div className="space-y-2 text-center sm:text-left">
-            <h3 className="text-xl font-bold text-white">Still need assistance?</h3>
+        <div className="bg-linear-to-r from-[#0a1c12] to-[#07130c] border border-emerald-900/80 rounded-2xl sm:rounded-3xl p-5 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-5 sm:gap-6 shadow-xl">
+          <div className="space-y-1.5 sm:space-y-2 text-center sm:text-left">
+            <h3 className="text-lg sm:text-xl font-bold text-white">Still need assistance?</h3>
             <p className="text-xs text-gray-300 max-w-md">
               Our administrative support team is ready to help you with property verification, listings, or technical queries.
             </p>
           </div>
-          <div className="flex items-center space-x-3 shrink-0">
+          <div className="flex items-center space-x-3 shrink-0 w-full sm:w-auto justify-center">
             <Link
               href="/contact"
-              className="px-6 py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs rounded-full shadow-lg transition-all flex items-center space-x-2"
+              className="w-full sm:w-auto px-6 py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs rounded-full shadow-lg transition-all flex items-center justify-center space-x-2"
             >
               <MessageSquare size={14} />
               <span>Contact Support</span>
