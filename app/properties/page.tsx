@@ -776,22 +776,6 @@ function PropertySearchContent() {
               </div>
             )}
 
-            {/* Verified Toggle */}
-            <div className="pt-2 border-t border-emerald-950">
-              <label className="flex items-center justify-between cursor-pointer select-none">
-                <span className="text-xs font-semibold text-gray-300 flex items-center space-x-1.5">
-                  <ShieldCheck size={16} className="text-emerald-400" />
-                  <span>Verified Listings Only</span>
-                </span>
-                <input
-                  type="checkbox"
-                  suppressHydrationWarning
-                  checked={verifiedOnly}
-                  onChange={(e) => setVerifiedOnly(e.target.checked)}
-                  className="w-4 h-4 text-emerald-500 rounded focus:ring-emerald-500 accent-emerald-500 cursor-pointer"
-                />
-              </label>
-            </div>
           </aside>
 
           {/* Main Property Listings Grid */}
